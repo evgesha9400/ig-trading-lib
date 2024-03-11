@@ -31,8 +31,8 @@ class DurableCache(AuthenticationCacheABC):
 
     def __init__(self, path: str, encryption_key: Optional[bytes] = None) -> None:
         """Initializes token storage with a file path and an optional encryption key.
-            :param path: Path to the file where tokens will be stored including the file name and extension.
-            :param encryption_key: Optional encryption key for securing tokens. Encryption is disabled if not provided.
+        :param path: Path to the file where tokens will be stored including the file name and extension.
+        :param encryption_key: Optional encryption key for securing tokens. Encryption is disabled if not provided.
         """
         self.path = Path(path)
         self.fernet = Fernet(encryption_key) if encryption_key else None
@@ -43,7 +43,7 @@ class DurableCache(AuthenticationCacheABC):
 
     def save_authentication_response(self, response: AuthenticationResponse) -> None:
         """Save the authentication response to the cache.
-            :param response: The authentication response to be cached.
+        :param response: The authentication response to be cached.
         """
         data = response.model_dump()
         try:
@@ -67,7 +67,7 @@ class DurableCache(AuthenticationCacheABC):
 
     def load_authentication_response(self) -> Optional[AuthenticationResponse]:
         """Load the authentication response from the cache if it exists.
-            :return: The authentication response if it exists, otherwise None."""
+        :return: The authentication response if it exists, otherwise None."""
         if not self.path.exists():
             logger.warning("Authentication cache file not found: %s", self.path)
             return None
@@ -104,12 +104,12 @@ class InMemoryCache(AuthenticationCacheABC):
 
     def save_authentication_response(self, response: AuthenticationResponse) -> None:
         """Save the authentication response to the cache if it exists.
-            :param response: The authentication response to be cached."""
+        :param response: The authentication response to be cached."""
         self.response = response
 
     def load_authentication_response(self) -> Optional[AuthenticationResponse]:
         """Load the authentication response from memory if it exists.
-            :return: The authentication response if it exists, otherwise None."""
+        :return: The authentication response if it exists, otherwise None."""
         if self.response:
             return self.response
         else:

@@ -3,7 +3,7 @@ from ig_trading_lib.authentication.models import (
     AccountSummary,
     AccountFinancials,
     AuthenticationResponse,
-    Tokens
+    Tokens,
 )
 
 __all__ = [
