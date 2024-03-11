@@ -13,6 +13,7 @@ This is a Python library designed to interface with the IG Trading platform. It 
 The project consists of several modules:
 
 - `authentication`: This module handles authentication with the IG Rest API.
+- `trading`: This module provides functionalities for trading operations. Currently, it includes methods for getting positions.
 
 
 ## Running the Tests
@@ -26,6 +27,7 @@ make test
 ## Features
 
 - Authentication: The project includes an `AuthenticationService` class that handles authentication.
+- Trading: Work in progress.
 
 ## Contributing
 
