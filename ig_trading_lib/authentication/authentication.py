@@ -39,7 +39,10 @@ class AuthenticationService:
         self.account_password = account_password
         self.base_url = base_url
         self.cache = cache
-        logger.info("Initialized authentication service. Caching %s.", "enabled" if self.cache else "disabled")
+        logger.info(
+            "Initialized authentication service. Caching %s.",
+            "enabled" if self.cache else "disabled",
+        )
 
     @property
     def url(self) -> str:
@@ -104,7 +107,8 @@ class AuthenticationService:
                 )
         else:
             raise AuthenticationError(
-                f"Authentication failed with status code {response.status_code}: {response.text}"
+                "Authentication failed with status code %s: %s"
+                % (response.status_code, response.text)
             )
 
     def __authenticate_and_cache(self) -> AuthenticationResponse:
