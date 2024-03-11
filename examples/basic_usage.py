@@ -1,4 +1,4 @@
-from authentication import AuthenticationService
+from ig_trading_lib.authentication import AuthenticationService
 
 
 if __name__ == "__main__":
