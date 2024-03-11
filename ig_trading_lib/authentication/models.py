@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from pydantic import BaseModel
 

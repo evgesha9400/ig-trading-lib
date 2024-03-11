@@ -1,5 +1,7 @@
 import logging
+
 from pytest import fixture
+
 
 logging.basicConfig(level=logging.INFO)
 

@@ -7,9 +7,8 @@ import requests
 from cryptography.fernet import Fernet
 
 from ig_trading_lib.authentication import AuthenticationService
-
-from ig_trading_lib.authentication.models import AccountInfo, AuthenticationResponse
 from ig_trading_lib.authentication.cache import InMemoryCache, DurableCache
+from ig_trading_lib.authentication.models import AccountInfo, AuthenticationResponse
 
 
 @patch("authentication.authentication.requests.post")
