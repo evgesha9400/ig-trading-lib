@@ -42,7 +42,7 @@ class DurableCache(AuthenticationCacheABC):
         )
 
     def save_authentication_response(self, response: AuthenticationResponse) -> None:
-        """Save the authentication response to the cache if file path exists.
+        """Save the authentication response to the cache.
             :param response: The authentication response to be cached.
         """
         data = response.model_dump()
