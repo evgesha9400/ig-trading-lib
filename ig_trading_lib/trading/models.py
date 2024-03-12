@@ -1,6 +1,9 @@
-from typing import List, Optional, Literal
+from typing import List, Any
+from typing import Literal, Optional
 
-from pydantic import BaseModel, condecimal, conint
+from pydantic import BaseModel, constr, condecimal
+from pydantic import conint
+from pydantic import model_validator
 
 
 InstrumentType = Literal[
@@ -84,3 +87,88 @@ class OpenPosition(BaseModel):
 
 class OpenPositions(BaseModel):
     positions: List[OpenPosition]
+
+
+
+class CreatePosition(BaseModel):
+    currencyCode: constr(pattern=r'^[A-Z]{3}$')
+    dealReference: Optional[constr(pattern=r'^[A-Za-z0-9_\-.]{1,30}$')] = None
+    direction: Literal['BUY', 'SELL']
+    epic: constr(pattern=r'^[A-Za-z0-9._]{6,30}$')
+    expiry: constr(pattern=r'^(\d{2}-)?[A-Z]{3}-\d{2}|-|DFB$')
+    forceOpen: bool
+    guaranteedStop: bool
+    level: Optional[condecimal(max_digits=12, decimal_places=2)] = None
+    limitDistance: Optional[condecimal(max_digits=12, decimal_places=2)] = None
+    limitLevel: Optional[condecimal(max_digits=12, decimal_places=2)] = None
+    orderType: Literal['LIMIT', 'MARKET', 'QUOTE']
+    quoteId: Optional[constr(pattern=r'^[A-Za-z0-9]+$')] = None
+    size: condecimal(max_digits=12, decimal_places=2, gt=0)
+    stopDistance: Optional[condecimal(max_digits=12, decimal_places=2)] = None
+    stopLevel: Optional[condecimal(max_digits=12, decimal_places=2)] = None
+    timeInForce: Literal['EXECUTE_AND_ELIMINATE', 'FILL_OR_KILL']
+    trailingStop: bool
+    trailingStopIncrement: Optional[condecimal(max_digits=12, decimal_places=2)] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_unique_constraints(cls, data: Any):
+        if sum([data.get("limitLevel") is not None, data.get("limitDistance") is not None]) > 1:
+            raise ValueError("Set only one of limitLevel or limitDistance.")
+        if sum([data.get("stopLevel") is not None, data.get("stopDistance") is not None]) > 1:
+            raise ValueError("Set only one of stopLevel or stopDistance.")
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_force_open_constraints(cls, data: Any):
+        if any([
+            data.get("limitDistance") is not None,
+            data.get("limitLevel") is not None,
+            data.get("stopDistance") is not None,
+            data.get("stopLevel") is not None
+        ]) and not data.get("forceOpen"):
+            raise ValueError("forceOpen must be true if limit or stop constraints are set.")
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_guaranteed_stop_constraints(cls, data: Any):
+        if data.get("guaranteedStop") and not (
+                bool(data.get("stopLevel")) ^ bool(data.get("stopDistance"))
+        ):
+            raise ValueError("When guaranteedStop is true, specify exactly one of stopLevel or stopDistance.")
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_order_type_constraints(cls, data: Any):
+        order_type = data.get("orderType")
+        if order_type == "LIMIT":
+            if data.get("quoteId") is not None:
+                raise ValueError("Do not set quoteId when orderType is LIMIT.")
+            if data.get("level") is None:
+                raise ValueError("Set level when orderType is LIMIT.")
+        elif order_type == "MARKET":
+            if any([data.get("level") is not None, data.get("quoteId") is not None]):
+                raise ValueError("Do not set level or quoteId when orderType is MARKET.")
+        elif order_type == "QUOTE":
+            if not all([data.get("level") is not None, data.get("quoteId") is not None]):
+                raise ValueError("Set both level and quoteId when orderType is QUOTE.")
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_trailing_stop_constraints(cls, data: Any):
+        if data.get("trailingStop"):
+            if data.get("stopLevel") is not None:
+                raise ValueError("Do not set stopLevel when trailingStop is true.")
+            if data.get("guaranteedStop"):
+                raise ValueError("guaranteedStop must be false when trailingStop is true.")
+            if not all([data.get("stopDistance") is not None, data.get("trailingStopIncrement") is not None]):
+                raise ValueError("Set both stopDistance and trailingStopIncrement when trailingStop is true.")
+        return data
+
+
+
+
