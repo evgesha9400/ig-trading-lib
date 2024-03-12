@@ -1,9 +1,7 @@
 from typing import List, Any
 from typing import Literal, Optional
 
-from pydantic import BaseModel, constr, condecimal
-from pydantic import conint
-from pydantic import model_validator
+from pydantic import BaseModel, constr, condecimal, conint, model_validator, Field
 
 
 InstrumentType = Literal[
@@ -91,24 +89,24 @@ class OpenPositions(BaseModel):
 
 
 class CreatePosition(BaseModel):
-    currencyCode: constr(pattern=r'^[A-Z]{3}$')
-    dealReference: Optional[constr(pattern=r'^[A-Za-z0-9_\-.]{1,30}$')] = None
-    direction: Literal['BUY', 'SELL']
-    epic: constr(pattern=r'^[A-Za-z0-9._]{6,30}$')
-    expiry: constr(pattern=r'^(\d{2}-)?[A-Z]{3}-\d{2}|-|DFB$')
-    forceOpen: bool
-    guaranteedStop: bool
-    level: Optional[condecimal(max_digits=12, decimal_places=2)] = None
-    limitDistance: Optional[condecimal(max_digits=12, decimal_places=2)] = None
-    limitLevel: Optional[condecimal(max_digits=12, decimal_places=2)] = None
-    orderType: Literal['LIMIT', 'MARKET', 'QUOTE']
-    quoteId: Optional[constr(pattern=r'^[A-Za-z0-9]+$')] = None
-    size: condecimal(max_digits=12, decimal_places=2, gt=0)
-    stopDistance: Optional[condecimal(max_digits=12, decimal_places=2)] = None
-    stopLevel: Optional[condecimal(max_digits=12, decimal_places=2)] = None
-    timeInForce: Literal['EXECUTE_AND_ELIMINATE', 'FILL_OR_KILL']
-    trailingStop: bool
-    trailingStopIncrement: Optional[condecimal(max_digits=12, decimal_places=2)] = None
+    currencyCode: constr(pattern=r'^[A-Z]{3}$') = Field(..., description="Currency. Restricted to available instrument currencies.")
+    dealReference: Optional[constr(pattern=r'^[A-Za-z0-9_\-.]{1,30}$')] = Field(default=None, description="A user-defined reference identifying the submission of the order.")
+    direction: Literal['BUY', 'SELL'] = Field(..., description="Deal direction.")
+    epic: constr(pattern=r'^[A-Za-z0-9._]{6,30}$') = Field(..., description="Instrument epic identifier.")
+    expiry: constr(pattern=r'^(\d{2}-)?[A-Z]{3}-\d{2}|-|DFB$') = Field(..., description="Instrument expiry.")
+    forceOpen: bool = Field(..., description="True if force open is required.")
+    guaranteedStop: bool = Field(..., description="True if a guaranteed stop is required.")
+    level: Optional[condecimal(max_digits=12, decimal_places=2)] = Field(default=None, description="Deal level.")
+    limitDistance: Optional[condecimal(max_digits=12, decimal_places=2)] = Field(default=None, description="Limit distance.")
+    limitLevel: Optional[condecimal(max_digits=12, decimal_places=2)] = Field(default=None, description="Limit level.")
+    orderType: Literal['LIMIT', 'MARKET', 'QUOTE'] = Field(..., description="Describes the order level model to be used for a position operation.")
+    quoteId: Optional[constr(pattern=r'^[A-Za-z0-9]+$')] = Field(default=None, description="Lightstreamer price quote identifier.")
+    size: condecimal(max_digits=12, decimal_places=2, gt=0) = Field(..., description="Deal size.")
+    stopDistance: Optional[condecimal(max_digits=12, decimal_places=2)] = Field(default=None, description="Stop distance.")
+    stopLevel: Optional[condecimal(max_digits=12, decimal_places=2)] = Field(default=None, description="Stop level.")
+    timeInForce: Literal['EXECUTE_AND_ELIMINATE', 'FILL_OR_KILL'] = Field(..., description="The time in force determines the order fill strategy.")
+    trailingStop: bool = Field(..., description="Whether the stop has to be moved towards the current level in case of a favourable trade.")
+    trailingStopIncrement: Optional[condecimal(max_digits=12, decimal_places=2)] = Field(default=None, description="Increment step in pips for the trailing stop.")
 
     @model_validator(mode="before")
     @classmethod
