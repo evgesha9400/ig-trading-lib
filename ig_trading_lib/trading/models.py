@@ -8,7 +8,6 @@ from pydantic import (
     condecimal,
     conint,
     model_validator,
-    Field,
     field_serializer,
 )
 
@@ -206,4 +205,54 @@ class CreatePosition(BaseModel):
                 raise ValueError(
                     "Set both stopDistance and trailingStopIncrement when trailingStop is true."
                 )
+        return data
+
+
+class ClosePosition(BaseModel):
+    direction: Literal["BUY", "SELL"]
+    orderType: Literal["LIMIT", "MARKET", "QUOTE"]
+    size: condecimal(gt=0, decimal_places=2)
+    timeInForce: Literal["EXECUTE_AND_ELIMINATE", "FILL_OR_KILL"]
+    quoteId: Optional[str] = None
+    dealId: Optional[constr(pattern=".{1,30}")] = None
+    epic: Optional[constr(pattern="[A-Za-z0-9._]{6,30}")] = None
+    expiry: Optional[constr(pattern="(\\d{2}-)?[A-Z]{3}-\\d{2}|-|DFB")] = None
+    level: Optional[condecimal(decimal_places=12)] = None
+
+    @field_serializer("level", "size", mode="plain")
+    def serialize_decimal(self, v: Optional[Decimal], _info) -> float:
+        if v is not None:
+            return float(v)
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_order_type(cls, data: Any):
+        if data.get("orderType") == "QUOTE" and (
+            data.get("quoteId") is None or data.get("level") is None
+        ):
+            raise ValueError("quoteId is required when orderType is QUOTE.")
+
+        if (
+            data.get("orderType") == "MARKET"
+            and (data.get("level") is not None or data.get("quoteId")) is not None
+        ):
+            raise ValueError(
+                "level and quoteId are not allowed when orderType is MARKET."
+            )
+
+        if data.get("orderType") == "LIMIT" and data.get("quoteId") is not None:
+            raise ValueError("quoteId is not allowed when orderType is LIMIT.")
+
+        if data.get("orderType") == "LIMIT" and data.get("level") is None:
+            raise ValueError("level is required when orderType is LIMIT.")
+
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_unique_constraints(cls, data: Any):
+        if data.get("dealId") is not None and data.get("epic") is not None:
+            raise ValueError("Set only one of dealId or epic.")
+        if data.get("dealId") is None and data.get("epic") is None:
+            raise ValueError("Set one of dealId or epic.")
         return data
