@@ -133,39 +133,23 @@ class CreatePosition(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def check_unique_constraints(cls, data: Any):
-        if (
-            sum(
-                [
-                    data.get("limitLevel") is not None,
-                    data.get("limitDistance") is not None,
-                ]
-            )
-            > 1
-        ):
+        if data.get("limitLevel") is not None and data.get("limitDistance") is not None:
             raise ValueError("Set only one of limitLevel or limitDistance.")
-        if (
-            sum(
-                [
-                    data.get("stopLevel") is not None,
-                    data.get("stopDistance") is not None,
-                ]
-            )
-            > 1
-        ):
+        if data.get("stopLevel") is not None and data.get("stopDistance") is not None:
             raise ValueError("Set only one of stopLevel or stopDistance.")
         return data
 
     @model_validator(mode="before")
     @classmethod
     def check_force_open_constraints(cls, data: Any):
-        if any(
+        if not data.get("forceOpen") and any(
             [
                 data.get("limitDistance") is not None,
                 data.get("limitLevel") is not None,
                 data.get("stopDistance") is not None,
                 data.get("stopLevel") is not None,
             ]
-        ) and not data.get("forceOpen"):
+        ):
             raise ValueError(
                 "forceOpen must be true if limit or stop constraints are set."
             )
