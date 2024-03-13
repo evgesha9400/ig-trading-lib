@@ -61,8 +61,8 @@ class AuthenticationService:
     def headers(self) -> dict:
         """Setting up the request headers."""
         return {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
+            "Content-Type": "application/json; charset=utf-8",
+            "Accept": "application/json; charset=utf-8",
             "X-IG-API-KEY": self.api_key,
             "Version": "2",
         }
