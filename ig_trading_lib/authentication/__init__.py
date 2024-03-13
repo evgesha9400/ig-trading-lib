@@ -1,4 +1,4 @@
-from .authentication import AuthenticationService, AuthenticationError
+from .service import AuthenticationService, AuthenticationError
 
 
 __all__ = [

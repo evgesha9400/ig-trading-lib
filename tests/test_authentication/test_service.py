@@ -13,7 +13,7 @@ from ig_trading_lib.authentication.models import AccountInfo, AuthenticationResp
 
 def test_authentication_no_cache(mocker, test_account_info):
     mock_post = mocker.patch(
-        "ig_trading_lib.authentication.authentication.requests.post"
+        "ig_trading_lib.authentication.service.requests.post"
     )
     test_service = AuthenticationService(
         api_key="test_api_key",
@@ -40,7 +40,7 @@ def test_authentication_no_cache(mocker, test_account_info):
 
 def test_authentication_in_memory_cache_hit(mocker, test_account_info):
     mock_post = mocker.patch(
-        "ig_trading_lib.authentication.authentication.requests.post"
+        "ig_trading_lib.authentication.service.requests.post"
     )
     test_cache = InMemoryCache()
     test_service = AuthenticationService(
@@ -68,7 +68,7 @@ def test_authentication_in_memory_cache_hit(mocker, test_account_info):
 
 def test_authentication_in_memory_cache_miss(mocker, test_account_info):
     mock_post = mocker.patch(
-        "ig_trading_lib.authentication.authentication.requests.post"
+        "ig_trading_lib.authentication.service.requests.post"
     )
     test_cache = InMemoryCache()
     test_service = AuthenticationService(
@@ -103,7 +103,7 @@ def test_authentication_in_memory_cache_miss(mocker, test_account_info):
 )
 def test_authentication_durable_cache_hit(mocker, encryption_key, test_account_info):
     mock_post = mocker.patch(
-        "ig_trading_lib.authentication.authentication.requests.post"
+        "ig_trading_lib.authentication.service.requests.post"
     )
     # Create a durable cache and save a valid authentication response to it
     current = Path(__file__).parent.absolute()
@@ -150,7 +150,7 @@ def test_authentication_durable_cache_hit(mocker, encryption_key, test_account_i
 )
 def test_authentication_durable_cache_miss(mocker, encryption_key, test_account_info):
     mock_post = mocker.patch(
-        "ig_trading_lib.authentication.authentication.requests.post"
+        "ig_trading_lib.authentication.service.requests.post"
     )
     # Create a durable cache
     current = Path(__file__).parent.absolute()
