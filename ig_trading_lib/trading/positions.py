@@ -2,7 +2,7 @@ import logging
 
 import requests
 from pydantic import ValidationError
-from typing import Dict, Literal, Optional
+
 from .models import (
     OpenPositions,
     OpenPosition,
