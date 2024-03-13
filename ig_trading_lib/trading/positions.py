@@ -2,7 +2,7 @@ import logging
 
 import requests
 from pydantic import ValidationError
-
+from typing import Dict, Literal, Optional
 from .models import (
     OpenPositions,
     OpenPosition,
@@ -72,9 +72,9 @@ class PositionService:
                     % (response.status_code, response.text)
                 )
         except ValidationError as e:
-            raise PositionsError(f"Invalid open positions response: %s" % e)
+            raise PositionsError("Invalid open positions response: %s" % e)
         except requests.RequestException as e:
-            raise PositionsError(f"Open positions request failed: %s" % e)
+            raise PositionsError("Open positions request failed: %s" % e)
 
     def create_position(self, create: CreatePosition) -> DealReference:
         """Create a new position for the authenticated account.
@@ -95,10 +95,11 @@ class PositionService:
                     % (response.status_code, response.text)
                 )
         except requests.RequestException as e:
-            raise PositionsError(f"Create position request failed: %s" % e)
+            raise PositionsError("Create position request failed: %s" % e)
 
     def close_position(self, close: ClosePosition) -> DealReference:
         """Close a position for the authenticated account.
+        :param close: ClosePosition. The position to close.
         :return: DealReference e.g: {'dealReference': 'DIAAAABBBCCC123'}
         """
 
@@ -113,11 +114,12 @@ class PositionService:
                     % (response.status_code, response.text)
                 )
         except requests.RequestException as e:
-            raise PositionsError(f"Close position request failed: %s" % e)
+            raise PositionsError("Close position request failed: %s" % e)
 
     def update_position(self, deal_id: str, update: UpdatePosition) -> DealReference:
         """Update a position for the authenticated account.
         :param deal_id: str. The deal ID of the position to update.
+        :param update: UpdatePosition. Position update details.
         :return: DealReference e.g: {'dealReference': 'DIAAAABBBCCC123'}
         """
 
@@ -132,4 +134,4 @@ class PositionService:
                     % (response.status_code, response.text)
                 )
         except requests.RequestException as e:
-            raise PositionsError(f"Update position request failed: %s" % e)
+            raise PositionsError("Update position request failed: %s" % e)
