@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List, Any
+from typing import List, Any, TypedDict
 from typing import Literal, Optional
 
 from pydantic import (
@@ -93,6 +93,10 @@ class OpenPosition(BaseModel):
 
 class OpenPositions(BaseModel):
     positions: List[OpenPosition]
+
+
+class DealReference(TypedDict):
+    dealReference: str
 
 
 class CreatePosition(BaseModel):
@@ -256,3 +260,87 @@ class ClosePosition(BaseModel):
         if data.get("dealId") is None and data.get("epic") is None:
             raise ValueError("Set one of dealId or epic.")
         return data
+
+    @classmethod
+    def from_create(cls, position: CreatePosition):
+        """Create a ClosePosition from a CreatePosition.
+        :param position: CreatePosition. The position to close.
+        :return: ClosePosition. The position to close.
+        """
+        return cls(
+            direction="BUY" if position.direction == "SELL" else "SELL",
+            orderType=position.orderType,
+            size=position.size,
+            timeInForce=position.timeInForce,
+            epic=position.epic,
+            expiry=position.expiry,
+            level=position.level,
+        )
+
+
+class UpdatePosition(BaseModel):
+    guaranteedStop: Optional[bool] = None
+    limitLevel: Optional[condecimal(decimal_places=2)] = None
+    stopLevel: Optional[condecimal(decimal_places=2)] = None
+    trailingStop: Optional[bool] = None
+    trailingStopDistance: Optional[condecimal(decimal_places=2)] = None
+    trailingStopIncrement: Optional[condecimal(decimal_places=2)] = None
+
+    @field_serializer(
+        "limitLevel",
+        "stopLevel",
+        "trailingStopDistance",
+        "trailingStopIncrement",
+        mode="plain",
+    )
+    @classmethod
+    def serialize_decimal(cls, v: Optional[Decimal], _info) -> Optional[float]:
+        if v is not None:
+            return float(v)
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_trailing_stop_constraints(cls, data: dict):
+        if data.get("trailingStop"):
+            cls._validate_trailing_stop_true(data)
+        elif data.get("trailingStop") == False:
+            cls._validate_trailing_stop_false(data)
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_guaranteed_stop_constraints(cls, data: dict):
+        if data.get("guaranteedStop"):
+            cls._validate_guaranteed_stop_true(data)
+        return data
+
+    @classmethod
+    def _validate_trailing_stop_true(cls, data: dict):
+        if data.get("guaranteedStop"):
+            raise ValueError(
+                "If trailingStop is true, then guaranteedStop must be false."
+            )
+        if any(
+            data.get(field) is None
+            for field in ["trailingStopDistance", "trailingStopIncrement", "stopLevel"]
+        ):
+            raise ValueError(
+                "If trailingStop is true, then trailingStopDistance, trailingStopIncrement, and stopLevel must be set."
+            )
+
+    @classmethod
+    def _validate_trailing_stop_false(cls, data: dict):
+        if any(
+            data.get(field) is not None
+            for field in ["trailingStopDistance", "trailingStopIncrement"]
+        ):
+            raise ValueError(
+                "If trailingStop is false, then DO NOT set trailingStopDistance or trailingStopIncrement."
+            )
+
+    @classmethod
+    def _validate_guaranteed_stop_true(cls, data: dict):
+        if data.get("stopLevel") is None:
+            raise ValueError("If guaranteedStop is true, then stopLevel must be set.")
+        if data.get("trailingStop"):
+            raise ValueError("guaranteedStop and trailingStop cannot both be true.")
