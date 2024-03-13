@@ -224,7 +224,7 @@ class ClosePosition(BaseModel):
     level: Optional[condecimal(decimal_places=12)] = None
 
     @field_serializer("level", "size", mode="plain")
-    def serialize_decimal(self, v: Optional[Decimal], _info) -> float:
+    def serialize_decimal(self, v: Optional[Decimal], _info) -> Optional[float]:
         if v is not None:
             return float(v)
 
