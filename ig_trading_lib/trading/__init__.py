@@ -1,10 +1,12 @@
-from .models import OpenPositions, OpenPosition
-from .positions import get_open_position_by_deal_id, get_open_positions
+from .models import OpenPositions, OpenPosition, CreatePosition, ClosePosition
+from .positions import PositionService, PositionsError
 
 
 __all__ = [
     "OpenPositions",
     "OpenPosition",
-    "get_open_position_by_deal_id",
-    "get_open_positions",
+    "CreatePosition",
+    "ClosePosition",
+    "PositionService",
+    "PositionsError",
 ]
