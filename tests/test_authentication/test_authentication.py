@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 import requests
@@ -11,8 +11,10 @@ from ig_trading_lib.authentication.cache import InMemoryCache, DurableCache
 from ig_trading_lib.authentication.models import AccountInfo, AuthenticationResponse
 
 
-@patch("authentication.authentication.requests.post")
-def test_authentication_no_cache(mock_post, test_account_info):
+def test_authentication_no_cache(mocker, test_account_info):
+    mock_post = mocker.patch(
+        "ig_trading_lib.authentication.authentication.requests.post"
+    )
     test_service = AuthenticationService(
         api_key="test_api_key",
         account_identifier="test_account",
@@ -36,8 +38,10 @@ def test_authentication_no_cache(mock_post, test_account_info):
     assert auth_response.account_info.model_dump() == test_account_info
 
 
-@patch("authentication.authentication.requests.post")
-def test_authentication_in_memory_cache_hit(mock_post, test_account_info):
+def test_authentication_in_memory_cache_hit(mocker, test_account_info):
+    mock_post = mocker.patch(
+        "ig_trading_lib.authentication.authentication.requests.post"
+    )
     test_cache = InMemoryCache()
     test_service = AuthenticationService(
         api_key="test_api_key",
@@ -62,8 +66,10 @@ def test_authentication_in_memory_cache_hit(mock_post, test_account_info):
     mock_post.assert_not_called()
 
 
-@patch("authentication.authentication.requests.post")
-def test_authentication_in_memory_cache_miss(mock_post, test_account_info):
+def test_authentication_in_memory_cache_miss(mocker, test_account_info):
+    mock_post = mocker.patch(
+        "ig_trading_lib.authentication.authentication.requests.post"
+    )
     test_cache = InMemoryCache()
     test_service = AuthenticationService(
         api_key="test_api_key",
@@ -91,12 +97,14 @@ def test_authentication_in_memory_cache_miss(mock_post, test_account_info):
     assert test_cache.response == auth_response
 
 
-@patch("authentication.authentication.requests.post")
 @pytest.mark.parametrize(
     "encryption_key",
     [None, Fernet.generate_key()],
 )
-def test_authentication_durable_cache_hit(mock_post, encryption_key, test_account_info):
+def test_authentication_durable_cache_hit(mocker, encryption_key, test_account_info):
+    mock_post = mocker.patch(
+        "ig_trading_lib.authentication.authentication.requests.post"
+    )
     # Create a durable cache and save a valid authentication response to it
     current = Path(__file__).parent.absolute()
     path = f"{current}/test_cache.json"
@@ -136,14 +144,14 @@ def test_authentication_durable_cache_hit(mock_post, encryption_key, test_accoun
     Path(path).unlink()
 
 
-@patch("authentication.authentication.requests.post")
 @pytest.mark.parametrize(
     "encryption_key",
     [None, Fernet.generate_key()],
 )
-def test_authentication_durable_cache_miss(
-    mock_post, encryption_key, test_account_info
-):
+def test_authentication_durable_cache_miss(mocker, encryption_key, test_account_info):
+    mock_post = mocker.patch(
+        "ig_trading_lib.authentication.authentication.requests.post"
+    )
     # Create a durable cache
     current = Path(__file__).parent.absolute()
     path = f"{current}/test_cache.json"

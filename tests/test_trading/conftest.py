@@ -3,6 +3,7 @@ from typing import Dict
 from pytest import fixture
 
 from ig_trading_lib import Tokens
+from trading.positions import PositionService
 
 
 @fixture
@@ -55,3 +56,10 @@ def open_position() -> Dict:
             "scalingFactor": 1,
         },
     }
+
+
+@fixture
+def position_service(api_key, tokens) -> PositionService:
+    return PositionService(
+        api_key=api_key, tokens=tokens, base_url="https://demo-api.ig.com"
+    )
