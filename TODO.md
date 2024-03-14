@@ -54,7 +54,9 @@
 
 
 ## Refinement
-
+- [ ] Add a root module for field definitions
+- [ ] Add a root module for validators
+- [ ] Rename objects contains from plural to list. e.g. `OpenPositions` to `OpenPositionsList`
 - [ ] Create either a @decorator or a function for general request processing e.g:
   ```
     def handle_request(request_func: callable, endpoint: str, headers_update: dict = None):
