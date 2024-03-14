@@ -3,7 +3,7 @@
   - [ ] Implement working orders service
     - [ ] Implement V2 GET /workingorders
       - [x] Implement v2 GET /workingorders response model
-      - [ ] Implement v2 GET /workingorders method
+      - [x] Implement v2 GET /workingorders method
     - [ ] Implement V2 POST /workingorders
       - [ ] Implement v2 POST /workingorders/otc request model
       - [ ] Implement v2 POST /workingorders/otc method
