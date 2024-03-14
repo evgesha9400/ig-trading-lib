@@ -21,7 +21,12 @@ class PositionsError(Exception):
 
 
 class PositionService:
-    def __init__(self, api_key, tokens, base_url):
+    def __init__(self, api_key: str, tokens: Tokens, base_url: str):
+        """Initialize the position service.
+        :param api_key: Your IG API key.
+        :param tokens: Authentication tokens for the IG API.
+        :param base_url: The base URL for the IG API (live or demo). e.g: https://demo-api.ig.com/gateway/deal
+        """
         self.api_key = api_key
         self.tokens = tokens
         self.base_url = base_url
