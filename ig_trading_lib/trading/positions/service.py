@@ -58,9 +58,9 @@ class PositionService:
                     % (response.status_code, response.text)
                 )
         except ValidationError as e:
-            raise PositionsError(f"Invalid open position response: %s" % e)
+            raise PositionsError("Invalid open position response: %s" % e)
         except requests.RequestException as e:
-            raise PositionsError(f"Open position request failed: %s" % e)
+            raise PositionsError("Open position request failed: %s" % e)
 
     def get_open_positions(self) -> OpenPositions:
         """Get open positions for the authenticated account.
