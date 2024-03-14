@@ -3,6 +3,7 @@ import logging
 import requests
 from pydantic import ValidationError
 
+from ig_trading_lib import Tokens
 from .models import (
     OpenPositions,
     OpenPosition,
