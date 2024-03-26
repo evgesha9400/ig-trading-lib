@@ -10,8 +10,8 @@ from .models import (
     CreatePosition,
     ClosePosition,
     UpdatePosition,
-    DealReference,
 )
+from ..models import DealReference
 
 
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ class PositionService:
                 url, headers=self.headers, json=create.model_dump()
             )
             if response.status_code == 200:
-                return response.json()
+                return DealReference.model_validate(response.json())
             else:
                 raise PositionsError(
                     "Create position request failed with status code %s: %s"
@@ -113,7 +113,7 @@ class PositionService:
         try:
             response = requests.post(url, headers=self.headers, json=close.model_dump())
             if response.status_code == 200:
-                return response.json()
+                return DealReference.model_validate(response.json())
             else:
                 raise PositionsError(
                     "Close position request failed with status code %s: %s"
@@ -133,7 +133,7 @@ class PositionService:
         try:
             response = requests.put(url, headers=self.headers, json=update.model_dump())
             if response.status_code == 200:
-                return response.json()
+                return DealReference.model_validate(response.json())
             else:
                 raise PositionsError(
                     "Update position request failed with status code %s: %s"

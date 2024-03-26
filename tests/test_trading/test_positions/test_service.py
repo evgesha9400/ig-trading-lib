@@ -63,7 +63,7 @@ def test_create_position(mocker, position_service):
             }
         )
     )
-    assert response == {"dealReference": "DIAAAABBBCCC123"}
+    assert response.model_dump() == {"dealReference": "DIAAAABBBCCC123"}
     assert mock_post.call_count == 1
 
 
@@ -85,7 +85,7 @@ def test_close_position(mocker, position_service):
             }
         )
     )
-    assert response == {"dealReference": "DIAAAABBBCCC123"}
+    assert response.model_dump() == {"dealReference": "DIAAAABBBCCC123"}
     assert mock_post.call_count == 1
 
 
@@ -105,5 +105,5 @@ def test_update_position(mocker, position_service):
             }
         ),
     )
-    assert response == {"dealReference": "DIAAAABBBCCC123"}
+    assert response.model_dump() == {"dealReference": "DIAAAABBBCCC123"}
     assert mock_put.call_count == 1
