@@ -1,6 +1,5 @@
 from decimal import Decimal
-from typing import List, Any, TypedDict
-from typing import Literal, Optional
+from typing import List, Any, Literal, Optional
 
 from pydantic import (
     BaseModel,
@@ -10,33 +9,7 @@ from pydantic import (
     model_validator,
     field_serializer,
 )
-
-
-InstrumentType = Literal[
-    "SHARES",
-    "BINARY",
-    "BUNGEE_CAPPED",
-    "BUNGEE_COMMODITIES",
-    "BUNGEE_CURRENCIES",
-    "BUNGEE_INDICES",
-    "COMMODITIES",
-    "CURRENCIES",
-    "INDICES",
-    "KNOCKOUTS_COMMODITIES",
-    "KNOCKOUTS_CURRENCIES",
-    "KNOCKOUTS_INDICES",
-    "KNOCKOUTS_SHARES",
-    "OPT_COMMODITIES",
-    "OPT_CURRENCIES",
-    "OPT_INDICES",
-    "OPT_RATES",
-    "OPT_SHARES",
-    "RATES",
-    "SECTORS",
-    "SPRINT_MARKET",
-    "TEST_MARKET",
-    "UNKNOWN",
-]
+from ..models import InstrumentType, Direction
 
 
 MarketStatusType = Literal[
@@ -48,6 +21,10 @@ MarketStatusType = Literal[
     "ON_AUCTION_NO_EDITS",
     "SUSPENDED",
 ]
+
+OrderType = Literal["LIMIT", "MARKET", "QUOTE"]
+
+TimeInForce = Literal["EXECUTE_AND_ELIMINATE", "FILL_OR_KILL"]
 
 
 class Market(BaseModel):
@@ -78,7 +55,7 @@ class Position(BaseModel):
     currency: str
     dealId: str
     dealReference: str
-    direction: Literal["BUY", "SELL"]
+    direction: Direction
     level: condecimal(decimal_places=2)
     limitLevel: Optional[condecimal(decimal_places=2)] = None
     limitedRiskPremium: Optional[condecimal(decimal_places=2)] = None
@@ -103,13 +80,13 @@ class DealReference(TypedDict):
 
 class CreatePosition(BaseModel):
     currencyCode: constr(pattern=r"^[A-Z]{3}$")
-    direction: Literal["BUY", "SELL"]
+    direction: Direction
     epic: constr(pattern=r"^[A-Za-z0-9._]{6,30}$")
     expiry: constr(pattern=r"^(\d{2}-)?[A-Z]{3}-\d{2}|-|DFB$")
     forceOpen: bool
     guaranteedStop: bool
-    orderType: Literal["LIMIT", "MARKET", "QUOTE"]
-    timeInForce: Literal["EXECUTE_AND_ELIMINATE", "FILL_OR_KILL"]
+    orderType: OrderType
+    timeInForce: TimeInForce
     trailingStop: bool
     dealReference: Optional[constr(pattern=r"^[A-Za-z0-9_\-.]{1,30}$")] = None
     level: Optional[condecimal(decimal_places=12)] = None
@@ -215,10 +192,10 @@ class CreatePosition(BaseModel):
 
 
 class ClosePosition(BaseModel):
-    direction: Literal["BUY", "SELL"]
-    orderType: Literal["LIMIT", "MARKET", "QUOTE"]
+    direction: Direction
+    orderType: OrderType
     size: condecimal(gt=0, decimal_places=2)
-    timeInForce: Literal["EXECUTE_AND_ELIMINATE", "FILL_OR_KILL"]
+    timeInForce: TimeInForce
     quoteId: Optional[str] = None
     dealId: Optional[constr(pattern=".{1,30}")] = None
     epic: Optional[constr(pattern="[A-Za-z0-9._]{6,30}")] = None

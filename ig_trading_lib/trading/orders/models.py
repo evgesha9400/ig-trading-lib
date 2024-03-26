@@ -3,32 +3,15 @@ from typing import Optional, List, Literal
 
 from pydantic import BaseModel, condecimal, field_validator
 
-
-InstrumentType = Literal[
-    "SHARES",
-    "BINARY",
-    "BUNGEE_CAPPED",
-    "BUNGEE_COMMODITIES",
-    "BUNGEE_CURRENCIES",
-    "BUNGEE_INDICES",
-    "COMMODITIES",
-    "CURRENCIES",
-    "INDICES",
-    "KNOCKOUTS_COMMODITIES",
-    "KNOCKOUTS_CURRENCIES",
-    "KNOCKOUTS_INDICES",
-    "KNOCKOUTS_SHARES",
-    "OPT_COMMODITIES",
-    "OPT_CURRENCIES",
-    "OPT_INDICES",
-    "OPT_RATES",
-    "OPT_SHARES",
-    "RATES",
-    "SECTORS",
-    "SPRINT_MARKET",
-    "TEST_MARKET",
-    "UNKNOWN",
-]
+from pydantic import (
+    BaseModel,
+    condecimal,
+    field_validator,
+    constr,
+    model_validator,
+    field_serializer,
+)
+from ..models import InstrumentType, Direction
 
 
 OrderType = Literal["LIMIT", "STOP"]
@@ -46,9 +29,6 @@ MarketStatus = Literal[
     "SUSPENDED",
     "TRADEABLE",
 ]
-
-
-Direction = Literal["BUY", "SELL"]
 
 
 class MarketData(BaseModel):
@@ -99,7 +79,6 @@ class WorkingOrderData(BaseModel):
                 return datetime.strptime(v, "%Y/%m/%d %H:%M")
             except ValueError:
                 raise ValueError(f"Invalid datetime format for goodTillDate value {v}")
-
 
     @field_validator("createdDate", mode="before")
     @classmethod

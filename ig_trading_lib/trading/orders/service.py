@@ -5,6 +5,10 @@ from .models import WorkingOrders
 import requests
 from pydantic import ValidationError
 
+from ig_trading_lib import Tokens
+from .models import WorkingOrders, CreateWorkingOrder
+from ..models import DealReference
+
 
 logger = logging.getLogger(__name__)
 
