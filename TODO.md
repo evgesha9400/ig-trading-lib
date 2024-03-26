@@ -1,12 +1,12 @@
 ## Moving forward
 - Implement trading package    
   - [ ] Implement working orders service
-    - [ ] Implement V2 GET /workingorders
+    - [x] Implement V2 GET /workingorders
       - [x] Implement v2 GET /workingorders response model
       - [x] Implement v2 GET /workingorders method
-    - [ ] Implement V2 POST /workingorders
-      - [ ] Implement v2 POST /workingorders/otc request model
-      - [ ] Implement v2 POST /workingorders/otc method
+    - [x] Implement V2 POST /workingorders
+      - [x] Implement v2 POST /workingorders/otc request model
+      - [x] Implement v2 POST /workingorders/otc method
     - [ ] Implement V2 DELETE /workingorders
       - [ ] Implement V2 DELETE /workingorders/otc/{dealId} method
     - [ ] Implement V2 PUT /workingorders/otc/{dealId}
