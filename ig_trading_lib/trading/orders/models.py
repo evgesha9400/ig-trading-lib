@@ -1,7 +1,6 @@
 from datetime import datetime
-from typing import Optional, List, Literal
-
-from pydantic import BaseModel, condecimal, field_validator
+from decimal import Decimal
+from typing import Optional, List, Literal, Any
 
 from pydantic import (
     BaseModel,
@@ -96,3 +95,69 @@ class WorkingOrder(BaseModel):
 
 class WorkingOrders(BaseModel):
     workingOrders: List[WorkingOrder]
+
+
+class CreateWorkingOrder(BaseModel):
+    currencyCode: constr(pattern="[A-Z]{3}")
+    direction: Direction
+    epic: str
+    expiry: constr(pattern="(\\d{2}-)?[A-Z]{3}-\\d{2}|-|DFB")
+    forceOpen: bool = False
+    goodTillDate: constr(pattern="(\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}|\\d*)")
+    level: condecimal(decimal_places=2)
+    size: condecimal(decimal_places=12)
+    type: OrderType
+    guaranteedStop: bool = False
+    timeInForce: TimeInForce = "GOOD_TILL_CANCELLED"
+    dealReference: Optional[str] = None
+    limitDistance: Optional[condecimal(decimal_places=2)] = None
+    limitLevel: Optional[condecimal(decimal_places=2)] = None
+    stopDistance: Optional[condecimal(decimal_places=2)] = None
+    stopLevel: Optional[condecimal(decimal_places=2)] = None
+
+    @field_serializer(
+        "level",
+        "size",
+        "limitDistance",
+        "limitLevel",
+        "stopDistance",
+        "stopLevel",
+        mode="plain",
+    )
+    def serialize_decimal(self, v: Optional[Decimal], _info) -> float:
+        if v is not None:
+            return float(v)
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_unique_constraints(cls, data: Any):
+        """[Constraint: Set only one of {limitLevel,limitDistance}]
+        [Constraint: Set only one of {stopLevel,stopDistance}]"""
+        if data.get("limitLevel") is not None and data.get("limitDistance") is not None:
+            raise ValueError("Set only one of limitLevel or limitDistance.")
+        if data.get("stopLevel") is not None and data.get("stopDistance") is not None:
+            raise ValueError("Set only one of stopLevel or stopDistance.")
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_good_till_date(self, data: Any):
+        if (
+            data.get("timeInForce") == "GOOD_TILL_DATE"
+            and data.get("goodTillDate") is None
+        ):
+            raise ValueError(
+                "timeInForce GOOD_TILL_DATE requires a goodTillDate value."
+            )
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_guaranteed_stop_constraints(cls, data: Any):
+        if data.get("guaranteedStop") and not (
+            bool(data.get("stopLevel")) ^ bool(data.get("stopDistance"))
+        ):
+            raise ValueError(
+                "When guaranteedStop is true, specify exactly one of stopLevel or stopDistance."
+            )
+        return data

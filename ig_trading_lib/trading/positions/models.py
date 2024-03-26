@@ -74,10 +74,6 @@ class OpenPositions(BaseModel):
     positions: List[OpenPosition]
 
 
-class DealReference(TypedDict):
-    dealReference: str
-
-
 class CreatePosition(BaseModel):
     currencyCode: constr(pattern=r"^[A-Z]{3}$")
     direction: Direction

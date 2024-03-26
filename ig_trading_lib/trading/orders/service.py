@@ -1,7 +1,5 @@
 import logging
 
-from ig_trading_lib import Tokens
-from .models import WorkingOrders
 import requests
 from pydantic import ValidationError
 
@@ -52,3 +50,23 @@ class OrderService:
             raise OrderException("Invalid working orders response: %s" % e)
         except requests.RequestException as e:
             raise OrderException("Working orders request failed: %s" % e)
+
+
+    def create_working_order(self, working_order: CreateWorkingOrder) -> DealReference:
+        """Create a new working order"""
+        url = f"{self.base_url}/gateway/deal/workingorders/otc"
+        try:
+            response = requests.post(url, headers=self.headers, json=working_order.dict())
+            if response.status_code == 200:
+                return DealReference.model_validate(response.json())
+            else:
+                raise OrderException(
+                    "Create working order failed with status code %s: %s"
+                    % (response.status_code, response.text)
+                )
+        except ValidationError as e:
+            raise OrderException("Invalid create working order response: %s" % e)
+        except requests.RequestException as e:
+            raise OrderException("Create working order request failed: %s" % e)
+
+
