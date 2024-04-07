@@ -78,12 +78,12 @@ class CreatePosition(BaseModel):
     currencyCode: constr(pattern=r"^[A-Z]{3}$")
     direction: Direction
     epic: constr(pattern=r"^[A-Za-z0-9._]{6,30}$")
-    expiry: constr(pattern=r"^(\d{2}-)?[A-Z]{3}-\d{2}|-|DFB$")
-    forceOpen: bool
-    guaranteedStop: bool
-    orderType: OrderType
-    timeInForce: TimeInForce
-    trailingStop: bool
+    expiry: constr(pattern=r"^(\d{2}-)?[A-Z]{3}-\d{2}|-|DFB$") = "DFB"
+    forceOpen: bool = False
+    guaranteedStop: bool = False
+    orderType: OrderType = "MARKET"
+    timeInForce: TimeInForce = "EXECUTE_AND_ELIMINATE"
+    trailingStop: bool = False
     dealReference: Optional[constr(pattern=r"^[A-Za-z0-9_\-.]{1,30}$")] = None
     level: Optional[condecimal(decimal_places=12)] = None
     limitDistance: Optional[condecimal(decimal_places=2)] = None
