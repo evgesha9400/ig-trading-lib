@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ig-trading-lib"
-version = "0.2.0"
+version = "0.3.0"
 description = "A Python library for IG Trading."
 authors = ["Evgeny Aleshin"]
 license = "MIT"
