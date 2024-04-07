@@ -73,3 +73,22 @@ class OrderService:
             raise OrderException("Create working order request failed: %s" % e)
 
 
+    def delete_working_order(self, deal_id: str) -> DealReference:
+        """Delete a working order
+        :param deal_id: str
+        :return: DealReference instance
+        """
+        url = f"{self.base_url}/gateway/deal/workingorders/otc/{deal_id}"
+        try:
+            response = requests.delete(url, headers=self.headers)
+            if response.status_code == 200:
+                return DealReference.model_validate(response.json())
+            else:
+                raise OrderException(
+                    "Delete working order failed with status code %s: %s"
+                    % (response.status_code, response.text)
+                )
+        except ValidationError as e:
+            raise OrderException("Invalid delete working order response: %s" % e)
+        except requests.RequestException as e:
+            raise OrderException("Delete working order request failed: %s" % e)
