@@ -53,7 +53,10 @@ class OrderService:
 
 
     def create_working_order(self, working_order: CreateWorkingOrder) -> DealReference:
-        """Create a new working order"""
+        """Create a new working order
+        :param working_order: CreateWorkingOrder instance
+        :return: DealReference instance
+        """
         url = f"{self.base_url}/gateway/deal/workingorders/otc"
         try:
             response = requests.post(url, headers=self.headers, json=working_order.dict())
