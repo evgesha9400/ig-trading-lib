@@ -103,25 +103,6 @@ class PositionService:
         except requests.RequestException as e:
             raise PositionsError("Create position request failed: %s" % e)
 
-    def close_position(self, close: ClosePosition) -> DealReference:
-        """Close a position for the authenticated account.
-        :param close: ClosePosition. The position to close.
-        :return: DealReference e.g: {'dealReference': 'DIAAAABBBCCC123'}
-        """
-
-        url = f"{self.base_url}/gateway/deal/positions/otc"
-        try:
-            response = requests.post(url, headers=self.headers, json=close.model_dump())
-            if response.status_code == 200:
-                return DealReference.model_validate(response.json())
-            else:
-                raise PositionsError(
-                    "Close position request failed with status code %s: %s"
-                    % (response.status_code, response.text)
-                )
-        except requests.RequestException as e:
-            raise PositionsError("Close position request failed: %s" % e)
-
     def update_position(self, deal_id: str, update: UpdatePosition) -> DealReference:
         """Update a position for the authenticated account.
         :param deal_id: str. The deal ID of the position to update.
@@ -141,3 +122,26 @@ class PositionService:
                 )
         except requests.RequestException as e:
             raise PositionsError("Update position request failed: %s" % e)
+
+    def close_position(self, close: ClosePosition) -> DealReference:
+        """Close a position for the authenticated account.
+        :param close: ClosePosition. The position to close.
+        :return: DealReference e.g: {'dealReference': 'DIAAAABBBCCC123'}
+        """
+
+        url = f"{self.base_url}/gateway/deal/positions/otc"
+        headers = self.headers.copy()
+        headers["Version"] = "1"
+        headers["_method"] = "DELETE"
+        json = close.model_dump(exclude_none=True)
+        try:
+            response = requests.post(url, headers=headers, json=json)
+            if response.status_code == 200:
+                return DealReference.model_validate(response.json())
+            else:
+                raise PositionsError(
+                    "Close position request failed with status code %s: %s"
+                    % (response.status_code, response.text)
+                )
+        except requests.RequestException as e:
+            raise PositionsError("Close position request failed: %s" % e)

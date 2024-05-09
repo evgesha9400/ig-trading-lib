@@ -12,6 +12,36 @@
     - [ ] Implement V2 PUT /workingorders/otc/{dealId}
       - [ ] Implement V2 DELETE /workingorders/otc/{dealId} request model
       - [ ] Implement V2 DELETE /workingorders/otc/{dealId} method
+  - [x] Implement positions service
+    - [x] Implement V2 GET /positions
+      - [x] Implement V2 GET /positions response model
+      - [x] Implement V2 GET /positions method
+    - [x] Implement V2 GET /positions/{dealId}
+      - [x] Implement V2 GET /positions/{dealId} response model
+      - [x] Implement V2 GET /positions/{dealId} method
+    - [x] Implement V2 POST /positions
+      - [x] Implement V2 POST /positions request model
+      - [x] Implement V2 POST /positions method
+    - [x] Implement V2 PUT /positions/{dealId}
+      - [x] Implement V2 PUT /positions/{dealId} request model
+      - [x] Implement V2 PUT /positions/{dealId} method
+    - [x] Implement V2 DELETE /positions
+      - [x] Implement V2 DELETE /positions/{dealId} method
+
+- Implement Integration tests
+  - [x] Implement authentication service tests
+    - [x] Implement V2 POST /session tests 
+  - [x] Implement positions service tests
+    - [x] Implement V2 GET /positions tests
+    - [x] Implement V2 GET /positions/{dealId} tests
+    - [x] Implement V2 POST /positions tests
+    - [x] Implement V2 PUT /positions/{dealId} tests
+    - [x] Implement V2 DELETE /positions/{dealId} tests
+  - [ ] Implement working orders service tests
+    - [ ] Implement V2 GET /workingorders tests
+    - [ ] Implement V2 POST /workingorders tests
+    - [ ] Implement V2 DELETE /workingorders tests
+    - [ ] Implement V2 PUT /workingorders/{dealId} tests
 
 - Implement markets package
   - [ ] Implement markets service

@@ -191,7 +191,7 @@ class ClosePosition(BaseModel):
     direction: Direction
     orderType: OrderType
     size: condecimal(gt=0, decimal_places=2)
-    timeInForce: TimeInForce
+    timeInForce: TimeInForce = None
     quoteId: Optional[str] = None
     dealId: Optional[constr(pattern=".{1,30}")] = None
     epic: Optional[constr(pattern="[A-Za-z0-9._]{6,30}")] = None
