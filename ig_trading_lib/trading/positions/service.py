@@ -82,16 +82,16 @@ class PositionService:
         except requests.RequestException as e:
             raise PositionsError("Open positions request failed: %s" % e)
 
-    def create_position(self, create: CreatePosition) -> DealReference:
+    def create_position(self, position: CreatePosition) -> DealReference:
         """Create a new position for the authenticated account.
-        :param create: CreatePosition. The position to create.
+        :param position: CreatePosition. The position to create.
         :return: DealReference e.g: {'dealReference': 'DIAAAABBBCCC123'}
         """
 
         url = f"{self.base_url}/gateway/deal/positions/otc"
         try:
             response = requests.post(
-                url, headers=self.headers, json=create.model_dump()
+                url, headers=self.headers, json=position.model_dump()
             )
             if response.status_code == 200:
                 return DealReference.model_validate(response.json())
@@ -103,16 +103,16 @@ class PositionService:
         except requests.RequestException as e:
             raise PositionsError("Create position request failed: %s" % e)
 
-    def update_position(self, deal_id: str, update: UpdatePosition) -> DealReference:
+    def update_position(self, deal_id: str, position: UpdatePosition) -> DealReference:
         """Update a position for the authenticated account.
         :param deal_id: str. The deal ID of the position to update.
-        :param update: UpdatePosition. Position update details.
+        :param position: UpdatePosition. Position update details.
         :return: DealReference e.g: {'dealReference': 'DIAAAABBBCCC123'}
         """
 
         url = f"{self.base_url}/gateway/deal/positions/otc/{deal_id}"
         try:
-            response = requests.put(url, headers=self.headers, json=update.model_dump())
+            response = requests.put(url, headers=self.headers, json=position.model_dump())
             if response.status_code == 200:
                 return DealReference.model_validate(response.json())
             else:
@@ -123,9 +123,9 @@ class PositionService:
         except requests.RequestException as e:
             raise PositionsError("Update position request failed: %s" % e)
 
-    def close_position(self, close: ClosePosition) -> DealReference:
+    def close_position(self, position: ClosePosition) -> DealReference:
         """Close a position for the authenticated account.
-        :param close: ClosePosition. The position to close.
+        :param position: ClosePosition. The position to close.
         :return: DealReference e.g: {'dealReference': 'DIAAAABBBCCC123'}
         """
 
@@ -133,7 +133,7 @@ class PositionService:
         headers = self.headers.copy()
         headers["Version"] = "1"
         headers["_method"] = "DELETE"
-        json = close.model_dump(exclude_none=True)
+        json = position.model_dump(exclude_none=True)
         try:
             response = requests.post(url, headers=headers, json=json)
             if response.status_code == 200:

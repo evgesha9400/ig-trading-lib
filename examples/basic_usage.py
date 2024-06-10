@@ -43,7 +43,7 @@ if __name__ == "__main__":
             "trailingStop": False,
         }
     )
-    deal_reference = position_service.create_position(create=create)
+    deal_reference = position_service.create_position(position=create)
     pprint.pprint(deal_reference)
 
     open_positions = position_service.get_open_positions()

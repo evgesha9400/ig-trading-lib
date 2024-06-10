@@ -48,7 +48,7 @@ def test_create_position(mocker, position_service):
     mock_post.return_value = response
 
     response = position_service.create_position(
-        create=CreatePosition.model_validate(
+        position=CreatePosition.model_validate(
             {
                 "currencyCode": "USD",
                 "direction": "BUY",
@@ -75,7 +75,7 @@ def test_close_position(mocker, position_service):
     mock_post.return_value = response
 
     response = position_service.close_position(
-        close=ClosePosition.model_validate(
+        position=ClosePosition.model_validate(
             {
                 "direction": "SELL",
                 "orderType": "MARKET",
@@ -98,7 +98,7 @@ def test_update_position(mocker, position_service):
 
     response = position_service.update_position(
         deal_id="DIAAAAPJCL8RHAM",
-        update=UpdatePosition.model_validate(
+        position=UpdatePosition.model_validate(
             {
                 "limitLevel": 1.0,
                 "stopLevel": 1.0,
