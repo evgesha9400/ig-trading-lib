@@ -7,11 +7,11 @@
     - [x] Implement V2 POST /workingorders
       - [x] Implement v2 POST /workingorders/otc request model
       - [x] Implement v2 POST /workingorders/otc method
-    - [ ] Implement V2 DELETE /workingorders
-      - [ ] Implement V2 DELETE /workingorders/otc/{dealId} method
-    - [ ] Implement V2 PUT /workingorders/otc/{dealId}
-      - [ ] Implement V2 DELETE /workingorders/otc/{dealId} request model
-      - [ ] Implement V2 DELETE /workingorders/otc/{dealId} method
+    - [x] Implement V2 DELETE /workingorders
+      - [x] Implement V2 DELETE /workingorders/otc/{dealId} method
+    - [x] Implement V2 PUT /workingorders/otc/{dealId}
+      - [x] Implement V2 DELETE /workingorders/otc/{dealId} request model
+      - [x] Implement V2 DELETE /workingorders/otc/{dealId} method
   - [x] Implement positions service
     - [x] Implement V2 GET /positions
       - [x] Implement V2 GET /positions response model
@@ -37,10 +37,10 @@
     - [x] Implement V2 POST /positions tests
     - [x] Implement V2 PUT /positions/{dealId} tests
     - [x] Implement V2 DELETE /positions/{dealId} tests
-  - [ ] Implement working orders service tests
-    - [ ] Implement V2 GET /workingorders tests
-    - [ ] Implement V2 POST /workingorders tests
-    - [ ] Implement V2 DELETE /workingorders tests
+  - [x] Implement working orders service tests
+    - [x] Implement V2 GET /workingorders tests
+    - [x] Implement V2 POST /workingorders tests
+    - [x] Implement V2 DELETE /workingorders tests
     - [ ] Implement V2 PUT /workingorders/{dealId} tests
 
 - Implement markets package

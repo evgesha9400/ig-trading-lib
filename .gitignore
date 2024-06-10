@@ -1,2 +1,14 @@
 /.pytest_cache/
 *.env*
+/.idea/.gitignore
+/.idea/aws.xml
+/.idea/ig_trading_lib.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/scratch.py
+/tests/test_cache.json
+/test_cache.json
+/.idea/vcs.xml
+*__pycache__
