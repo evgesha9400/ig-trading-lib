@@ -17,7 +17,7 @@ def test_get_working_orders(mocker, working_orders, order_service):
     response.json.return_value = test_working_orders
     mock_get.return_value = response
 
-    working_orders = order_service.get_working_orders()
+    working_orders = order_service.get_orders()
 
     assert len(working_orders.workingOrders) == 1
     expected = WorkingOrders.model_validate(test_working_orders)
@@ -31,8 +31,8 @@ def test_create_working_order(mocker, order_service):
     response.json.return_value = {"dealReference": "DIAAAABBBCCC123"}
     mock_post.return_value = response
 
-    response = order_service.create_working_order(
-        working_order=CreateWorkingOrder.model_validate(
+    response = order_service.create_order(
+        order=CreateWorkingOrder.model_validate(
             {
                 "currencyCode": "USD",
                 "direction": "BUY",

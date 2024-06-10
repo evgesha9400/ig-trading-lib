@@ -34,8 +34,10 @@ class OrderService:
         }
 
 
-    def get_working_orders(self) -> WorkingOrders:
-        """Get working orders list"""
+    def get_orders(self) -> WorkingOrders:
+        """Get working orders list
+        :return: WorkingOrders instance
+        """
         url = f"{self.base_url}/gateway/deal/workingorders"
         try:
             response = requests.get(url, headers=self.headers)
@@ -52,14 +54,14 @@ class OrderService:
             raise OrderException("Working orders request failed: %s" % e)
 
 
-    def create_working_order(self, working_order: CreateWorkingOrder) -> DealReference:
+    def create_order(self, order: CreateWorkingOrder) -> DealReference:
         """Create a new working order
-        :param working_order: CreateWorkingOrder instance
+        :param order: CreateWorkingOrder instance
         :return: DealReference instance
         """
         url = f"{self.base_url}/gateway/deal/workingorders/otc"
         try:
-            response = requests.post(url, headers=self.headers, json=working_order.dict())
+            response = requests.post(url, headers=self.headers, json=order.dict())
             if response.status_code == 200:
                 return DealReference.model_validate(response.json())
             else:
@@ -73,7 +75,7 @@ class OrderService:
             raise OrderException("Create working order request failed: %s" % e)
 
 
-    def delete_working_order(self, deal_id: str) -> DealReference:
+    def delete_order(self, deal_id: str) -> DealReference:
         """Delete a working order
         :param deal_id: str
         :return: DealReference instance

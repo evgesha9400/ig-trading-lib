@@ -103,13 +103,13 @@ class CreateWorkingOrder(BaseModel):
     epic: str
     expiry: constr(pattern="(\\d{2}-)?[A-Z]{3}-\\d{2}|-|DFB")
     forceOpen: bool = False
-    goodTillDate: constr(pattern="(\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}|\\d*)")
     level: condecimal(decimal_places=2)
     size: condecimal(decimal_places=12)
     type: OrderType
     guaranteedStop: bool = False
-    timeInForce: TimeInForce = "GOOD_TILL_CANCELLED"
     dealReference: Optional[str] = None
+    timeInForce: TimeInForce = "GOOD_TILL_CANCELLED"
+    goodTillDate: Optional[constr(pattern="(\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}|\\d*)")] = None
     limitDistance: Optional[condecimal(decimal_places=2)] = None
     limitLevel: Optional[condecimal(decimal_places=2)] = None
     stopDistance: Optional[condecimal(decimal_places=2)] = None
