@@ -19,7 +19,7 @@ if __name__ == "__main__":
         account_identifier=account_identifier,
         account_password=account_password,
         base_url=base_url,
-        cache=InMemoryCache(),
+        cache=InMemoryCache(), # Optional caching for tokens
     )
     auth_response = auth_service.authenticate()
 
