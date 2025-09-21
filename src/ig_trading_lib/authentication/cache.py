@@ -6,8 +6,7 @@ from typing import Optional
 
 from cryptography.fernet import Fernet, InvalidToken
 
-from .models import AuthenticationResponse
-
+from ig_trading_lib.authentication.models import AuthenticationResponse
 
 logger = logging.getLogger(__name__)
 

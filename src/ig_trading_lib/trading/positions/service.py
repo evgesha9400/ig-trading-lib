@@ -4,15 +4,14 @@ import requests
 from pydantic import ValidationError
 
 from ig_trading_lib import Tokens
-from .models import (
-    OpenPositions,
-    OpenPosition,
-    CreatePosition,
+from ig_trading_lib.trading.models import DealReference
+from ig_trading_lib.trading.positions.models import (
     ClosePosition,
+    CreatePosition,
+    OpenPosition,
+    OpenPositions,
     UpdatePosition,
 )
-from ..models import DealReference
-
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +111,9 @@ class PositionService:
 
         url = f"{self.base_url}/gateway/deal/positions/otc/{deal_id}"
         try:
-            response = requests.put(url, headers=self.headers, json=position.model_dump())
+            response = requests.put(
+                url, headers=self.headers, json=position.model_dump()
+            )
             if response.status_code == 200:
                 return DealReference.model_validate(response.json())
             else:

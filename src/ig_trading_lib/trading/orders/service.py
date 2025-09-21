@@ -4,15 +4,15 @@ import requests
 from pydantic import ValidationError
 
 from ig_trading_lib import Tokens
-from .models import WorkingOrders, CreateWorkingOrder
-from ..models import DealReference
-
+from ig_trading_lib.trading.models import DealReference
+from ig_trading_lib.trading.orders.models import CreateWorkingOrder, WorkingOrders
 
 logger = logging.getLogger(__name__)
 
 
 class OrderException(Exception):
     """Exception raised for errors in the order process."""
+
     pass
 
 
@@ -33,7 +33,6 @@ class OrderService:
             "CST": self.tokens.cst_token,
         }
 
-
     def get_orders(self) -> WorkingOrders:
         """Get working orders list
         :return: WorkingOrders instance
@@ -53,7 +52,6 @@ class OrderService:
         except requests.RequestException as e:
             raise OrderException("Working orders request failed: %s" % e)
 
-
     def create_order(self, order: CreateWorkingOrder) -> DealReference:
         """Create a new working order
         :param order: CreateWorkingOrder instance
@@ -61,7 +59,7 @@ class OrderService:
         """
         url = f"{self.base_url}/gateway/deal/workingorders/otc"
         try:
-            response = requests.post(url, headers=self.headers, json=order.dict())
+            response = requests.post(url, headers=self.headers, json=order.model_dump())
             if response.status_code == 200:
                 return DealReference.model_validate(response.json())
             else:
@@ -73,7 +71,6 @@ class OrderService:
             raise OrderException("Invalid create working order response: %s" % e)
         except requests.RequestException as e:
             raise OrderException("Create working order request failed: %s" % e)
-
 
     def delete_order(self, deal_id: str) -> DealReference:
         """Delete a working order

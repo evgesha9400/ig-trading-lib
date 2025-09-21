@@ -1,17 +1,17 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, List, Literal, Any
+from typing import Any, List, Literal, Optional
 
 from pydantic import (
     BaseModel,
     condecimal,
-    field_validator,
     constr,
-    model_validator,
     field_serializer,
+    field_validator,
+    model_validator,
 )
-from ..models import InstrumentType, Direction
 
+from ig_trading_lib.trading.models import Direction, InstrumentType
 
 OrderType = Literal["LIMIT", "STOP"]
 
@@ -109,7 +109,9 @@ class CreateWorkingOrder(BaseModel):
     guaranteedStop: bool = False
     dealReference: Optional[str] = None
     timeInForce: TimeInForce = "GOOD_TILL_CANCELLED"
-    goodTillDate: Optional[constr(pattern="(\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}|\\d*)")] = None
+    goodTillDate: Optional[
+        constr(pattern="(\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}|\\d*)")
+    ] = None
     limitDistance: Optional[condecimal(decimal_places=2)] = None
     limitLevel: Optional[condecimal(decimal_places=2)] = None
     stopDistance: Optional[condecimal(decimal_places=2)] = None

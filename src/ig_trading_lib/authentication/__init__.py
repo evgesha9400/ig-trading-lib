@@ -1,5 +1,7 @@
-from .service import AuthenticationService, AuthenticationError
-
+from ig_trading_lib.authentication.service import (
+    AuthenticationError,
+    AuthenticationService,
+)
 
 __all__ = [
     "AuthenticationService",

@@ -1,6 +1,14 @@
-from .models import (
-    WorkingOrders,
-    WorkingOrder,
+from ig_trading_lib.trading.orders.models import (
     CreateWorkingOrder,
+    WorkingOrder,
+    WorkingOrders,
 )
-from .service import OrderService, OrderException
+from ig_trading_lib.trading.orders.service import OrderException, OrderService
+
+__all__ = [
+    "CreateWorkingOrder",
+    "WorkingOrder",
+    "WorkingOrders",
+    "OrderException",
+    "OrderService",
+]

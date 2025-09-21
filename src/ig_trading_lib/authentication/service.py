@@ -5,9 +5,8 @@ from typing import Optional
 import requests
 from pydantic import ValidationError
 
-from .cache import AuthenticationCacheABC
-from .models import AuthenticationResponse
-
+from ig_trading_lib.authentication.cache import AuthenticationCacheABC
+from ig_trading_lib.authentication.models import AuthenticationResponse
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +84,7 @@ class AuthenticationService:
         try:
             response = requests.post(self.url, json=self.data, headers=self.headers)
         except requests.RequestException as e:
-            raise AuthenticationError(f"Authentication request failed: %s" % e)
+            raise AuthenticationError("Authentication request failed: %s" % e)
 
         if response.status_code == 200:
             try:

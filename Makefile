@@ -1,5 +1,5 @@
 # -------- Config --------
-PYTEST := poetry run pytest -q
+PYTEST := poetry run pytest -q -v
 UNIT_DIR := tests/unit
 INTEG_DIR := tests/integration
 

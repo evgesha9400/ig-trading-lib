@@ -1,16 +1,16 @@
 from decimal import Decimal
-from typing import List, Any, Literal, Optional
+from typing import Any, List, Literal, Optional
 
 from pydantic import (
     BaseModel,
-    constr,
     condecimal,
     conint,
-    model_validator,
+    constr,
     field_serializer,
+    model_validator,
 )
-from ..models import InstrumentType, Direction
 
+from ig_trading_lib.trading.models import Direction, InstrumentType
 
 MarketStatusType = Literal[
     "TRADEABLE",
