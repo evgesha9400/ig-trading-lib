@@ -2,7 +2,7 @@ from typing import Dict
 
 from pytest import fixture
 
-from trading.positions import PositionService
+from ig_trading_lib.trading.positions import PositionService
 
 
 @fixture

@@ -4,17 +4,16 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from cryptography.fernet import Fernet
 
 from ig_trading_lib.authentication import AuthenticationService
-from ig_trading_lib.authentication.cache import InMemoryCache, DurableCache
+from ig_trading_lib.authentication.cache import DurableCache, InMemoryCache
 from ig_trading_lib.authentication.models import AccountInfo, AuthenticationResponse
+
+TEST_FERNET_KEY = b"wxRG1WeraTfODNmlhTuGpZQsEQywOMmE-1MDW-Tkcr8="
 
 
 def test_authentication_no_cache(mocker, test_account_info):
-    mock_post = mocker.patch(
-        "ig_trading_lib.authentication.service.requests.post"
-    )
+    mock_post = mocker.patch("ig_trading_lib.authentication.service.requests.post")
     test_service = AuthenticationService(
         api_key="test_api_key",
         account_identifier="test_account",
@@ -39,9 +38,7 @@ def test_authentication_no_cache(mocker, test_account_info):
 
 
 def test_authentication_in_memory_cache_hit(mocker, test_account_info):
-    mock_post = mocker.patch(
-        "ig_trading_lib.authentication.service.requests.post"
-    )
+    mock_post = mocker.patch("ig_trading_lib.authentication.service.requests.post")
     test_cache = InMemoryCache()
     test_service = AuthenticationService(
         api_key="test_api_key",
@@ -67,9 +64,7 @@ def test_authentication_in_memory_cache_hit(mocker, test_account_info):
 
 
 def test_authentication_in_memory_cache_miss(mocker, test_account_info):
-    mock_post = mocker.patch(
-        "ig_trading_lib.authentication.service.requests.post"
-    )
+    mock_post = mocker.patch("ig_trading_lib.authentication.service.requests.post")
     test_cache = InMemoryCache()
     test_service = AuthenticationService(
         api_key="test_api_key",
@@ -99,12 +94,10 @@ def test_authentication_in_memory_cache_miss(mocker, test_account_info):
 
 @pytest.mark.parametrize(
     "encryption_key",
-    [None, Fernet.generate_key()],
+    [None, TEST_FERNET_KEY],
 )
 def test_authentication_durable_cache_hit(mocker, encryption_key, test_account_info):
-    mock_post = mocker.patch(
-        "ig_trading_lib.authentication.service.requests.post"
-    )
+    mock_post = mocker.patch("ig_trading_lib.authentication.service.requests.post")
     # Create a durable cache and save a valid authentication response to it
     current = Path(__file__).parent.absolute()
     path = f"{current}/test_cache.json"
@@ -146,12 +139,10 @@ def test_authentication_durable_cache_hit(mocker, encryption_key, test_account_i
 
 @pytest.mark.parametrize(
     "encryption_key",
-    [None, Fernet.generate_key()],
+    [None, TEST_FERNET_KEY],
 )
 def test_authentication_durable_cache_miss(mocker, encryption_key, test_account_info):
-    mock_post = mocker.patch(
-        "ig_trading_lib.authentication.service.requests.post"
-    )
+    mock_post = mocker.patch("ig_trading_lib.authentication.service.requests.post")
     # Create a durable cache
     current = Path(__file__).parent.absolute()
     path = f"{current}/test_cache.json"

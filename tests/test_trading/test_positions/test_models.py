@@ -3,7 +3,11 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from trading.positions import CreatePosition, ClosePosition, UpdatePosition
+from ig_trading_lib.trading.positions import (
+    ClosePosition,
+    CreatePosition,
+    UpdatePosition,
+)
 
 
 @pytest.mark.parametrize(
