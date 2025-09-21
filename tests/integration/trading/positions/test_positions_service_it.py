@@ -1,7 +1,11 @@
 import logging
 import time
 
-from trading.positions import CreatePosition, ClosePosition, UpdatePosition
+from ig_trading_lib.trading.positions import (
+    ClosePosition,
+    CreatePosition,
+    UpdatePosition,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +29,7 @@ def test_position_service_crud(position_service):
         quoteId=None,
         stopDistance=None,
         stopLevel=None,
-        trailingStopIncrement=None
+        trailingStopIncrement=None,
     )
     deal_reference = position_service.create_position(create)
     assert deal_reference is not None
@@ -65,4 +69,3 @@ def test_position_service_crud(position_service):
     deal_reference = position_service.close_position(close)
     assert deal_reference is not None
     logger.info(f"Close Deal reference:\n{deal_reference.model_dump_json(indent=2)}")
-

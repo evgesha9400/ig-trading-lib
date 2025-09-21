@@ -1,13 +1,15 @@
-from pytest import fixture
+# tests/conftest.py  (root)
+import sys
+from pathlib import Path
 
-from ig_trading_lib import Tokens
+try:
+    from dotenv import load_dotenv
 
+    load_dotenv()  # reads .env if present
+except Exception:
+    pass
 
-@fixture
-def api_key() -> str:
-    return "test_api_key"
-
-
-@fixture
-def tokens() -> Tokens:
-    return Tokens(cst_token="test_cst_token", x_security_token="test_x_security_token")
+SRC = Path(__file__).resolve().parents[1] / "src"
+# If PYTHONPATH=src isn’t already active, ensure src is added:
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))

@@ -1,10 +1,11 @@
 import logging
 import os
+
 import pytest
 from dotenv import load_dotenv
 
-from authentication.service import AuthenticationService
-from trading import PositionService, OrderService
+from ig_trading_lib.authentication.service import AuthenticationService
+from ig_trading_lib.trading import OrderService, PositionService
 
 dotenv_path = os.path.join(os.path.dirname(__file__), ".env.test")
 

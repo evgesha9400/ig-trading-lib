@@ -20,6 +20,11 @@ packages = [{ include = "ig_trading_lib", from = "src" }]
 pytest = "^8.4.2"
 pytest-mock = "^3.15.1"
 
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+addopts = ""
+markers = ["integration: integration tests"]
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"

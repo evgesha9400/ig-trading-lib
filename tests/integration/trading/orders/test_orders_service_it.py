@@ -1,6 +1,6 @@
 import logging
 
-from trading.orders import CreateWorkingOrder
+from ig_trading_lib.trading.orders import CreateWorkingOrder
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def test_orders_service_crud(order_service):
         limitDistance=None,
         limitLevel=None,
         stopDistance=None,
-        stopLevel=None
+        stopLevel=None,
     )
     deal_reference = order_service.create_order(order=order)
 
