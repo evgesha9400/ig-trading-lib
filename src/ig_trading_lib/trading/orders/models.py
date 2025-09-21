@@ -163,3 +163,61 @@ class CreateWorkingOrder(BaseModel):
                 "When guaranteedStop is true, specify exactly one of stopLevel or stopDistance."
             )
         return data
+
+
+class UpdateWorkingOrder(BaseModel):
+    level: condecimal(decimal_places=2)
+    guaranteedStop: Optional[bool] = None
+    timeInForce: Optional[TimeInForce] = None
+    goodTillDate: Optional[
+        constr(pattern="(\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}|\\d*)")
+    ] = None
+    limitDistance: Optional[condecimal(decimal_places=2)] = None
+    limitLevel: Optional[condecimal(decimal_places=2)] = None
+    stopDistance: Optional[condecimal(decimal_places=2)] = None
+    stopLevel: Optional[condecimal(decimal_places=2)] = None
+    type: Optional[OrderType] = None
+
+    @field_serializer(
+        "level",
+        "limitDistance",
+        "limitLevel",
+        "stopDistance",
+        "stopLevel",
+        mode="plain",
+    )
+    def serialize_decimal(self, v: Optional[Decimal], _info) -> float:
+        if v is not None:
+            return float(v)
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_unique_constraints(cls, data: Any):
+        if data.get("limitLevel") is not None and data.get("limitDistance") is not None:
+            raise ValueError("Set only one of limitLevel or limitDistance.")
+        if data.get("stopLevel") is not None and data.get("stopDistance") is not None:
+            raise ValueError("Set only one of stopLevel or stopDistance.")
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_good_till_date(self, data: Any):
+        if (
+            data.get("timeInForce") == "GOOD_TILL_DATE"
+            and data.get("goodTillDate") is None
+        ):
+            raise ValueError(
+                "timeInForce GOOD_TILL_DATE requires a goodTillDate value."
+            )
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_guaranteed_stop_constraints(cls, data: Any):
+        if data.get("guaranteedStop") and not (
+            bool(data.get("stopLevel")) ^ bool(data.get("stopDistance"))
+        ):
+            raise ValueError(
+                "When guaranteedStop is true, specify exactly one of stopLevel or stopDistance."
+            )
+        return data

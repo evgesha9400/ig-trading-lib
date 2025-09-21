@@ -1,6 +1,6 @@
 ## Moving forward
 - Implement trading package    
-  - [ ] Implement working orders service
+  - [x] Implement working orders service
     - [x] Implement V2 GET /workingorders
       - [x] Implement v2 GET /workingorders response model
       - [x] Implement v2 GET /workingorders method
@@ -37,10 +37,10 @@
     - [x] Implement V2 POST /positions tests
     - [x] Implement V2 PUT /positions/{dealId} tests
     - [x] Implement V2 DELETE /positions/{dealId} tests
-  - [x] Implement working orders service tests
-    - [x] Implement V2 GET /workingorders tests
-    - [x] Implement V2 POST /workingorders tests
-    - [x] Implement V2 DELETE /workingorders tests
+  - [ ] Implement working orders service tests
+    - [ ] Implement V2 GET /workingorders tests
+    - [ ] Implement V2 POST /workingorders tests
+    - [ ] Implement V2 DELETE /workingorders tests
     - [ ] Implement V2 PUT /workingorders/{dealId} tests
 
 - Implement markets package
