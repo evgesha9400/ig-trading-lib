@@ -30,7 +30,7 @@ jobs:
 
     - name: Run tests
       run: |
-         PYTHONPATH=ig_trading_lib poetry run pytest tests
+         poetry run pytest -q -vv tests/unit
 
     - name: Build and publish
       run: |
