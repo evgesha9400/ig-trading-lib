@@ -3,7 +3,6 @@ import logging
 import requests
 from pydantic import ValidationError
 
-from ig_trading_lib import Tokens
 from ig_trading_lib.trading.models import DealReference
 from ig_trading_lib.trading.positions.models import (
     ClosePosition,
@@ -12,6 +11,7 @@ from ig_trading_lib.trading.positions.models import (
     OpenPositions,
     UpdatePosition,
 )
+from ig_trading_lib.trading.service import TradingService
 
 logger = logging.getLogger(__name__)
 
@@ -20,28 +20,7 @@ class PositionsError(Exception):
     """Exception raised for errors in the positions process."""
 
 
-class PositionService:
-    def __init__(self, api_key: str, tokens: Tokens, base_url: str):
-        """Initialize the position service.
-        :param api_key: Your IG API key.
-        :param tokens: Authentication tokens for the IG API.
-        :param base_url: The base URL for the IG API (live or demo). e.g: https://demo-api.ig.com/gateway/deal
-        """
-        self.api_key = api_key
-        self.tokens = tokens
-        self.base_url = base_url
-
-    @property
-    def headers(self) -> dict:
-        return {
-            "Content-Type": "application/json; charset=utf-8",
-            "Accept": "application/json; charset=utf-8",
-            "Version": "2",
-            "X-IG-API-KEY": self.api_key,
-            "X-SECURITY-TOKEN": self.tokens.x_security_token,
-            "CST": self.tokens.cst_token,
-        }
-
+class PositionService(TradingService):
     def get_open_position_by_deal_id(self, deal_id: str) -> OpenPosition:
         """Get open position by deal ID for the authenticated account.
         :param deal_id: str. The deal ID of the open position.
