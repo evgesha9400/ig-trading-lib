@@ -37,11 +37,11 @@
     - [x] Implement V2 POST /positions tests
     - [x] Implement V2 PUT /positions/{dealId} tests
     - [x] Implement V2 DELETE /positions/{dealId} tests
-  - [ ] Implement working orders service tests
-    - [ ] Implement V2 GET /workingorders tests
-    - [ ] Implement V2 POST /workingorders tests
-    - [ ] Implement V2 DELETE /workingorders tests
-    - [ ] Implement V2 PUT /workingorders/{dealId} tests
+  - [x] Implement working orders service tests
+    - [x] Implement V2 GET /workingorders tests
+    - [x] Implement V2 POST /workingorders tests
+    - [x] Implement V2 DELETE /workingorders tests
+    - [x] Implement V2 PUT /workingorders/{dealId} tests
 
 - Implement markets package
   - [ ] Implement markets service
@@ -87,37 +87,4 @@
 - [ ] Add a root module for field definitions
 - [ ] Add a root module for validators
 - [ ] Rename objects contains from plural to list. e.g. `OpenPositions` to `OpenPositionsList`
-- [ ] Create either a @decorator or a function for general request processing e.g:
-  ```
-    def handle_request(request_func: callable, endpoint: str, headers_update: dict = None):
-        def decorator(func):
-            @wraps(func)
-            def wrapper(self, *args, **kwargs):
-                url = f"{self.base_url}/{endpoint.format(*args, **kwargs)}"
-                headers = self.headers.update(headers_update) if headers_update else self.headers
-                request_name = func.__name__.split('_').join(' ').capitalize()
-
-                try:
-                    response = request_func(url, headers=headers, *args, **kwargs)
-                    if response.status_code == 200:
-                        return func(self, response.json())
-                    else:
-                        logger.error(
-                            "%s request failed with status code %s: %s",
-                            request_name,
-                            response.status_code,
-                            response.text,
-                        )
-                        raise PositionsError()
-                except ValidationError as e:
-                    logger.error("%s request invalid response: %s", request_name, e)
-                    raise PositionsError()
-                except requests.RequestException as e:
-                    logger.error("%s request failed: %s", request_name, e)
-                    raise PositionsError()
-
-            return wrapper
-
-        return decorator
-  ```
 - [ ] Implement comprehensive error logging for all documented exceptions

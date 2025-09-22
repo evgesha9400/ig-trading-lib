@@ -40,9 +40,6 @@ Direction = Literal["BUY", "SELL"]
 DealStatus = Literal["ACCEPTED", "REJECTED"]
 
 
-PositionStatus = Literal["AMENDED", "CLOSED", "DELETED", "OPEN", "PARTIALLY_CLOSED"]
-
-
 DealReason = Literal[
     "ACCOUNT_NOT_ENABLED_TO_TRADING",
     "ATTACHED_ORDER_LEVEL_ERROR",
@@ -111,13 +108,13 @@ DealReason = Literal[
 
 class AffectedDeal(BaseModel):
     dealId: str
-    status: PositionStatus
+    status: Literal["AMENDED", "DELETED", "FULLY_CLOSED", "OPENED", "PARTIALLY_CLOSED"]
 
 
 class DealConfirmation(BaseModel):
     affectedDeals: List[AffectedDeal]
     dealId: Optional[str] = None
-    status: Optional[PositionStatus] = None
+    status: Optional[Literal["AMENDED", "DELETED", "CLOSED", "OPEN", "PARTIALLY_CLOSED"]] = None
     date: Optional[str] = None
     dealReference: Optional[str] = None
     dealStatus: Optional[DealStatus] = None

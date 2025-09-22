@@ -30,22 +30,20 @@ def auth_service() -> AuthenticationService:
 
 
 @pytest.fixture
-def position_service(auth_service) -> PositionService:
+def ig_client(auth_service) -> IGClient:
     auth_response = auth_service.authenticate()
-    client = IGClient(
+    return IGClient(
         base_url=auth_service.base_url,
         api_key=auth_service.api_key,
         tokens=auth_response.tokens,
     )
-    return PositionService(client)
 
 
 @pytest.fixture
-def order_service(auth_service) -> OrderService:
-    auth_response = auth_service.authenticate()
-    client = IGClient(
-        base_url=auth_service.base_url,
-        api_key=auth_service.api_key,
-        tokens=auth_response.tokens,
-    )
-    return OrderService(client)
+def position_service(ig_client) -> PositionService:
+    return PositionService(ig_client)
+
+
+@pytest.fixture
+def order_service(ig_client) -> OrderService:
+    return OrderService(ig_client)
