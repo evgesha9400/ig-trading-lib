@@ -2,9 +2,9 @@ import logging
 
 from pydantic import ValidationError
 
-from .client import TradingClient
-from .models import DealReference
-from .orders_models import CreateWorkingOrder, UpdateWorkingOrder, WorkingOrders
+from ig_trading_lib.trading.client import TradingClient
+from ig_trading_lib.trading.models import DealReference
+from ig_trading_lib.trading.orders_models import CreateWorkingOrder, UpdateWorkingOrder, WorkingOrders
 
 logger = logging.getLogger(__name__)
 

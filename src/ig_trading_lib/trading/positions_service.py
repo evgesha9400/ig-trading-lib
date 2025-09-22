@@ -2,9 +2,9 @@ import logging
 
 from pydantic import ValidationError
 
-from .client import TradingClient
-from .models import DealReference
-from .positions_models import (
+from ig_trading_lib.trading.client import TradingClient
+from ig_trading_lib.trading.models import DealReference
+from ig_trading_lib.trading.positions_models import (
     ClosePosition,
     CreatePosition,
     OpenPosition,
