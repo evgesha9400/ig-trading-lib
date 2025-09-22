@@ -3,7 +3,7 @@ import pprint
 
 from ig_trading_lib.authentication import AuthenticationService
 from ig_trading_lib.authentication.cache import InMemoryCache
-from ig_trading_lib.trading.positions import CreatePosition, PositionService
+from ig_trading_lib.trading import CreatePosition, IGClient, PositionService
 
 if __name__ == "__main__":
     """This example demonstrates how to use the PositionService to open a position and retrieve open positions."""
@@ -24,9 +24,8 @@ if __name__ == "__main__":
     )
     auth_response = auth_service.authenticate()
 
-    position_service = PositionService(
-        api_key=api_key, tokens=auth_response.tokens, base_url=base_url
-    )
+    client = IGClient(base_url=base_url, api_key=api_key, tokens=auth_response.tokens)
+    position_service = PositionService(client)
 
     create = CreatePosition.model_validate(
         {

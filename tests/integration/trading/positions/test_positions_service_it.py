@@ -1,7 +1,7 @@
 import logging
 import time
 
-from ig_trading_lib.trading.positions import (
+from ig_trading_lib.trading import (
     ClosePosition,
     CreatePosition,
     UpdatePosition,

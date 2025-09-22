@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from ig_trading_lib.trading.positions import (
+from ig_trading_lib.trading import (
     ClosePosition,
     CreatePosition,
     UpdatePosition,

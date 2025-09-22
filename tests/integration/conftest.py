@@ -5,7 +5,7 @@ import pytest
 from dotenv import load_dotenv
 
 from ig_trading_lib.authentication.service import AuthenticationService
-from ig_trading_lib.trading import OrderService, PositionService
+from ig_trading_lib.trading import IGClient, OrderService, PositionService
 
 dotenv_path = os.path.join(os.path.dirname(__file__), ".env.test")
 
@@ -32,18 +32,20 @@ def auth_service() -> AuthenticationService:
 @pytest.fixture
 def position_service(auth_service) -> PositionService:
     auth_response = auth_service.authenticate()
-    return PositionService(
+    client = IGClient(
+        base_url=auth_service.base_url,
         api_key=auth_service.api_key,
         tokens=auth_response.tokens,
-        base_url=auth_service.base_url,
     )
+    return PositionService(client)
 
 
 @pytest.fixture
 def order_service(auth_service) -> OrderService:
     auth_response = auth_service.authenticate()
-    return OrderService(
+    client = IGClient(
+        base_url=auth_service.base_url,
         api_key=auth_service.api_key,
         tokens=auth_response.tokens,
-        base_url=auth_service.base_url,
     )
+    return OrderService(client)

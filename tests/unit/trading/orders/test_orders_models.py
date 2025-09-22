@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from ig_trading_lib.trading.orders.models import WorkingOrders, CreateWorkingOrder
+from ig_trading_lib.trading import CreateWorkingOrder, WorkingOrders
 
 
 def test_working_orders_validation(working_orders):
@@ -21,7 +21,11 @@ def test_working_orders_validation(working_orders):
         ),
         # Testing both stopLevel and stopDistance when guaranteedStop is True
         (
-            {"guaranteedStop": True, "stopLevel": Decimal("100.0"), "stopDistance": Decimal("10.0")},
+            {
+                "guaranteedStop": True,
+                "stopLevel": Decimal("100.0"),
+                "stopDistance": Decimal("10.0"),
+            },
             "When guaranteedStop is true, specify exactly one of stopLevel or stopDistance.",
         ),
         # Testing both limitLevel and limitDistance

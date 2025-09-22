@@ -2,7 +2,7 @@ from typing import Dict
 
 from pytest import fixture
 
-from ig_trading_lib.trading.positions import PositionService
+from ig_trading_lib.trading import IGClient, PositionService
 
 
 @fixture
@@ -49,6 +49,7 @@ def open_position() -> Dict:
 
 @fixture
 def position_service(api_key, tokens) -> PositionService:
-    return PositionService(
-        api_key=api_key, tokens=tokens, base_url="https://demo-api.ig.com"
+    client = IGClient(
+        base_url="https://demo-api.ig.com", api_key=api_key, tokens=tokens
     )
+    return PositionService(client)

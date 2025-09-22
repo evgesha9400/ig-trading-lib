@@ -2,17 +2,17 @@ from unittest.mock import MagicMock
 
 import requests
 
-from ig_trading_lib.trading.positions import (
-    OpenPositions,
-    OpenPosition,
-    CreatePosition,
+from ig_trading_lib.trading import (
     ClosePosition,
+    CreatePosition,
+    OpenPosition,
+    OpenPositions,
     UpdatePosition,
 )
 
 
 def test_get_open_positions(mocker, open_position, position_service):
-    mock_get = mocker.patch("ig_trading_lib.trading.positions.service.requests.get")
+    mock_get = mocker.patch("ig_trading_lib.trading.client.requests.get")
     test_positions = {"positions": [open_position]}
     response = MagicMock(spec=requests.Response)
     response.status_code = 200
@@ -27,7 +27,7 @@ def test_get_open_positions(mocker, open_position, position_service):
 
 
 def test_get_open_position_by_deal_id(mocker, open_position, position_service):
-    mock_get = mocker.patch("ig_trading_lib.trading.positions.service.requests.get")
+    mock_get = mocker.patch("ig_trading_lib.trading.client.requests.get")
     response = MagicMock(spec=requests.Response)
     response.status_code = 200
     response.json.return_value = open_position
@@ -41,7 +41,7 @@ def test_get_open_position_by_deal_id(mocker, open_position, position_service):
 
 
 def test_create_position(mocker, position_service):
-    mock_post = mocker.patch("ig_trading_lib.trading.positions.service.requests.post")
+    mock_post = mocker.patch("ig_trading_lib.trading.client.requests.post")
     response = MagicMock(spec=requests.Response)
     response.status_code = 200
     response.json.return_value = {"dealReference": "DIAAAABBBCCC123"}
@@ -68,7 +68,7 @@ def test_create_position(mocker, position_service):
 
 
 def test_close_position(mocker, position_service):
-    mock_post = mocker.patch("ig_trading_lib.trading.positions.service.requests.post")
+    mock_post = mocker.patch("ig_trading_lib.trading.client.requests.post")
     response = MagicMock(spec=requests.Response)
     response.status_code = 200
     response.json.return_value = {"dealReference": "DIAAAABBBCCC123"}
@@ -90,7 +90,7 @@ def test_close_position(mocker, position_service):
 
 
 def test_update_position(mocker, position_service):
-    mock_put = mocker.patch("ig_trading_lib.trading.positions.service.requests.put")
+    mock_put = mocker.patch("ig_trading_lib.trading.client.requests.put")
     response = MagicMock(spec=requests.Response)
     response.status_code = 200
     response.json.return_value = {"dealReference": "DIAAAABBBCCC123"}

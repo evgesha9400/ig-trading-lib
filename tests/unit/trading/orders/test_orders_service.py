@@ -3,14 +3,11 @@ from unittest.mock import MagicMock
 
 import requests
 
-from ig_trading_lib.trading.orders import (
-    WorkingOrders,
-    CreateWorkingOrder,
-)
+from ig_trading_lib.trading import CreateWorkingOrder, WorkingOrders
 
 
 def test_get_working_orders(mocker, working_orders, order_service):
-    mock_get = mocker.patch("ig_trading_lib.trading.orders.service.requests.get")
+    mock_get = mocker.patch("ig_trading_lib.trading.client.requests.get")
     test_working_orders = working_orders
     response = MagicMock(spec=requests.Response)
     response.status_code = 200
@@ -25,7 +22,7 @@ def test_get_working_orders(mocker, working_orders, order_service):
 
 
 def test_create_working_order(mocker, order_service):
-    mock_post = mocker.patch("ig_trading_lib.trading.orders.service.requests.post")
+    mock_post = mocker.patch("ig_trading_lib.trading.client.requests.post")
     response = MagicMock(spec=requests.Response)
     response.status_code = 200
     response.json.return_value = {"dealReference": "DIAAAABBBCCC123"}

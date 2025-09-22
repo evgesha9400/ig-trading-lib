@@ -1,6 +1,6 @@
 import logging
 
-from ig_trading_lib.trading.orders import CreateWorkingOrder
+from ig_trading_lib.trading import CreateWorkingOrder, get_deal_confirmation
 
 logger = logging.getLogger(__name__)
 
@@ -31,24 +31,24 @@ def test_orders_service_crud(order_service):
     )
     deal_reference = order_service.create_order(order=order)
 
-    deal_confirmation = order_service.confirms(deal_reference=deal_reference)
+    deal_confirmation = get_deal_confirmation(order_service.client, deal_reference)
     logger.info(f"Deal confirmation:\n{deal_confirmation.model_dump_json(indent=4)}")
 
-    if deal_confirmation.affectedDeals:
+    if deal_confirmation.dealStatus == "ACCEPTED":
         logger.info("Order was accepted, proceeding with retrieval and deletion")
         orders = order_service.get_orders()
         logger.info(f"Orders:\n{orders.model_dump_json(indent=4)}")
         assert len(orders.workingOrders) == 1
 
-        order_service.delete_order(
-            deal_id=orders.workingOrders[0].workingOrderData.dealId
-        )
+        order_service.delete_order(deal_id=orders.workingOrders[0].workingOrderData.dealId)
 
         orders = order_service.get_orders()
         logger.info(f"Orders after deletion:\n{orders.model_dump_json(indent=4)}")
         assert len(orders.workingOrders) == 0
-    else:
+    elif deal_confirmation.dealStatus == "REJECTED":
         logger.info(f"Order was rejected with reason: {deal_confirmation.reason}")
         orders = order_service.get_orders()
         logger.info(f"Orders after rejection:\n{orders.model_dump_json(indent=4)}")
         assert len(orders.workingOrders) == 0
+    else:
+        raise ValueError(f"Unexpected deal status: {deal_confirmation.dealStatus}")

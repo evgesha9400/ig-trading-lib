@@ -128,20 +128,14 @@ class CreatePosition(BaseModel):
                 data.get("stopLevel") is not None,
             ]
         ):
-            raise ValueError(
-                "forceOpen must be true if limit or stop constraints are set."
-            )
+            raise ValueError("forceOpen must be true if limit or stop constraints are set.")
         return data
 
     @model_validator(mode="before")
     @classmethod
     def check_guaranteed_stop_constraints(cls, data: Any):
-        if data.get("guaranteedStop") and not (
-            bool(data.get("stopLevel")) ^ bool(data.get("stopDistance"))
-        ):
-            raise ValueError(
-                "When guaranteedStop is true, specify exactly one of stopLevel or stopDistance."
-            )
+        if data.get("guaranteedStop") and not (bool(data.get("stopLevel")) ^ bool(data.get("stopDistance"))):
+            raise ValueError("When guaranteedStop is true, specify exactly one of stopLevel or stopDistance.")
         return data
 
     @model_validator(mode="before")
@@ -155,13 +149,9 @@ class CreatePosition(BaseModel):
                 raise ValueError("Set level when orderType is LIMIT.")
         elif order_type == "MARKET":
             if any([data.get("level") is not None, data.get("quoteId") is not None]):
-                raise ValueError(
-                    "Do not set level or quoteId when orderType is MARKET."
-                )
+                raise ValueError("Do not set level or quoteId when orderType is MARKET.")
         elif order_type == "QUOTE":
-            if not all(
-                [data.get("level") is not None, data.get("quoteId") is not None]
-            ):
+            if not all([data.get("level") is not None, data.get("quoteId") is not None]):
                 raise ValueError("Set both level and quoteId when orderType is QUOTE.")
         return data
 
@@ -172,18 +162,14 @@ class CreatePosition(BaseModel):
             if data.get("stopLevel") is not None:
                 raise ValueError("Do not set stopLevel when trailingStop is true.")
             if data.get("guaranteedStop"):
-                raise ValueError(
-                    "guaranteedStop must be false when trailingStop is true."
-                )
+                raise ValueError("guaranteedStop must be false when trailingStop is true.")
             if not all(
                 [
                     data.get("stopDistance") is not None,
                     data.get("trailingStopIncrement") is not None,
                 ]
             ):
-                raise ValueError(
-                    "Set both stopDistance and trailingStopIncrement when trailingStop is true."
-                )
+                raise ValueError("Set both stopDistance and trailingStopIncrement when trailingStop is true.")
         return data
 
 
@@ -206,18 +192,11 @@ class ClosePosition(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def check_order_type(cls, data: Any):
-        if data.get("orderType") == "QUOTE" and (
-            data.get("quoteId") is None or data.get("level") is None
-        ):
+        if data.get("orderType") == "QUOTE" and (data.get("quoteId") is None or data.get("level") is None):
             raise ValueError("quoteId is required when orderType is QUOTE.")
 
-        if (
-            data.get("orderType") == "MARKET"
-            and (data.get("level") is not None or data.get("quoteId")) is not None
-        ):
-            raise ValueError(
-                "level and quoteId are not allowed when orderType is MARKET."
-            )
+        if data.get("orderType") == "MARKET" and (data.get("level") is not None or data.get("quoteId")) is not None:
+            raise ValueError("level and quoteId are not allowed when orderType is MARKET.")
 
         if data.get("orderType") == "LIMIT" and data.get("quoteId") is not None:
             raise ValueError("quoteId is not allowed when orderType is LIMIT.")
@@ -278,7 +257,7 @@ class UpdatePosition(BaseModel):
     def validate_trailing_stop_constraints(cls, data: dict):
         if data.get("trailingStop"):
             cls._validate_trailing_stop_true(data)
-        elif data.get("trailingStop") == False:
+        elif not data.get("trailingStop"):
             cls._validate_trailing_stop_false(data)
         return data
 
@@ -292,26 +271,16 @@ class UpdatePosition(BaseModel):
     @classmethod
     def _validate_trailing_stop_true(cls, data: dict):
         if data.get("guaranteedStop"):
-            raise ValueError(
-                "If trailingStop is true, then guaranteedStop must be false."
-            )
-        if any(
-            data.get(field) is None
-            for field in ["trailingStopDistance", "trailingStopIncrement", "stopLevel"]
-        ):
+            raise ValueError("If trailingStop is true, then guaranteedStop must be false.")
+        if any(data.get(field) is None for field in ["trailingStopDistance", "trailingStopIncrement", "stopLevel"]):
             raise ValueError(
                 "If trailingStop is true, then trailingStopDistance, trailingStopIncrement, and stopLevel must be set."
             )
 
     @classmethod
     def _validate_trailing_stop_false(cls, data: dict):
-        if any(
-            data.get(field) is not None
-            for field in ["trailingStopDistance", "trailingStopIncrement"]
-        ):
-            raise ValueError(
-                "If trailingStop is false, then DO NOT set trailingStopDistance or trailingStopIncrement."
-            )
+        if any(data.get(field) is not None for field in ["trailingStopDistance", "trailingStopIncrement"]):
+            raise ValueError("If trailingStop is false, then DO NOT set trailingStopDistance or trailingStopIncrement.")
 
     @classmethod
     def _validate_guaranteed_stop_true(cls, data: dict):

@@ -1,13 +1,14 @@
 from pytest import fixture
 
-from ig_trading_lib.trading.orders import OrderService
+from ig_trading_lib.trading import IGClient, OrderService
 
 
 @fixture
 def order_service(api_key, tokens) -> OrderService:
-    return OrderService(
-        api_key=api_key, tokens=tokens, base_url="https://demo-api.ig.com"
+    client = IGClient(
+        base_url="https://demo-api.ig.com", api_key=api_key, tokens=tokens
     )
+    return OrderService(client)
 
 
 @fixture

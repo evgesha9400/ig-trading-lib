@@ -117,7 +117,7 @@ class AffectedDeal(BaseModel):
 class DealConfirmation(BaseModel):
     affectedDeals: List[AffectedDeal]
     dealId: Optional[str] = None
-    status: Optional[str] = None
+    status: Optional[PositionStatus] = None
     date: Optional[str] = None
     dealReference: Optional[str] = None
     dealStatus: Optional[DealStatus] = None

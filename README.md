@@ -18,7 +18,7 @@ pip install ig-trading-lib
 ```python
 from ig_trading_lib.authentication import AuthenticationService
 from ig_trading_lib.authentication.cache import InMemoryCache
-from ig_trading_lib.trading.positions import CreatePosition, PositionService
+from ig_trading_lib.trading import CreatePosition, PositionService, IGClient
 
 # Initialize authentication
 auth_service = AuthenticationService(
@@ -32,12 +32,9 @@ auth_service = AuthenticationService(
 # Authenticate
 auth_response = auth_service.authenticate()
 
-# Create position service
-position_service = PositionService(
-    api_key="your_api_key",
-    tokens=auth_response.tokens,
-    base_url="https://demo-api.ig.com"
-)
+# Create client and position service
+client = IGClient(base_url="https://demo-api.ig.com", api_key="your_api_key", tokens=auth_response.tokens)
+position_service = PositionService(client)
 
 # Create a position
 position = CreatePosition(
@@ -92,14 +89,14 @@ deal_reference = position_service.create_position(position)
 - `PositionService`: Position management operations
 - `OrderService`: Working order management operations
 
-### Models (`ig_trading_lib.trading.positions.models`)
+### Models (via `ig_trading_lib.trading` facade)
 - `CreatePosition`: Position creation model
 - `ClosePosition`: Position closing model  
 - `UpdatePosition`: Position update model
 - `OpenPosition`: Open position data model
 - `Market`: Market information model
 
-### Models (`ig_trading_lib.trading.orders.models`)
+### Orders Models (via `ig_trading_lib.trading` facade)
 - `CreateWorkingOrder`: Working order creation model
 - `WorkingOrder`: Working order data model
 - `MarketData`: Market data for orders
@@ -150,13 +147,10 @@ auth_response = auth_service.authenticate()
 ### Position Service
 
 ```python
-from ig_trading_lib.trading.positions import PositionService, CreatePosition
+from ig_trading_lib.trading import PositionService, CreatePosition, IGClient
 
-position_service = PositionService(
-    api_key="your_api_key",
-    tokens=auth_response.tokens,
-    base_url="https://demo-api.ig.com"
-)
+client = IGClient(base_url="https://demo-api.ig.com", api_key="your_api_key", tokens=auth_response.tokens)
+position_service = PositionService(client)
 
 # Create a market position
 position = CreatePosition(
@@ -183,13 +177,10 @@ position_service.close_position(close_pos)
 ### Order Service
 
 ```python
-from ig_trading_lib.trading.orders import OrderService, CreateWorkingOrder
+from ig_trading_lib.trading import OrderService, CreateWorkingOrder, IGClient
 
-order_service = OrderService(
-    api_key="your_api_key", 
-    tokens=auth_response.tokens,
-    base_url="https://demo-api.ig.com"
-)
+client = IGClient(base_url="https://demo-api.ig.com", api_key="your_api_key", tokens=auth_response.tokens)
+order_service = OrderService(client)
 
 # Create a working order
 order = CreateWorkingOrder(
