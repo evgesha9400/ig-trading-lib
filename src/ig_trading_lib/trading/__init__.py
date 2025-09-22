@@ -1,7 +1,7 @@
-from .client import IGClient, TradingClient
-from .confirms import get_deal_confirmation
-from .models import DealConfirmation, DealReference, Direction, InstrumentType
-from .orders_models import (
+from ig_trading_lib.trading.client import IGClient, TradingClient
+from ig_trading_lib.trading.confirms import get_deal_confirmation
+from ig_trading_lib.trading.models import DealConfirmation, DealReference, Direction, InstrumentType
+from ig_trading_lib.trading.orders_models import (
     CreateWorkingOrder,
     MarketData,
     UpdateWorkingOrder,
@@ -9,8 +9,8 @@ from .orders_models import (
     WorkingOrderData,
     WorkingOrders,
 )
-from .orders_service import OrderException, OrderService
-from .positions_models import (
+from ig_trading_lib.trading.orders_service import OrderException, OrderService
+from ig_trading_lib.trading.positions_models import (
     ClosePosition,
     CreatePosition,
     Market,
@@ -19,7 +19,7 @@ from .positions_models import (
     Position,
     UpdatePosition,
 )
-from .positions_service import PositionsError, PositionService
+from ig_trading_lib.trading.positions_service import PositionsError, PositionService
 
 __all__ = [
     "IGClient",

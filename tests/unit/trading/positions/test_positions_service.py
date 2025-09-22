@@ -67,6 +67,26 @@ def test_create_position(mocker, position_service):
     assert mock_post.call_count == 1
 
 
+def test_update_position(mocker, position_service):
+    mock_put = mocker.patch("ig_trading_lib.trading.client.requests.put")
+    response = MagicMock(spec=requests.Response)
+    response.status_code = 200
+    response.json.return_value = {"dealReference": "DIAAAABBBCCC123"}
+    mock_put.return_value = response
+
+    response = position_service.update_position(
+        deal_id="DIAAAAPJCL8RHAM",
+        position=UpdatePosition.model_validate(
+            {
+                "limitLevel": 1.0,
+                "stopLevel": 1.0,
+            }
+        ),
+    )
+    assert response.model_dump() == {"dealReference": "DIAAAABBBCCC123"}
+    assert mock_put.call_count == 1
+
+
 def test_close_position(mocker, position_service):
     mock_post = mocker.patch("ig_trading_lib.trading.client.requests.post")
     response = MagicMock(spec=requests.Response)
@@ -87,23 +107,3 @@ def test_close_position(mocker, position_service):
     )
     assert response.model_dump() == {"dealReference": "DIAAAABBBCCC123"}
     assert mock_post.call_count == 1
-
-
-def test_update_position(mocker, position_service):
-    mock_put = mocker.patch("ig_trading_lib.trading.client.requests.put")
-    response = MagicMock(spec=requests.Response)
-    response.status_code = 200
-    response.json.return_value = {"dealReference": "DIAAAABBBCCC123"}
-    mock_put.return_value = response
-
-    response = position_service.update_position(
-        deal_id="DIAAAAPJCL8RHAM",
-        position=UpdatePosition.model_validate(
-            {
-                "limitLevel": 1.0,
-                "stopLevel": 1.0,
-            }
-        ),
-    )
-    assert response.model_dump() == {"dealReference": "DIAAAABBBCCC123"}
-    assert mock_put.call_count == 1
