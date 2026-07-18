@@ -1,6 +1,6 @@
 # IG Trading Library v3
 
-Typed, safety-first synchronous and asynchronous clients for the documented IG REST and streaming APIs.
+Safe, typed synchronous and asynchronous IG REST and streaming clients.
 
 ## Install
 
@@ -51,7 +51,7 @@ async with AsyncIGClient(config) as client:
 
 ## Live-trading boundary
 
-Live mutations require an explicit permit in addition to `Environment.LIVE`. A missing permit fails before authentication or network I/O.
+Guarded live mutations require an explicit permit in addition to `Environment.LIVE`. A missing permit fails before authentication or network I/O.
 
 ```python
 from ig_trading_lib import Environment, IGClient, IGConfig, TradingPermit
@@ -59,9 +59,11 @@ from ig_trading_lib import Environment, IGClient, IGConfig, TradingPermit
 live_config = IGConfig(environment=Environment.LIVE, credentials=config.credentials)
 client = IGClient(live_config, trading_permit=TradingPermit())
 
-# Every create, amend, delete, and close operation is guarded.
+# Position create, update, and close operations are guarded.
 client.positions.create({"epic": "CS.D.EURUSD.TODAY.IP", "direction": "BUY", "size": "1"})
 ```
+
+The guarded typed surfaces are `positions.create`, `positions.update`, `positions.close`, `accounts.update_preferences`, and mutation methods on `watchlists`, `working_orders`, `costs`, and `applications`. `ResourceClient` instances without a guard are not covered by this boundary.
 
 Do not retry a failed mutation yourself. The client raises `AmbiguousExecutionError` when a network failure means IG may have accepted it; resolve that outcome with the deal reference or a confirmation before issuing another order.
 
@@ -78,7 +80,7 @@ with IGClient(config) as client:
     confirmation = client.confirms.get("/DEAL_REFERENCE")
 ```
 
-The version facades preserve raw provider payloads and provide every documented v1–v4 endpoint surface. Use them only when a provider-specific schema or historical endpoint version is required.
+The version facades preserve raw provider payloads and provide a generic explicit-version path entry point. Use them when a provider-specific schema or historical endpoint version is required; they do not promise a dedicated helper for every documented operation.
 
 ```python
 with IGClient(config) as client:
@@ -119,7 +121,7 @@ async with AsyncIGClient(config) as client:
 
 ## Errors and observability
 
-All public failures derive from `IGError`. Errors carry a safe provider request ID, a client operation ID, retry timing when supplied by IG, and redacted details.
+Operational failures derive from `IGError`. Errors carry a safe provider request ID, a client operation ID, retry timing when supplied by IG, and redacted details. `LiveTradingPermissionError` is a separate `PermissionError` raised by the live-mutation guard.
 
 ```python
 from ig_trading_lib import AmbiguousExecutionError, RateLimitError, TransportError
@@ -141,9 +143,11 @@ Successful requests emit structured standard-library log records named `ig.http.
 ```bash
 poetry sync --with dev
 poetry run pytest tests/unit/v3
-poetry run ruff format --check src tests
-poetry run ruff check src tests
+poetry run ruff format --check src tests scripts examples
+poetry run ruff check src tests scripts examples
 poetry run pyright
+poetry run python scripts/check_documentation_contract.py
+poetry run mkdocs build --strict
 poetry export --only main --without-hashes --output /tmp/ig-trading-lib-requirements.txt
 poetry run pip-audit --strict --requirement /tmp/ig-trading-lib-requirements.txt
 poetry build

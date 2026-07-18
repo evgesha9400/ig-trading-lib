@@ -1,0 +1,41 @@
+# Public API
+
+The package root, `ig_trading_lib`, is the supported import surface. Its `__all__` exports are checked against the [public API contract](../contracts/public-api.yml), where every parameter has a source-checked type and a concise description. The API reference below is generated from source by mkdocstrings and Griffe.
+
+`IGClient` and `AsyncIGClient` expose typed service namespaces, streaming clients, and `v1` through `v4` version facades. The endpoint matrix is the source-backed list of documented provider operations; the generic version facade does not promise a dedicated helper for each row.
+
+## Client façades
+
+::: ig_trading_lib.client
+
+## Configuration and safety primitives
+
+::: ig_trading_lib.core
+
+## Canonical models
+
+::: ig_trading_lib.models
+
+## Public failures
+
+::: ig_trading_lib.errors
+
+## Synchronous services
+
+::: ig_trading_lib.services
+
+## Asynchronous services
+
+::: ig_trading_lib.async_services
+
+## Streaming
+
+::: ig_trading_lib.streaming
+
+## Explicit-version façades
+
+::: ig_trading_lib.versions
+
+## Endpoint catalogue model
+
+::: ig_trading_lib.endpoint_catalog

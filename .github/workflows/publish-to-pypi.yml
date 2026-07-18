@@ -34,11 +34,14 @@ jobs:
 
       - name: Format and lint
         run: |
-          poetry run ruff format --check src tests
-          poetry run ruff check src tests
+          poetry run ruff format --check src tests scripts examples
+          poetry run ruff check src tests scripts examples
 
       - name: Type check
         run: poetry run pyright
+
+      - name: Validate documentation contract and site
+        run: make docs-check
 
       - name: Test with coverage
         run: poetry run pytest tests/unit/v3
