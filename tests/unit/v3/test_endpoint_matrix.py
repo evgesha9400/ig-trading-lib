@@ -1,0 +1,62 @@
+from ig_trading_lib.endpoint_catalog import DOCUMENTED_ENDPOINTS, EndpointSpec
+
+
+def test_endpoint_catalog_covers_every_current_ig_rest_reference_operation() -> None:
+    expected = {
+        ("accounts", "GET", (1,)),
+        ("account_preferences", "GET", (1,)),
+        ("account_preferences", "PUT", (1,)),
+        ("activity", "GET", (2, 3)),
+        ("activity_date_range", "GET", (1,)),
+        ("activity_period", "GET", (1,)),
+        ("transactions", "GET", (2,)),
+        ("transactions_date_range", "GET", (1,)),
+        ("transactions_period", "GET", (1,)),
+        ("confirmation", "GET", (1,)),
+        ("positions", "GET", (1, 2)),
+        ("position", "GET", (1, 2)),
+        ("otc_position", "POST", (1, 2)),
+        ("otc_position", "DELETE", (1,)),
+        ("otc_position_by_deal", "PUT", (1, 2)),
+        ("working_orders", "GET", (1, 2)),
+        ("otc_working_order", "POST", (1, 2)),
+        ("otc_working_order_by_deal", "DELETE", (1, 2)),
+        ("otc_working_order_by_deal", "PUT", (1, 2)),
+        ("repeat_dealing_window", "GET", (1,)),
+        ("categories", "GET", (1,)),
+        ("category_instruments", "GET", (1,)),
+        ("markets", "GET", (1, 2)),
+        ("market", "GET", (1, 2, 3, 4)),
+        ("market_search", "GET", (1,)),
+        ("prices", "GET", (3,)),
+        ("prices_points", "GET", (1, 2)),
+        ("prices_date_range", "GET", (1, 2)),
+        ("watchlists", "GET", (1,)),
+        ("watchlists", "POST", (1,)),
+        ("watchlist", "GET", (1,)),
+        ("watchlist", "PUT", (1,)),
+        ("watchlist", "DELETE", (1,)),
+        ("watchlist_market", "DELETE", (1,)),
+        ("client_sentiment", "GET", (1,)),
+        ("client_sentiment_market", "GET", (1,)),
+        ("client_sentiment_related", "GET", (1,)),
+        ("session", "GET", (1,)),
+        ("session", "DELETE", (1,)),
+        ("session", "POST", (1, 2, 3)),
+        ("session", "PUT", (1,)),
+        ("encryption_key", "GET", (1,)),
+        ("refresh_token", "POST", (1,)),
+        ("indicative_costs_close", "POST", (1,)),
+        ("indicative_costs_durable_medium", "GET", (1,)),
+        ("indicative_costs_edit", "POST", (1,)),
+        ("indicative_costs_history", "GET", (1,)),
+        ("indicative_costs_open", "POST", (1,)),
+        ("applications", "GET", (1,)),
+        ("applications", "PUT", (1,)),
+        ("application_disable", "PUT", (1,)),
+    }
+
+    actual = {(item.name, item.method, item.versions) for item in DOCUMENTED_ENDPOINTS}
+
+    assert actual == expected
+    assert all(isinstance(item, EndpointSpec) for item in DOCUMENTED_ENDPOINTS)

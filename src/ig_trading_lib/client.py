@@ -17,6 +17,7 @@ from ig_trading_lib.models import IGModel
 from ig_trading_lib.services import AccountsClient, MarketsClient, ResourceClient
 from ig_trading_lib.streaming import AsyncStreamingClient, StreamingClient
 from ig_trading_lib.transport import AsyncTransport, SyncTransport
+from ig_trading_lib.versions import AsyncVersionFacade, VersionFacade
 
 
 class PositionsClient:
@@ -30,6 +31,30 @@ class PositionsClient:
         """Create an OTC position after enforcing live-dealing permission."""
         self._guard.require_mutation_permission()
         response = self._transport.request("POST", "/positions/otc", version=2, json=request)
+        return IGModel.model_validate(response.json())
+
+    def list(self) -> IGModel:
+        """Return all open positions for the active account."""
+        response = self._transport.request("GET", "/positions", version=2)
+        return IGModel.model_validate(response.json())
+
+    def get(self, deal_id: str) -> IGModel:
+        """Return one open position by IG deal identifier."""
+        response = self._transport.request("GET", f"/positions/{deal_id}", version=2)
+        return IGModel.model_validate(response.json())
+
+    def update(self, deal_id: str, request: Mapping[str, Any]) -> IGModel:
+        """Amend one OTC position after enforcing live-dealing permission."""
+        self._guard.require_mutation_permission()
+        response = self._transport.request(
+            "PUT", f"/positions/otc/{deal_id}", version=2, json=request
+        )
+        return IGModel.model_validate(response.json())
+
+    def close(self, request: Mapping[str, Any]) -> IGModel:
+        """Close one or more OTC positions after enforcing live-dealing permission."""
+        self._guard.require_mutation_permission()
+        response = self._transport.request("DELETE", "/positions/otc", version=1, json=request)
         return IGModel.model_validate(response.json())
 
 
@@ -54,7 +79,20 @@ class IGClient:
         self.watchlists = ResourceClient(
             self._transport, "/watchlists", version=1, guard=self._guard
         )
-        self.sentiment = ResourceClient(self._transport, "/clientsentiment", version=1)
+        self.confirms = ResourceClient(self._transport, "/confirms", version=1)
+        self.working_orders = ResourceClient(
+            self._transport,
+            "/working-orders",
+            version=2,
+            guard=self._guard,
+        )
+        self.repeat_dealing_window = ResourceClient(
+            self._transport,
+            "/repeat-dealing-window",
+            version=1,
+        )
+        self.categories = ResourceClient(self._transport, "/categories", version=1)
+        self.sentiment = ResourceClient(self._transport, "/client-sentiment", version=1)
         self.costs = ResourceClient(
             self._transport,
             "/indicativecostsandcharges",
@@ -67,12 +105,16 @@ class IGClient:
             version=1,
             guard=self._guard,
         )
-        self.market_navigation = ResourceClient(self._transport, "/marketnavigation", version=1)
         self.prices = ResourceClient(self._transport, "/prices", version=3)
+        self.session = ResourceClient(self._transport, "/session", version=1)
         self.streaming = StreamingClient(
             session_provider=self._transport.streaming_session,
             refresh_session_provider=self._transport.refresh_streaming_session,
         )
+        self.v1 = VersionFacade(self._transport, self._guard, version=1)
+        self.v2 = VersionFacade(self._transport, self._guard, version=2)
+        self.v3 = VersionFacade(self._transport, self._guard, version=3)
+        self.v4 = VersionFacade(self._transport, self._guard, version=4)
 
     def close(self) -> None:
         """Close resources owned by the client."""
@@ -97,6 +139,32 @@ class AsyncPositionsClient:
         """Create an OTC position after enforcing live-dealing permission."""
         self._guard.require_mutation_permission()
         response = await self._transport.request("POST", "/positions/otc", version=2, json=request)
+        return IGModel.model_validate(response.json())
+
+    async def list(self) -> IGModel:
+        """Return all open positions for the active account."""
+        response = await self._transport.request("GET", "/positions", version=2)
+        return IGModel.model_validate(response.json())
+
+    async def get(self, deal_id: str) -> IGModel:
+        """Return one open position by IG deal identifier."""
+        response = await self._transport.request("GET", f"/positions/{deal_id}", version=2)
+        return IGModel.model_validate(response.json())
+
+    async def update(self, deal_id: str, request: Mapping[str, Any]) -> IGModel:
+        """Amend one OTC position after enforcing live-dealing permission."""
+        self._guard.require_mutation_permission()
+        response = await self._transport.request(
+            "PUT", f"/positions/otc/{deal_id}", version=2, json=request
+        )
+        return IGModel.model_validate(response.json())
+
+    async def close(self, request: Mapping[str, Any]) -> IGModel:
+        """Close one or more OTC positions after enforcing live-dealing permission."""
+        self._guard.require_mutation_permission()
+        response = await self._transport.request(
+            "DELETE", "/positions/otc", version=1, json=request
+        )
         return IGModel.model_validate(response.json())
 
 
@@ -124,7 +192,20 @@ class AsyncIGClient:
             version=1,
             guard=self._guard,
         )
-        self.sentiment = AsyncResourceClient(self._transport, "/clientsentiment", version=1)
+        self.confirms = AsyncResourceClient(self._transport, "/confirms", version=1)
+        self.working_orders = AsyncResourceClient(
+            self._transport,
+            "/working-orders",
+            version=2,
+            guard=self._guard,
+        )
+        self.repeat_dealing_window = AsyncResourceClient(
+            self._transport,
+            "/repeat-dealing-window",
+            version=1,
+        )
+        self.categories = AsyncResourceClient(self._transport, "/categories", version=1)
+        self.sentiment = AsyncResourceClient(self._transport, "/client-sentiment", version=1)
         self.costs = AsyncResourceClient(
             self._transport,
             "/indicativecostsandcharges",
@@ -137,14 +218,16 @@ class AsyncIGClient:
             version=1,
             guard=self._guard,
         )
-        self.market_navigation = AsyncResourceClient(
-            self._transport, "/marketnavigation", version=1
-        )
         self.prices = AsyncResourceClient(self._transport, "/prices", version=3)
+        self.session = AsyncResourceClient(self._transport, "/session", version=1)
         self.streaming = AsyncStreamingClient(
             session_provider=self._transport.streaming_session,
             refresh_session_provider=self._transport.refresh_streaming_session,
         )
+        self.v1 = AsyncVersionFacade(self._transport, self._guard, version=1)
+        self.v2 = AsyncVersionFacade(self._transport, self._guard, version=2)
+        self.v3 = AsyncVersionFacade(self._transport, self._guard, version=3)
+        self.v4 = AsyncVersionFacade(self._transport, self._guard, version=4)
 
     async def close(self) -> None:
         """Close resources owned by the asynchronous client."""
