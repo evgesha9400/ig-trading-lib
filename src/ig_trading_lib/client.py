@@ -9,7 +9,7 @@ import httpx
 
 from ig_trading_lib.core import IGConfig, TradingGuard, TradingPermit
 from ig_trading_lib.models import IGModel
-from ig_trading_lib.services import MarketsClient
+from ig_trading_lib.services import AccountsClient, MarketsClient, ResourceClient
 from ig_trading_lib.transport import SyncTransport
 
 
@@ -42,6 +42,15 @@ class IGClient:
         self._transport = SyncTransport(config, http_client=http_client)
         self.positions = PositionsClient(self._guard, self._transport)
         self.markets = MarketsClient(self._transport)
+        self.accounts = AccountsClient(self._transport)
+        self.activity = ResourceClient(self._transport, "/history/activity", version=3)
+        self.transactions = ResourceClient(self._transport, "/history/transactions", version=2)
+        self.watchlists = ResourceClient(self._transport, "/watchlists", version=1)
+        self.sentiment = ResourceClient(self._transport, "/clientsentiment", version=1)
+        self.costs = ResourceClient(self._transport, "/indicativecostsandcharges", version=1)
+        self.applications = ResourceClient(self._transport, "/operations/application", version=1)
+        self.market_navigation = ResourceClient(self._transport, "/marketnavigation", version=1)
+        self.prices = ResourceClient(self._transport, "/prices", version=3)
 
     def close(self) -> None:
         """Close resources owned by the client."""
