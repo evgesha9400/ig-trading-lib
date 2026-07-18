@@ -38,7 +38,15 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.pyright]
 pythonVersion = "3.11"
 typeCheckingMode = "basic"
-include = ["src"]
+include = [
+    "src/ig_trading_lib/__init__.py",
+    "src/ig_trading_lib/client.py",
+    "src/ig_trading_lib/core.py",
+    "src/ig_trading_lib/errors.py",
+    "src/ig_trading_lib/models.py",
+    "src/ig_trading_lib/services.py",
+    "src/ig_trading_lib/transport.py",
+]
 
 [tool.pytest.ini_options]
 log_cli = true
