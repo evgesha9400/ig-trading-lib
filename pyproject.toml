@@ -1,0 +1,31 @@
+[project]
+name = "ig-trading-lib"
+version = "2.1.0"
+description = ""
+authors = [{ name = "Evgeny Aleshin" }]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "python-dotenv>=1.1.1,<2.0.0",
+    "cryptography>=46.0.1,<47.0.0",
+    "pydantic>=2.11.9,<3.0.0",
+    "requests>=2.32.5,<3.0.0",
+]
+
+[tool.poetry]
+packages = [{ include = "ig_trading_lib", from = "src" }]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.2"
+pytest-mock = "^3.15.1"
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
