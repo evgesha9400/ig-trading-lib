@@ -1,0 +1,244 @@
+name: Release versioned documentation
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  LIBRARY_REPOSITORY: evgesha9400/ig-trading-lib
+  PORTAL_REPOSITORY: evgesha9400/evgesha9400.github.io
+  PORTAL_WORKFLOW: rebuild-library-pages.yml
+  PORTAL_REF: main
+
+concurrency:
+  group: ig-trading-lib-versioned-documentation
+  cancel-in-progress: false
+
+jobs:
+  validate-documentation:
+    name: Validate documentation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        run: pipx install "poetry==2.3.2"
+
+      - name: Validate lock and install documentation dependencies
+        run: |
+          poetry check --lock
+          poetry sync --with dev
+
+      - name: Validate documentation and release workflow
+        run: |
+          make docs-check
+          make workflow-check
+
+  validate-release:
+    name: Validate release tag
+    needs: validate-documentation
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      version: ${{ steps.release.outputs.version }}
+      commit: ${{ steps.release.outputs.commit }}
+      is_stable: ${{ steps.release.outputs.is_stable }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - id: release
+        name: Derive a safe SemVer release identity
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          semver_pattern='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?(\+([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?$'
+
+          if [[ ! "$TAG" =~ $semver_pattern ]]; then
+            echo "::error::Release tags must use SemVer and begin with v (for example v3.0.0)."
+            exit 1
+          fi
+
+          version="${TAG#v}"
+          package_version="$(python -c '
+          import tomllib
+          from pathlib import Path
+
+          print(tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))["project"]["version"])
+          ')"
+          if [[ "$version" != "$package_version" ]]; then
+            echo "::error::Release tag $TAG does not match pyproject.toml version $package_version."
+            exit 1
+          fi
+
+          is_stable=true
+          if [[ "$version" == *-* ]]; then
+            is_stable=false
+          fi
+
+          {
+            echo "tag=$TAG"
+            echo "version=$version"
+            echo "commit=$COMMIT"
+            echo "is_stable=$is_stable"
+          } >> "$GITHUB_OUTPUT"
+
+  publish-versioned-documentation:
+    name: Publish immutable versioned documentation
+    needs: validate-release
+    if: needs.validate-release.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        run: pipx install "poetry==2.3.2"
+
+      - name: Install documentation dependencies
+        run: poetry sync --with dev
+
+      - name: Fetch gh-pages when it already exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          git ls-remote --exit-code --heads origin gh-pages >/dev/null
+          status=$?
+          set -e
+
+          case "$status" in
+            0)
+              git fetch --no-tags origin gh-pages:refs/remotes/origin/gh-pages
+              ;;
+            2)
+              echo "gh-pages does not exist yet; this is the first documentation release."
+              ;;
+            *)
+              echo "::error::Unable to inspect the gh-pages branch."
+              exit "$status"
+              ;;
+          esac
+
+      - name: Refuse to replace immutable versioned documentation
+        shell: bash
+        env:
+          VERSION: ${{ needs.validate-release.outputs.version }}
+        run: |
+          set -euo pipefail
+          poetry run mike list --json > /tmp/ig-trading-lib-mike-versions.json
+
+          if poetry run python -c '
+          import json
+          import sys
+
+          version = sys.argv[1]
+          versions = json.load(sys.stdin)
+          raise SystemExit(0 if any(item["version"] == version for item in versions) else 1)
+          ' "$VERSION" < /tmp/ig-trading-lib-mike-versions.json; then
+            echo "::error::Documentation for $VERSION already exists and is immutable."
+            exit 1
+          fi
+
+      - name: Publish the immutable version and stable latest alias
+        shell: bash
+        env:
+          VERSION: ${{ needs.validate-release.outputs.version }}
+          IS_STABLE: ${{ needs.validate-release.outputs.is_stable }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$IS_STABLE" == "true" ]]; then
+            poetry run mike deploy --push --update-aliases --alias-type redirect "$VERSION" latest
+            poetry run mike set-default --push latest
+            exit 0
+          fi
+
+          poetry run mike deploy --push "$VERSION"
+          echo "Pre-release documentation published at /$VERSION/; latest was not changed."
+
+  create-github-release:
+    name: Create GitHub Release record
+    needs: [validate-release, publish-versioned-documentation]
+    if: needs.publish-versioned-documentation.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create the release record without publishing a package
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.validate-release.outputs.tag }}
+          IS_STABLE: ${{ needs.validate-release.outputs.is_stable }}
+        run: |
+          set -euo pipefail
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "GitHub Release $TAG already exists; keeping it unchanged."
+            exit 0
+          fi
+
+          release_flags=(--verify-tag --title "$TAG" --generate-notes)
+          if [[ "$IS_STABLE" != "true" ]]; then
+            release_flags+=(--prerelease)
+          fi
+
+          gh release create "$TAG" "${release_flags[@]}"
+
+  dispatch-portal-rebuild:
+    name: Dispatch portal rebuild
+    needs: [validate-release, publish-versioned-documentation]
+    if: needs.publish-versioned-documentation.result == 'success'
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Dispatch the portal workflow when its token is configured
+        shell: bash
+        env:
+          PORTAL_TOKEN: ${{ secrets.LIBRARY_PORTAL_DISPATCH_TOKEN }}
+          TAG: ${{ needs.validate-release.outputs.tag }}
+          VERSION: ${{ needs.validate-release.outputs.version }}
+          COMMIT: ${{ needs.validate-release.outputs.commit }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$PORTAL_TOKEN" ]]; then
+            echo "Portal dispatch skipped: LIBRARY_PORTAL_DISPATCH_TOKEN is unavailable."
+            exit 0
+          fi
+
+          GH_TOKEN="$PORTAL_TOKEN" gh workflow run "$PORTAL_WORKFLOW" \
+            --repo "$PORTAL_REPOSITORY" \
+            --ref "$PORTAL_REF" \
+            -f "repository=$LIBRARY_REPOSITORY" \
+            -f "tag=$TAG" \
+            -f "version=$VERSION" \
+            -f "commit=$COMMIT"

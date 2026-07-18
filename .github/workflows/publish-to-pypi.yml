@@ -1,5 +1,8 @@
 name: Verify Python package
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main, develop]
@@ -44,7 +47,9 @@ jobs:
         run: poetry run pyright
 
       - name: Validate documentation contract and site
-        run: make docs-check
+        run: |
+          make docs-check
+          make workflow-check
 
       - name: Test with coverage
         run: poetry run pytest tests/unit/v3

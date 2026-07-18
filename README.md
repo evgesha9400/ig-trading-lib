@@ -158,6 +158,24 @@ The default test suite is deterministic and has no IG network dependency. Demo i
 
 See [the v2-to-v3 migration guide](docs/migration-v2-to-v3.md) for the clean-break migration.
 
+## Documentation releases
+
+Documentation is validated on pull requests, `main`, and `develop`, but those runs never publish Pages content. Publishing is restricted to a pushed SemVer tag beginning with `v`.
+
+| Tag | Published documentation | `latest` and root redirect |
+| --- | --- | --- |
+| `v3.0.0` | `https://evgesha9400.github.io/ig-trading-lib/3.0.0/` | Updated to `3.0.0` |
+| `v3.1.0-rc.1` | `https://evgesha9400.github.io/ig-trading-lib/3.1.0-rc.1/` | Unchanged |
+
+Each versioned site is immutable: the workflow rejects an existing version before `mike` deploys it. Publish a corrected release under a new SemVer tag instead of changing a published tag.
+
+```bash
+git tag -a v3.0.0 -m "Release v3.0.0"
+git push origin v3.0.0
+```
+
+After documentation deployment succeeds, the workflow creates a GitHub Release record with generated notes; it does not publish to PyPI. It also dispatches `evgesha9400/evgesha9400.github.io`'s `rebuild-library-pages.yml` workflow with the library repository, tag, version, and commit. Configure `LIBRARY_PORTAL_DISPATCH_TOKEN` with access to dispatch that workflow; when it is absent, the release succeeds and the portal hand-off is clearly skipped.
+
 ## Disclaimer
 
 This project is not affiliated with IG. Trading involves material risk. Review IG’s [REST reference](https://labs.ig.com/rest-trading-api-reference.html), [REST guide](https://labs.ig.com/rest-trading-api-guide.html), and [streaming guide](https://labs.ig.com/streaming-api-guide.html) before connecting an agent to an account.

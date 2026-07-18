@@ -15,6 +15,11 @@ theme:
     - navigation.top
     - search.highlight
 
+extra:
+  version:
+    provider: mike
+    default: latest
+
 nav:
   - Overview: index.md
   - Getting started: getting-started.md

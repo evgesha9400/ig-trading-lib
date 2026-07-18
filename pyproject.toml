@@ -30,6 +30,7 @@ python-dotenv = "^1.1.1"
 pip-audit = "^2.9.0"
 mkdocs-material = ">=9.7,<10.0"
 mkdocstrings = {version = ">=1.0,<2.0", extras = ["python"]}
+mike = ">=2.2,<3.0"
 pyyaml = ">=6.0,<7.0"
 playwright = "^1.61.0"
 

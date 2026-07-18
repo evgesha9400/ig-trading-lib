@@ -1,7 +1,7 @@
 PYTEST := poetry run pytest
 UNIT_DIR := tests/unit/v3
 
-.PHONY: install test lint format type docs-check docs-serve audit build verify
+.PHONY: install test lint format type docs-check docs-serve workflow-check audit build verify
 
 install:
 	poetry sync --with dev
@@ -26,6 +26,9 @@ docs-check:
 docs-serve:
 	poetry run mkdocs serve
 
+workflow-check:
+	poetry run python scripts/check_release_workflow.py
+
 audit:
 	poetry export --only main --without-hashes --output /tmp/ig-trading-lib-requirements.txt
 	poetry run pip-audit --strict --requirement /tmp/ig-trading-lib-requirements.txt
@@ -33,4 +36,4 @@ audit:
 build:
 	poetry build
 
-verify: format lint type docs-check test audit build
+verify: format lint type docs-check workflow-check test audit build
