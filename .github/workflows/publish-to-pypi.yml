@@ -32,6 +32,9 @@ jobs:
           poetry check --lock
           poetry sync --with dev
 
+      - name: Install Chromium for documentation browser checks
+        run: poetry run playwright install --with-deps chromium
+
       - name: Format and lint
         run: |
           poetry run ruff format --check src tests scripts examples

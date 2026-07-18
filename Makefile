@@ -19,6 +19,7 @@ type:
 	poetry run pyright
 
 docs-check:
+	poetry run python scripts/generate_documentation_indexes.py --check
 	poetry run python scripts/check_documentation_contract.py
 	poetry run mkdocs build --strict --site-dir /tmp/ig-trading-lib-site
 

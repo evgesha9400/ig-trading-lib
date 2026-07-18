@@ -1,0 +1,74 @@
+# IG Trading Library
+
+> Safe, typed synchronous and asynchronous clients for IG REST and streaming APIs.
+
+## Start here
+
+- [Overview](docs/index.md)
+- [Getting started](docs/getting-started.md)
+- [Safety boundary](docs/guides/safety.md)
+- [Conceptual guides](docs/guides/credentials.md)
+- [Sync and async recipes](docs/recipes/index.md)
+- [Machine-readable API index](docs/reference/public-api-index.json)
+- [Human API reference](docs/reference/public-api.md)
+- [Endpoint matrix](docs/reference/endpoint-matrix.md)
+
+## Agent rules
+
+- Read `docs/contracts/public-api.yml` when exact signatures, return types, or parameters matter.
+- Treat `docs/reference/public-api-index.json` as generated discovery data,
+  not an independent authority.
+- The endpoint catalog records the library's maintained compatibility matrix;
+  it is not a live verification of IG availability.
+- `v1` through `v4` are generic, raw-payload facades. Do not infer a dedicated
+  helper or a provider payload schema from a resource name.
+- A `TradingPermit` protects live mutations on guarded typed resources and all
+  raw version-facade mutations. It does not guard every possible `ResourceClient` instance.
+- A mutation that raises `AmbiguousExecutionError` needs confirmation or
+  deal-reference verification before another mutation.
+
+## Supported root exports
+
+- `AmbiguousExecutionError`
+- `AsyncIGClient`
+- `AsyncStreamingClient`
+- `AuthenticationError`
+- `AuthorizationError`
+- `Environment`
+- `IGClient`
+- `IGConfig`
+- `IGError`
+- `IGModel`
+- `LiveTradingPermissionError`
+- `OAuthCredentials`
+- `Page`
+- `ProviderRejectionError`
+- `RateLimitError`
+- `ResourceNotFoundError`
+- `SessionCredentials`
+- `StreamSubscription`
+- `StreamUpdate`
+- `StreamingClient`
+- `StreamingDataLossError`
+- `StreamingSubscriptionError`
+- `TradingPermit`
+- `TransportError`
+
+## Public modules
+
+- `ig_trading_lib.client`
+- `ig_trading_lib.core`
+- `ig_trading_lib.endpoint_catalog`
+- `ig_trading_lib.errors`
+- `ig_trading_lib.models`
+- `ig_trading_lib.services`
+- `ig_trading_lib.async_services`
+- `ig_trading_lib.streaming`
+- `ig_trading_lib.versions`
+
+## Safety rules
+
+- Guarded typed mutations are positions.create, positions.update, positions.close, accounts.update_preferences, and create, update, or delete on watchlists, working_orders, costs, and applications.
+- Every POST, PUT, or DELETE through a v1, v2, v3, or v4 VersionFacade or VersionedResource requires TradingPermit on a live account.
+- Do not infer that every ResourceClient mutation is guarded: guards are installed only for the typed client attributes named above.
+- After AmbiguousExecutionError, verify the outcome with a confirmation or relevant deal reference before considering another mutation.

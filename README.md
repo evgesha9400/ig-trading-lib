@@ -39,7 +39,7 @@ The synchronous and asynchronous clients expose matching service namespaces:
 | `IGClient(config)` | `AsyncIGClient(config)` |
 | `client.markets.search("EURUSD")` | `await client.markets.search("EURUSD")` |
 | `client.positions.list()` | `await client.positions.list()` |
-| `client.v2.positions.create(...)` | `await client.v2.positions.create(...)` |
+| `client.positions.create(...)` | `await client.positions.create(...)` |
 
 ```python
 from ig_trading_lib import AsyncIGClient
@@ -88,7 +88,7 @@ with IGClient(config) as client:
     raw_prices = client.v2.prices.get("/CS.D.EURUSD.TODAY.IP/MINUTE/10")
 ```
 
-The endpoint/version catalog is maintained in `ig_trading_lib.endpoint_catalog` and contract-tested against IG’s REST reference.
+The endpoint/version catalog is maintained in `ig_trading_lib.endpoint_catalog` and contract-tested against the maintained `DOCUMENTED_ENDPOINTS` catalog.
 
 ## Streaming
 
@@ -136,7 +136,7 @@ except AmbiguousExecutionError as error:
     print("Resolve the deal outcome before retrying", error.operation_id)
 ```
 
-Successful requests emit structured standard-library log records named `ig.http.response`. They include method, path, status, retry count, provider request ID, and client operation ID; passwords and tokens are never logged.
+Successful requests emit `ig.http.response` through the `ig_trading_lib.transport` standard-library logger. The structured record includes method, path, status, retry count, provider request ID, and client operation ID; passwords and tokens are never logged.
 
 ## Tests and development
 
@@ -148,6 +148,7 @@ poetry run ruff check src tests scripts examples
 poetry run pyright
 poetry run python scripts/check_documentation_contract.py
 poetry run mkdocs build --strict
+poetry run playwright install chromium
 poetry export --only main --without-hashes --output /tmp/ig-trading-lib-requirements.txt
 poetry run pip-audit --strict --requirement /tmp/ig-trading-lib-requirements.txt
 poetry build
