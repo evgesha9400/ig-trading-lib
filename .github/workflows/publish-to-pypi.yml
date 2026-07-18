@@ -1,12 +1,15 @@
-name: Publish Python 🐍 distribution 📦 to PyPI
+name: Verify Python package
 
 on:
   push:
     branches:
       - main
+      - develop
+  pull_request:
+  workflow_dispatch:
 
 jobs:
-  publish:
+  verify:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4.1.1
@@ -20,19 +23,14 @@ jobs:
       run: |
         curl -sSL https://install.python-poetry.org | python3 -
 
-    - name: Configure Poetry
-      run: |
-        poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
-
     - name: Install dependencies
       run: |
-        poetry install
+        poetry install --with dev
 
     - name: Run tests
       run: |
          poetry run pytest -q -vv tests/unit
 
-    - name: Build and publish
+    - name: Build package
       run: |
         poetry build
-        poetry publish
