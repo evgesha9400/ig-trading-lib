@@ -32,7 +32,7 @@ MANIFEST_VALUES = {
     "repository": "evgesha9400/ig-trading-lib",
     "repository_url": "https://github.com/evgesha9400/ig-trading-lib",
     "package": {"name": "ig-trading-lib"},
-    "status": "planned",
+    "status": "published",
     "categories": ["brokerage", "trading"],
 }
 SOURCE_MODULES = (

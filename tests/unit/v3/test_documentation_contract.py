@@ -19,6 +19,14 @@ def test_public_documentation_contract_is_complete() -> None:
     validate_documentation_contract(PROJECT_ROOT)
 
 
+def test_portal_manifest_marks_v3_documentation_as_published() -> None:
+    """The v3.0.0 portal manifest must advertise published documentation."""
+    manifest_path = PROJECT_ROOT / "docs" / "library.yml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+
+    assert manifest["status"] == "published"
+
+
 def test_contract_parameters_have_types_and_descriptions() -> None:
     """Each declared callable parameter must explain its public meaning."""
     contract_path = PROJECT_ROOT / "docs" / "contracts" / "public-api.yml"

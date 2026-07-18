@@ -187,6 +187,23 @@ def _validate_github_release_job(job: object) -> None:
 def _validate_portal_dispatch_job(job: object) -> None:
     if not isinstance(job, dict) or job.get("permissions") != {}:
         raise ReleaseWorkflowError("Portal dispatch must not receive a repository token.")
+    expected_dependencies = [
+        "validate-release",
+        "publish-versioned-documentation",
+        "create-github-release",
+    ]
+    if job.get("needs") != expected_dependencies:
+        raise ReleaseWorkflowError(
+            "Portal dispatch must wait for the GitHub Release record after documentation."
+        )
+    expected_condition = (
+        "needs.publish-versioned-documentation.result == 'success' "
+        "&& needs.create-github-release.result == 'success'"
+    )
+    if job.get("if") != expected_condition:
+        raise ReleaseWorkflowError(
+            "Portal dispatch must require successful documentation and GitHub Release record jobs."
+        )
     commands = _job_commands(job)
     environment = _job_environment(job)
     if environment.get("PORTAL_TOKEN") != "${{ secrets.LIBRARY_PORTAL_DISPATCH_TOKEN }}":

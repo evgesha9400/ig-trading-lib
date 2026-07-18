@@ -215,8 +215,8 @@ jobs:
 
   dispatch-portal-rebuild:
     name: Dispatch portal rebuild
-    needs: [validate-release, publish-versioned-documentation]
-    if: needs.publish-versioned-documentation.result == 'success'
+    needs: [validate-release, publish-versioned-documentation, create-github-release]
+    if: needs.publish-versioned-documentation.result == 'success' && needs.create-github-release.result == 'success'
     runs-on: ubuntu-latest
     permissions: {}
     steps:
