@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 
 
@@ -17,9 +17,9 @@ class Environment(StrEnum):
 class SessionCredentials:
     """Credentials for IG's legacy v1/v2 session authentication."""
 
-    api_key: str
-    identifier: str
-    password: str
+    api_key: str = field(repr=False)
+    identifier: str = field(repr=False)
+    password: str = field(repr=False)
     version: int = 2
 
 
@@ -27,9 +27,9 @@ class SessionCredentials:
 class OAuthCredentials:
     """Credentials for IG's OAuth v3 session authentication."""
 
-    api_key: str
-    identifier: str
-    password: str
+    api_key: str = field(repr=False)
+    identifier: str = field(repr=False)
+    password: str = field(repr=False)
     version: int = 3
 
 
@@ -58,6 +58,16 @@ class IGConfig:
         if self.environment is Environment.DEMO:
             return "https://demo-api.ig.com/gateway/deal"
         return "https://api.ig.com/gateway/deal"
+
+
+@dataclass(frozen=True, slots=True)
+class StreamingSession:
+    """Session values required by IG's Lightstreamer connection."""
+
+    endpoint: str
+    account_id: str
+    cst: str = field(repr=False)
+    security_token: str = field(repr=False)
 
 
 class LiveTradingPermissionError(PermissionError):

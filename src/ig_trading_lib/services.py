@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterator, Mapping
 from typing import Any
 
+from ig_trading_lib.core import TradingGuard
 from ig_trading_lib.models import IGModel, Page
 from ig_trading_lib.transport import SyncTransport
 
@@ -12,10 +13,17 @@ from ig_trading_lib.transport import SyncTransport
 class ResourceClient:
     """Versioned REST resource facade with consistent page handling."""
 
-    def __init__(self, transport: SyncTransport, path: str, version: int) -> None:
+    def __init__(
+        self,
+        transport: SyncTransport,
+        path: str,
+        version: int,
+        guard: TradingGuard | None = None,
+    ) -> None:
         self._transport = transport
         self._path = path
         self._version = version
+        self._guard = guard
 
     def get(self, suffix: str = "", *, params: Mapping[str, Any] | None = None) -> IGModel:
         """Retrieve one resource or provider response object."""
@@ -65,6 +73,8 @@ class ResourceClient:
         return self._mutation("DELETE", None, suffix)
 
     def _mutation(self, method: str, body: Mapping[str, Any] | None, suffix: str) -> IGModel:
+        if self._guard is not None:
+            self._guard.require_mutation_permission()
         response = self._transport.request(
             method, f"{self._path}{suffix}", version=self._version, json=body
         )
@@ -89,8 +99,8 @@ class ResourceClient:
 class AccountsClient(ResourceClient):
     """Account list and preference operations."""
 
-    def __init__(self, transport: SyncTransport) -> None:
-        super().__init__(transport, "/accounts", version=1)
+    def __init__(self, transport: SyncTransport, guard: TradingGuard) -> None:
+        super().__init__(transport, "/accounts", version=1, guard=guard)
 
     def list(self) -> Page[IGModel]:
         """List accounts available to the authenticated client."""

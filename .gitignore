@@ -10,5 +10,6 @@
 /scratch.py
 /tests/test_cache.json
 /test_cache.json
+/dist/
 /.idea/vcs.xml
 *__pycache__
