@@ -1,6 +1,6 @@
 import httpx
 
-from ig_trading_lib import Environment, IGClient, IGConfig, SessionCredentials
+from ig_trading_lib import Environment, IGClient, IGConfig, SessionCredentials, TradingPermit
 
 
 def test_canonical_services_use_documented_paths_and_versions() -> None:
@@ -39,3 +39,22 @@ def test_canonical_services_use_documented_paths_and_versions() -> None:
         ("GET", "/gateway/deal/client-sentiment", "1"),
         ("GET", "/gateway/deal/working-orders", "2"),
     ]
+
+
+def test_sync_position_mutations_use_the_documented_otc_versions() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/gateway/deal/session":
+            return httpx.Response(200, headers={"CST": "cst", "X-SECURITY-TOKEN": "security"})
+        return httpx.Response(200, json={"dealReference": request.method})
+
+    client = IGClient(
+        IGConfig(
+            environment=Environment.DEMO,
+            credentials=SessionCredentials("api-key", "identifier", "password"),
+        ),
+        trading_permit=TradingPermit(),
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+
+    assert client.positions.update("D1", {"limitLevel": "2"}).deal_reference == "PUT"
+    assert client.positions.close({"dealId": "D1"}).deal_reference == "DELETE"

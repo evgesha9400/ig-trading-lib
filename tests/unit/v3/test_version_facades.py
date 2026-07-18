@@ -8,6 +8,7 @@ from ig_trading_lib import (
     IGConfig,
     LiveTradingPermissionError,
     SessionCredentials,
+    TradingPermit,
 )
 
 
@@ -66,3 +67,48 @@ async def test_async_version_facades_match_the_raw_sync_surface() -> None:
     response = await client.v1.request("GET", "/session")
 
     assert response == {"accountId": "ABC123"}
+
+
+def test_sync_versioned_resource_supports_get_update_and_delete() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/gateway/deal/session":
+            return httpx.Response(200, headers={"CST": "cst", "X-SECURITY-TOKEN": "security"})
+        return httpx.Response(200, json={"wireField": request.method})
+
+    client = IGClient(
+        IGConfig(
+            environment=Environment.DEMO,
+            credentials=SessionCredentials("api-key", "identifier", "password"),
+        ),
+        trading_permit=TradingPermit(),
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+
+    assert client.v1.watchlists.get("/W1") == {"wireField": "GET"}
+    assert client.v1.watchlists.update({"epic": "EPIC"}, "/W1") == {"wireField": "PUT"}
+    assert client.v1.watchlists.delete("/W1") == {"wireField": "DELETE"}
+    assert client.v1.request("POST", "/custom", json={"key": "value"}) == {"wireField": "POST"}
+
+
+@pytest.mark.asyncio
+async def test_async_versioned_resource_supports_get_create_update_and_delete() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/gateway/deal/session":
+            return httpx.Response(200, headers={"CST": "cst", "X-SECURITY-TOKEN": "security"})
+        return httpx.Response(200, json={"wireField": request.method})
+
+    client = AsyncIGClient(
+        IGConfig(
+            environment=Environment.DEMO,
+            credentials=SessionCredentials("api-key", "identifier", "password"),
+        ),
+        trading_permit=TradingPermit(),
+        http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
+    )
+
+    assert await client.v1.watchlists.get("/W1") == {"wireField": "GET"}
+    assert await client.v1.watchlists.create({"name": "agent"}) == {"wireField": "POST"}
+    assert await client.v1.watchlists.update({"epic": "EPIC"}, "/W1") == {"wireField": "PUT"}
+    assert await client.v1.watchlists.delete("/W1") == {"wireField": "DELETE"}
+
+    await client.close()

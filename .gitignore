@@ -1,5 +1,7 @@
 /.pytest_cache/
+/.coverage
 *.env*
+.DS_Store
 /.idea/.gitignore
 /.idea/aws.xml
 /.idea/ig_trading_lib.iml

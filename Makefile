@@ -1,44 +1,28 @@
-# -------- Config --------
-PYTEST := poetry run pytest -q -v
-UNIT_DIR := tests/unit
-INTEG_DIR := tests/integration
+PYTEST := poetry run pytest
+UNIT_DIR := tests/unit/v3
 
-.PHONY: help install venv clean \
-        test test-unit test-integration test-all \
-        test-failed
-
-help:
-	@echo "Targets:"
-	@echo "  install          - poetry install (deps + package)"
-	@echo "  venv             - show Poetry venv path"
-	@echo "  clean            - remove .pytest_cache and __pycache__"
-	@echo "  test             - run UNIT tests (default)"
-	@echo "  test-unit        - run UNIT tests"
-	@echo "  test-integration - run INTEGRATION tests"
-	@echo "  test-all         - run ALL tests (unit + integration)"
-	@echo "  test-file        - run a specific test file/class/case (TEST=...)"
-	@echo "  test-failed      - rerun only tests that failed last run"
+.PHONY: install test lint format type audit build verify
 
 install:
-	poetry install
+	poetry sync --with dev
 
-clean:
-	@find tests -name '__pycache__' -type d -exec rm -rf {} + || true
-	@rm -rf .pytest_cache
-
-# ----- Test Targets -----
-
-# Default: fast feedback — unit only
-test: test-unit
-
-test-unit:
+test:
 	$(PYTEST) $(UNIT_DIR)
 
-test-integration:
-	$(PYTEST) $(INTEG_DIR)
+lint:
+	poetry run ruff check src tests
 
-test-all:
-	$(PYTEST) $(UNIT_DIR) $(INTEG_DIR)
+format:
+	poetry run ruff format --check src tests
 
-test-failed:
-	$(PYTEST) --last-failed
+type:
+	poetry run pyright
+
+audit:
+	poetry export --only main --without-hashes --output /tmp/ig-trading-lib-requirements.txt
+	poetry run pip-audit --strict --requirement /tmp/ig-trading-lib-requirements.txt
+
+build:
+	poetry build
+
+verify: format lint type test audit build

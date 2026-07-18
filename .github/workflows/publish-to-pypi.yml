@@ -2,35 +2,49 @@ name: Verify Python package
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
   pull_request:
   workflow_dispatch:
 
 jobs:
   verify:
+    name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
-    - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
 
-    - name: Set up Python
-      uses: actions/setup-python@v5.0.0
-      with:
-        python-version: '3.13'
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install Poetry
-      run: |
-        curl -sSL https://install.python-poetry.org | python3 -
+      - name: Install Poetry
+        run: pipx install poetry
 
-    - name: Install dependencies
-      run: |
-        poetry install --with dev
+      - name: Validate lock and install dependencies
+        run: |
+          poetry check --lock
+          poetry sync --with dev
 
-    - name: Run tests
-      run: |
-         poetry run pytest -q -vv tests/unit
+      - name: Format and lint
+        run: |
+          poetry run ruff format --check src tests
+          poetry run ruff check src tests
 
-    - name: Build package
-      run: |
-        poetry build
+      - name: Type check
+        run: poetry run pyright
+
+      - name: Test with coverage
+        run: poetry run pytest tests/unit/v3
+
+      - name: Build package
+        run: poetry build
+
+      - name: Audit dependencies
+        run: |
+          poetry export --only main --without-hashes --output /tmp/requirements.txt
+          poetry run pip-audit --strict --requirement /tmp/requirements.txt

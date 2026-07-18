@@ -1,245 +1,158 @@
-# IG Trading Library
+# IG Trading Library v3
 
-A comprehensive Python library for interfacing with the IG Trading platform. This library provides a straightforward and Pythonic way to interact with the IG Trading API, enabling automation of trading tasks, account management, position management, and order handling.
+Typed, safety-first synchronous and asynchronous clients for the documented IG REST and streaming APIs.
 
-## Prerequisites
-
-- Python 3.13+
-- make (for running tests)
-
-## Installation
+## Install
 
 ```bash
 pip install ig-trading-lib
 ```
 
-## Quick Start
+Python 3.11–3.13 is supported.
+
+## Start safely
+
+Use a demo account while building an agent. Credentials are explicit, immutable objects and are redacted from representations and error diagnostics.
 
 ```python
-from ig_trading_lib.authentication import AuthenticationService
-from ig_trading_lib.authentication.cache import InMemoryCache
-from ig_trading_lib.trading import CreatePosition, PositionService, IGClient
+from ig_trading_lib import Environment, IGClient, IGConfig, SessionCredentials
 
-# Initialize authentication
-auth_service = AuthenticationService(
-    api_key="your_api_key",
-    account_identifier="your_account_identifier", 
-    account_password="your_account_password",
-    base_url="https://demo-api.ig.com",
-    cache=InMemoryCache()
+config = IGConfig(
+    environment=Environment.DEMO,
+    credentials=SessionCredentials(
+        api_key="…",
+        identifier="…",
+        password="…",
+    ),
 )
 
-# Authenticate
-auth_response = auth_service.authenticate()
-
-# Create client and position service
-client = IGClient(base_url="https://demo-api.ig.com", api_key="your_api_key", tokens=auth_response.tokens)
-position_service = PositionService(client)
-
-# Create a position
-position = CreatePosition(
-    currencyCode="USD",
-    direction="BUY",
-    epic="CS.D.GBPUSD.TODAY.IP",
-    orderType="MARKET",
-    size=1
-)
-
-deal_reference = position_service.create_position(position)
+with IGClient(config) as client:
+    markets = client.markets.search("EURUSD")
+    for market in markets.items:
+        print(market.epic, market.market_status)
 ```
 
-## Features
+The synchronous and asynchronous clients expose matching service namespaces:
 
-### Authentication Module
-- **AuthenticationService**: Handles authentication with the IG REST API
-- **Token Management**: Automatic token caching and refresh
-- **Multiple Cache Options**: In-memory and encrypted file-based caching
-- **Account Information**: Retrieves account details and financial information
+| Sync | Async |
+| --- | --- |
+| `IGClient(config)` | `AsyncIGClient(config)` |
+| `client.markets.search("EURUSD")` | `await client.markets.search("EURUSD")` |
+| `client.positions.list()` | `await client.positions.list()` |
+| `client.v2.positions.create(...)` | `await client.v2.positions.create(...)` |
 
-### Trading Module
+```python
+from ig_trading_lib import AsyncIGClient
 
-#### Positions Service
-- **Create Positions**: Open new trading positions with various order types (MARKET, LIMIT, QUOTE)
-- **Get Positions**: Retrieve all open positions or specific positions by deal ID
-- **Update Positions**: Modify existing positions (stop levels, limit levels, trailing stops)
-- **Close Positions**: Close existing positions with flexible order options
-- **Risk Management**: Support for guaranteed stops, trailing stops, and stop/limit orders
+async with AsyncIGClient(config) as client:
+    accounts = await client.accounts.list()
+    print(accounts.items)
+```
 
-#### Orders Service  
-- **Working Orders**: Create, retrieve, and delete working orders
-- **Order Types**: Support for LIMIT and STOP orders
-- **Time in Force**: GOOD_TILL_CANCELLED and GOOD_TILL_DATE options
-- **Order Management**: Full CRUD operations for working orders
+## Live-trading boundary
 
-### Data Models
-- **Type Safety**: Full Pydantic model validation
-- **Rich Validation**: Comprehensive field validation and constraints
-- **Serialization**: Automatic JSON serialization/deserialization
-- **Error Handling**: Detailed error messages and validation feedback
+Live mutations require an explicit permit in addition to `Environment.LIVE`. A missing permit fails before authentication or network I/O.
 
-## Modules
+```python
+from ig_trading_lib import Environment, IGClient, IGConfig, TradingPermit
 
-### Authentication (`ig_trading_lib.authentication`)
-- `AuthenticationService`: Main authentication service
-- `AuthenticationCacheABC`: Abstract cache interface
-- `DurableCache`: File-based caching with optional encryption
-- `InMemoryCache`: In-memory token caching
+live_config = IGConfig(environment=Environment.LIVE, credentials=config.credentials)
+client = IGClient(live_config, trading_permit=TradingPermit())
 
-### Trading (`ig_trading_lib.trading`)
-- `PositionService`: Position management operations
-- `OrderService`: Working order management operations
+# Every create, amend, delete, and close operation is guarded.
+client.positions.create({"epic": "CS.D.EURUSD.TODAY.IP", "direction": "BUY", "size": "1"})
+```
 
-### Models (via `ig_trading_lib.trading` facade)
-- `CreatePosition`: Position creation model
-- `ClosePosition`: Position closing model  
-- `UpdatePosition`: Position update model
-- `OpenPosition`: Open position data model
-- `Market`: Market information model
+Do not retry a failed mutation yourself. The client raises `AmbiguousExecutionError` when a network failure means IG may have accepted it; resolve that outcome with the deal reference or a confirmation before issuing another order.
 
-### Orders Models (via `ig_trading_lib.trading` facade)
-- `CreateWorkingOrder`: Working order creation model
-- `WorkingOrder`: Working order data model
-- `MarketData`: Market data for orders
+## REST services and versions
 
-## Running Tests
+Canonical services normalise provider keys to `snake_case` and paginate with `Page` plus lazy `iter_pages` / async `iter_pages` methods.
 
-The project includes comprehensive unit and integration tests:
+```python
+with IGClient(config) as client:
+    for activity in client.activity.iter_pages(item_key="activities"):
+        print(activity)
+
+    position = client.positions.get("DEAL_ID")
+    confirmation = client.confirms.get("/DEAL_REFERENCE")
+```
+
+The version facades preserve raw provider payloads and provide every documented v1–v4 endpoint surface. Use them only when a provider-specific schema or historical endpoint version is required.
+
+```python
+with IGClient(config) as client:
+    raw_market = client.v4.markets.get("/CS.D.EURUSD.TODAY.IP")
+    raw_prices = client.v2.prices.get("/CS.D.EURUSD.TODAY.IP/MINUTE/10")
+```
+
+The endpoint/version catalog is maintained in `ig_trading_lib.endpoint_catalog` and contract-tested against IG’s REST reference.
+
+## Streaming
+
+Streaming is lazy: no Lightstreamer session is opened until iteration begins. IG requires CST/XST security tokens even for OAuth users; the client obtains them when needed, preserves subscriptions during SDK recovery, and exposes terminal stream errors instead of silently dropping data.
+
+```python
+from ig_trading_lib import StreamSubscription
+
+subscription = StreamSubscription(
+    key="eurusd",
+    mode="MERGE",
+    items=("MARKET:CS.D.EURUSD.TODAY.IP",),
+    fields=("BID", "OFFER", "UPDATE_TIME"),
+)
+
+with IGClient(config) as client:
+    updates = client.streaming.iter_updates(subscription)
+    try:
+        for update in updates:
+            print(update.item_name, update.changed_fields)
+    finally:
+        updates.close()
+```
+
+```python
+async with AsyncIGClient(config) as client:
+    async for update in client.streaming.aiter_updates(subscription):
+        print(update.changed_fields)
+```
+
+## Errors and observability
+
+All public failures derive from `IGError`. Errors carry a safe provider request ID, a client operation ID, retry timing when supplied by IG, and redacted details.
+
+```python
+from ig_trading_lib import AmbiguousExecutionError, RateLimitError, TransportError
+
+try:
+    client.markets.search("EURUSD")
+except RateLimitError as error:
+    print(error.retry_after_seconds)
+except TransportError as error:
+    print(error.operation_id)
+except AmbiguousExecutionError as error:
+    print("Resolve the deal outcome before retrying", error.operation_id)
+```
+
+Successful requests emit structured standard-library log records named `ig.http.response`. They include method, path, status, retry count, provider request ID, and client operation ID; passwords and tokens are never logged.
+
+## Tests and development
 
 ```bash
-# Run all tests
-make test
-
-# Run unit tests only
-pytest tests/unit
-
-# Run integration tests (requires API credentials)
-pytest tests/integration
+poetry sync --with dev
+poetry run pytest tests/unit/v3
+poetry run ruff format --check src tests
+poetry run ruff check src tests
+poetry run pyright
+poetry export --only main --without-hashes --output /tmp/ig-trading-lib-requirements.txt
+poetry run pip-audit --strict --requirement /tmp/ig-trading-lib-requirements.txt
+poetry build
 ```
 
-## API Reference
+The default test suite is deterministic and has no IG network dependency. Demo integration runs are deliberately separate and must be invoked only with explicit credentials and opt-in approval. Never store credentials in the repository.
 
-### Authentication Service
-
-```python
-from ig_trading_lib.authentication import AuthenticationService
-from ig_trading_lib.authentication.cache import DurableCache, InMemoryCache
-
-# Basic usage
-auth_service = AuthenticationService(
-    api_key="your_api_key",
-    account_identifier="your_account_identifier",
-    account_password="your_account_password", 
-    base_url="https://demo-api.ig.com"  # or https://api.ig.com for live
-)
-
-# With caching
-auth_service = AuthenticationService(
-    api_key="your_api_key",
-    account_identifier="your_account_identifier",
-    account_password="your_account_password",
-    base_url="https://demo-api.ig.com",
-    cache=DurableCache("tokens.json", encryption_key=b"your_key")  # Optional
-)
-
-auth_response = auth_service.authenticate()
-```
-
-### Position Service
-
-```python
-from ig_trading_lib.trading import PositionService, CreatePosition, IGClient
-
-client = IGClient(base_url="https://demo-api.ig.com", api_key="your_api_key", tokens=auth_response.tokens)
-position_service = PositionService(client)
-
-# Create a market position
-position = CreatePosition(
-    currencyCode="USD",
-    direction="BUY", 
-    epic="CS.D.GBPUSD.TODAY.IP",
-    orderType="MARKET",
-    size=1
-)
-deal_ref = position_service.create_position(position)
-
-# Get all open positions
-positions = position_service.get_open_positions()
-
-# Get specific position
-position = position_service.get_open_position_by_deal_id("deal_id")
-
-# Close position
-from ig_trading_lib.trading.positions import ClosePosition
-close_pos = ClosePosition.from_create(position)
-position_service.close_position(close_pos)
-```
-
-### Order Service
-
-```python
-from ig_trading_lib.trading import OrderService, CreateWorkingOrder, IGClient
-
-client = IGClient(base_url="https://demo-api.ig.com", api_key="your_api_key", tokens=auth_response.tokens)
-order_service = OrderService(client)
-
-# Create a working order
-order = CreateWorkingOrder(
-    currencyCode="USD",
-    direction="BUY",
-    epic="CS.D.GBPUSD.TODAY.IP", 
-    level=1.2500,
-    size=1,
-    type="LIMIT"
-)
-deal_ref = order_service.create_order(order)
-
-# Get all working orders
-orders = order_service.get_orders()
-
-# Delete working order
-order_service.delete_order("deal_id")
-```
-
-## Environment Variables
-
-For testing and development, you can set these environment variables:
-
-```bash
-export IG_API_KEY="your_api_key"
-export IG_ACCOUNT_IDENTIFIER="your_account_identifier" 
-export IG_ACCOUNT_PASSWORD="your_account_password"
-export IG_BASE_URL="https://demo-api.ig.com"  # or https://api.ig.com for live
-```
-
-## Contributing
-
-Contributions are welcome! Please feel free to fork the repository and create a pull request.
-
-### Development Setup
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd ig-trading-lib
-
-# Install dependencies
-poetry install
-
-# Run tests
-make test
-
-# Run linting
-make lint
-```
-
-## License
-
-This project is licensed under the MIT License.
-
-## Contact
-
-If you have any questions, feel free to reach out to me on GitHub.
+See [the v2-to-v3 migration guide](docs/migration-v2-to-v3.md) for the clean-break migration.
 
 ## Disclaimer
 
-This library is not affiliated with, authorized, endorsed, or in any way officially connected with IG Markets Ltd. Use at your own risk.
+This project is not affiliated with IG. Trading involves material risk. Review IG’s [REST reference](https://labs.ig.com/rest-trading-api-reference.html), [REST guide](https://labs.ig.com/rest-trading-api-guide.html), and [streaming guide](https://labs.ig.com/streaming-api-guide.html) before connecting an agent to an account.

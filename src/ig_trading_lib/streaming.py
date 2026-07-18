@@ -331,7 +331,7 @@ class AsyncStreamingClient:
         delegate = StreamingClient(
             session_provider=lambda: initial_session,
             refresh_session_provider=lambda: asyncio.run_coroutine_threadsafe(
-                self._refresh_session_provider(), loop
+                self._get_refreshed_session(), loop
             ).result(),
             client_factory=self._client_factory,
             subscription_factory=self._subscription_factory,
@@ -348,3 +348,6 @@ class AsyncStreamingClient:
         """Close all Lightstreamer delegates created by this async facade."""
         for delegate in tuple(self._delegates):
             delegate.close()
+
+    async def _get_refreshed_session(self) -> StreamingSession:
+        return await self._refresh_session_provider()

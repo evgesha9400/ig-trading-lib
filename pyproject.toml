@@ -7,8 +7,9 @@ license = "MIT"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 dependencies = [
-    "cryptography>=46.0.1,<47.0.0",
+    "cryptography>=48.0.1,<49.0.0",
     "httpx>=0.28.1,<1.0.0",
+    "idna>=3.15,<4.0.0",
     "lightstreamer-client-lib>=2.2.2,<3.0.0",
     "pydantic>=2.11.9,<3.0.0",
 ]
@@ -26,7 +27,7 @@ hypothesis = "^6.131.9"
 ruff = "^0.11.13"
 pyright = "^1.1.402"
 python-dotenv = "^1.1.1"
-requests = "^2.32.5"
+pip-audit = "^2.9.0"
 
 [tool.ruff]
 target-version = "py311"
@@ -38,21 +39,15 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.pyright]
 pythonVersion = "3.11"
 typeCheckingMode = "basic"
-include = [
-    "src/ig_trading_lib/__init__.py",
-    "src/ig_trading_lib/client.py",
-    "src/ig_trading_lib/core.py",
-    "src/ig_trading_lib/errors.py",
-    "src/ig_trading_lib/models.py",
-    "src/ig_trading_lib/services.py",
-    "src/ig_trading_lib/transport.py",
-]
+include = ["src"]
 
 [tool.pytest.ini_options]
+addopts = "--cov=ig_trading_lib --cov-fail-under=90"
 log_cli = true
 log_cli_level = "INFO"
 log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+testpaths = ["tests/unit/v3"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
