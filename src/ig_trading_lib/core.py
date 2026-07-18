@@ -50,6 +50,7 @@ class IGConfig:
     environment: Environment
     credentials: Credentials
     timeout_seconds: float = 10.0
+    max_retries: int = 2
     account_id: str | None = None
 
     @property
@@ -74,6 +75,4 @@ class TradingGuard:
         if self._config.environment is Environment.LIVE and not (
             self._permit and self._permit.acknowledged
         ):
-            raise LiveTradingPermissionError(
-                "Live trading requires an explicit TradingPermit."
-            )
+            raise LiveTradingPermissionError("Live trading requires an explicit TradingPermit.")

@@ -1,6 +1,12 @@
 import pytest
 
-from ig_trading_lib import Environment, IGClient, IGConfig, LiveTradingPermissionError, SessionCredentials
+from ig_trading_lib import (
+    Environment,
+    IGClient,
+    IGConfig,
+    LiveTradingPermissionError,
+    SessionCredentials,
+)
 
 
 def test_live_position_creation_requires_explicit_trading_permit() -> None:
