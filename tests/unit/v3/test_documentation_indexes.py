@@ -346,6 +346,15 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 == "rgb(0, 0, 0)"
             )
 
+            code_block = desktop.locator(".md-typeset .highlight").first
+            code_pre = code_block.locator("pre")
+
+            assert (
+                code_block.evaluate("element => getComputedStyle(element).borderTopWidth") == "1px"
+            )
+            assert code_pre.evaluate("element => getComputedStyle(element).borderTopWidth") == "0px"
+            assert code_pre.evaluate("element => getComputedStyle(element).marginTop") == "0px"
+
             mobile = browser.new_page(viewport={"width": 390, "height": 844})
             mobile.goto(base_url, wait_until="networkidle")
             assert mobile.evaluate("document.documentElement.scrollWidth <= window.innerWidth")

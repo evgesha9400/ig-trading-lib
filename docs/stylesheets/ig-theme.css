@@ -168,20 +168,33 @@ pre {
 }
 
 .md-typeset .highlight,
-.md-typeset pre,
+.md-typeset > pre,
 .md-typeset .admonition,
 .md-typeset details {
   border-radius: 0.85rem;
 }
 
 .md-typeset .highlight,
-.md-typeset pre {
+.md-typeset > pre {
   border: 1px solid var(--ig-login-grey-20);
 }
 
 [data-md-color-scheme="ig-login-dark"] .md-typeset .highlight,
-[data-md-color-scheme="ig-login-dark"] .md-typeset pre {
+[data-md-color-scheme="ig-login-dark"] .md-typeset > pre {
   border-color: var(--ig-login-grey-80);
+}
+
+.md-typeset .highlight {
+  background-color: var(--md-code-bg-color);
+  overflow: hidden;
+}
+
+.md-typeset .highlight > pre,
+.md-typeset .highlight > pre > code {
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
 }
 
 .md-typeset .admonition,
