@@ -3958,12 +3958,12 @@
     "directory": "docs/rest-api-reference",
     "sections": [
       {
-        "slug": "account",
-        "title": "Account"
+        "slug": "login",
+        "title": "Login"
       },
       {
-        "slug": "dealing",
-        "title": "Dealing"
+        "slug": "account",
+        "title": "Account"
       },
       {
         "slug": "markets",
@@ -3978,12 +3978,12 @@
         "title": "Client sentiment"
       },
       {
-        "slug": "login",
-        "title": "Login"
-      },
-      {
         "slug": "indicative-costs-and-charges",
         "title": "Indicative costs and charges"
+      },
+      {
+        "slug": "dealing",
+        "title": "Dealing"
       },
       {
         "slug": "general",

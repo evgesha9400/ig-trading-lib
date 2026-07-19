@@ -65,13 +65,13 @@ def test_endpoint_catalog_covers_every_current_ig_rest_reference_operation() -> 
     assert actual == expected
     assert all(isinstance(item, EndpointSpec) for item in DOCUMENTED_ENDPOINTS)
     assert [section.slug for section in REST_REFERENCE_SECTIONS] == [
+        "login",
         "account",
-        "dealing",
         "markets",
         "watchlists",
         "client-sentiment",
-        "login",
         "indicative-costs-and-charges",
+        "dealing",
         "general",
     ]
     assert {item.category for item in DOCUMENTED_ENDPOINTS} == {

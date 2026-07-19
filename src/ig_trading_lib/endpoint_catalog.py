@@ -1,4 +1,4 @@
-"""The documented IG REST reference, grouped in IG's published order."""
+"""The documented IG REST reference, grouped in trader workflow order."""
 
 from __future__ import annotations
 
@@ -27,13 +27,13 @@ class RestReferenceSection:
 
 
 REST_REFERENCE_SECTIONS: tuple[RestReferenceSection, ...] = (
+    RestReferenceSection("login", "Login"),
     RestReferenceSection("account", "Account"),
-    RestReferenceSection("dealing", "Dealing"),
     RestReferenceSection("markets", "Markets"),
     RestReferenceSection("watchlists", "Watchlists"),
     RestReferenceSection("client-sentiment", "Client sentiment"),
-    RestReferenceSection("login", "Login"),
     RestReferenceSection("indicative-costs-and-charges", "Indicative costs and charges"),
+    RestReferenceSection("dealing", "Dealing"),
     RestReferenceSection("general", "General"),
 )
 

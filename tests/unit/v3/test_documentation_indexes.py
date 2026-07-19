@@ -248,7 +248,7 @@ def test_documentation_exposes_only_the_current_library_surface() -> None:
 def test_mkdocs_navigation_and_search_mirror_ig_api_information_architecture(
     tmp_path: Path,
 ) -> None:
-    """The local navigation follows the official IG API guide and reference order."""
+    """The local navigation follows the API guide and a trader workflow reference order."""
     configuration = yaml.safe_load((PROJECT_ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
     navigation = configuration["nav"]
 
@@ -261,13 +261,13 @@ def test_mkdocs_navigation_and_search_mirror_ig_api_information_architecture(
         "Library reference",
     ]
     assert [next(iter(item)) for item in navigation[2]["REST API reference"]] == [
+        "Login",
         "Account",
-        "Dealing",
         "Markets",
         "Watchlists",
         "Client sentiment",
-        "Login",
         "Indicative costs and charges",
+        "Dealing",
         "General",
     ]
 
@@ -323,9 +323,9 @@ def test_mkdocs_navigation_and_search_mirror_ig_api_information_architecture(
         try:
             page = browser.new_page()
             page.goto(base_url, wait_until="networkidle")
-            page.get_by_role("link", name="Account").first.click()
-            expect(page).to_have_url(f"{base_url}/rest-api-reference/account/")
-            expect(page).to_have_title("Account - IG Trading Library")
+            page.get_by_role("link", name="Login").first.click()
+            expect(page).to_have_url(f"{base_url}/rest-api-reference/login/")
+            expect(page).to_have_title("Login - IG Trading Library")
 
             page.goto(base_url, wait_until="networkidle")
             page.locator("input[data-md-component='search-query']").fill("TradingPermit")
@@ -396,22 +396,27 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 primary_action.evaluate("element => getComputedStyle(element).color")
                 == "rgb(0, 0, 0)"
             )
-            wordmark = desktop.locator(".md-header__button.md-logo")
-            product_name = desktop.locator(".md-header__topic .md-ellipsis").first
+            wordmark = desktop.get_by_role("link", name="IG Trading Library")
+            brand_mark = wordmark.locator(".ig-docs-brand-mark")
+            product_name = wordmark.locator(".ig-docs-brand-name")
 
-            assert wordmark.get_attribute("aria-label") == "IG Trading Library"
+            expect(wordmark).to_have_class(re.compile(r"\bmd-header__brand\b"))
+            expect(product_name).to_have_text("Trading Library")
             assert (
-                wordmark.evaluate("element => getComputedStyle(element, '::after').content")
-                == '"IG"'
-            )
-            assert (
-                wordmark.evaluate("element => getComputedStyle(element, '::after').color")
+                brand_mark.evaluate("element => getComputedStyle(element).color")
                 == "rgb(230, 30, 30)"
             )
             assert (
-                product_name.evaluate("element => getComputedStyle(element, '::after').content")
-                == '"Trading Library"'
+                product_name.evaluate("element => getComputedStyle(element).color")
+                == "rgb(255, 255, 255)"
             )
+            wordmark.hover()
+            assert (
+                brand_mark.evaluate("element => getComputedStyle(element).color")
+                == "rgb(255, 108, 108)"
+            )
+            wordmark.click()
+            expect(desktop).to_have_url(f"{base_url}/")
 
             light_code = browser.new_page()
             light_code.goto(
