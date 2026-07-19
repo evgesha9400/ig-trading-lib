@@ -60,6 +60,20 @@ def _validate_triggers(workflow: dict[str, Any]) -> None:
         raise ReleaseWorkflowError("Release documentation must be triggered only by v* tags.")
     if "pull_request" not in triggers or "workflow_dispatch" not in triggers:
         raise ReleaseWorkflowError("Documentation validation must also cover PRs and manual runs.")
+    _validate_manual_recovery_input(triggers["workflow_dispatch"])
+
+
+def _validate_manual_recovery_input(manual_dispatch: object) -> None:
+    if not isinstance(manual_dispatch, dict):
+        raise ReleaseWorkflowError("Manual documentation runs must declare the recovery-tag input.")
+    inputs = manual_dispatch.get("inputs")
+    if not isinstance(inputs, dict) or set(inputs) != {"release_tag"}:
+        raise ReleaseWorkflowError("Manual runs must expose only the release_tag recovery input.")
+    release_tag = inputs["release_tag"]
+    if not isinstance(release_tag, dict):
+        raise ReleaseWorkflowError("The recovery tag input must be a mapping.")
+    if release_tag.get("required") != "false" or release_tag.get("type") != "string":
+        raise ReleaseWorkflowError("The recovery tag input must be an optional string.")
 
 
 def _validate_top_level_permissions(workflow: dict[str, Any]) -> None:
@@ -105,6 +119,10 @@ def _validate_workflow_environment(workflow: dict[str, Any]) -> None:
 def _validate_documentation_job(job: object) -> None:
     if not isinstance(job, dict) or job.get("permissions") != {"contents": "read"}:
         raise ReleaseWorkflowError("Documentation validation must remain read-only.")
+    if _checkout_refs(job) != [_release_checkout_ref()] or _checkout_fetch_depths(job) != ["0"]:
+        raise ReleaseWorkflowError(
+            "Documentation validation must check out the exact release source."
+        )
     commands = _job_commands(job)
     _require(commands, "make docs-check", "Documentation validation must build the site strictly.")
     _require(
@@ -115,13 +133,45 @@ def _validate_documentation_job(job: object) -> None:
 def _validate_tag_job(job: object) -> None:
     if not isinstance(job, dict):
         raise ReleaseWorkflowError("Tag validation must be a job mapping.")
-    if job.get("if") != "github.ref_type == 'tag'":
-        raise ReleaseWorkflowError("Only tags may enter the release pipeline.")
+    expected_condition = (
+        "github.ref_type == 'tag' || "
+        "(github.event_name == 'workflow_dispatch' && inputs.release_tag != '')"
+    )
+    if job.get("if") != expected_condition:
+        raise ReleaseWorkflowError(
+            "Only tags or explicit manual recovery tags may enter the release pipeline."
+        )
     outputs = job.get("outputs")
     if not isinstance(outputs, dict) or set(outputs) != {"tag", "version", "commit", "is_stable"}:
         raise ReleaseWorkflowError("Tag validation must expose only the release identity fields.")
     commands = _job_commands(job)
     _require(commands, "semver_pattern=", "Release tags must use an explicit SemVer pattern.")
+    _require(commands, 'git rev-parse "$tag_ref^{}"', "Release commits must resolve from tags.")
+    _require(
+        commands,
+        'echo "commit=$commit"',
+        "Release recovery must pass the tag commit to downstream jobs.",
+    )
+    _require(
+        commands, 'git cat-file -t "$tag_ref"', "Release recovery must require annotated tags."
+    )
+    _require(
+        commands,
+        'git cat-file -p "$tag_ref"',
+        "Release recovery tags must directly target commits.",
+    )
+    _require(
+        commands,
+        'git cat-file -t "$TAG^{}"',
+        "Release recovery tags must resolve to commits.",
+    )
+    _require(
+        commands,
+        "Release checkout does not match tag",
+        "Release recovery must check out the exact immutable tag.",
+    )
+    if "github.sha" in commands:
+        raise ReleaseWorkflowError("Release recovery must derive commits from the immutable tag.")
     _require(commands, "pyproject.toml", "Release tags must match the package version.")
     _require(
         commands,
@@ -129,12 +179,32 @@ def _validate_tag_job(job: object) -> None:
         "Release tags must reject package-version mismatches.",
     )
     _require(commands, "is_stable=false", "Pre-release tags must be identified explicitly.")
+    if _checkout_refs(job) != [_release_checkout_ref()] or _checkout_fetch_depths(job) != ["0"]:
+        raise ReleaseWorkflowError(
+            "Release validation must check out the exact tag or recovery tag."
+        )
 
 
 def _validate_publish_job(job: object) -> None:
     if not isinstance(job, dict) or job.get("permissions") != {"contents": "write"}:
         raise ReleaseWorkflowError("Versioned docs require only contents: write permission.")
     commands = _job_commands(job)
+    if _checkout_refs(job) != [
+        "${{ needs.validate-release.outputs.tag }}"
+    ] or _checkout_fetch_depths(job) != ["0"]:
+        raise ReleaseWorkflowError(
+            "Versioned documentation must check out the validated release tag."
+        )
+    _require(
+        commands,
+        'git config user.name "github-actions[bot]"',
+        "Versioned documentation commits require an explicit bot identity.",
+    )
+    _require(
+        commands,
+        'git config user.email "41898282+github-actions[bot]@users.noreply.github.com"',
+        "Versioned documentation commits require an explicit bot email.",
+    )
     _require(
         commands, "mike list --json", "Versioned documentation must check deployed versions first."
     )
@@ -252,6 +322,41 @@ def _job_environment(job: dict[str, Any]) -> dict[str, str]:
         if isinstance(environment, dict) and "PORTAL_TOKEN" in environment:
             return {str(key): str(value) for key, value in environment.items()}
     return {}
+
+
+def _checkout_refs(job: dict[str, Any]) -> list[str]:
+    steps = job.get("steps")
+    if not isinstance(steps, list):
+        return []
+    refs: list[str] = []
+    for step in steps:
+        if not isinstance(step, dict) or step.get("uses") != "actions/checkout@v5":
+            continue
+        with_values = step.get("with")
+        if isinstance(with_values, dict) and "ref" in with_values:
+            refs.append(str(with_values["ref"]))
+    return refs
+
+
+def _checkout_fetch_depths(job: dict[str, Any]) -> list[str]:
+    steps = job.get("steps")
+    if not isinstance(steps, list):
+        return []
+    depths: list[str] = []
+    for step in steps:
+        if not isinstance(step, dict) or step.get("uses") != "actions/checkout@v5":
+            continue
+        with_values = step.get("with")
+        if isinstance(with_values, dict) and "fetch-depth" in with_values:
+            depths.append(str(with_values["fetch-depth"]))
+    return depths
+
+
+def _release_checkout_ref() -> str:
+    return (
+        "${{ github.event_name == 'workflow_dispatch' "
+        "&& format('refs/tags/{0}', inputs.release_tag) || github.ref }}"
+    )
 
 
 def _require(commands: str, expected: str, message: str) -> None:

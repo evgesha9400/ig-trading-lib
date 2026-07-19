@@ -9,6 +9,11 @@ on:
       - "v*"
   pull_request:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing immutable v* tag to recover after a failed documentation release"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -31,6 +36,9 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.release_tag) || github.ref }}
 
       - uses: actions/setup-python@v6
         with:
@@ -52,7 +60,9 @@ jobs:
   validate-release:
     name: Validate release tag
     needs: validate-documentation
-    if: github.ref_type == 'tag'
+    if: >-
+      github.ref_type == 'tag' ||
+      (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -63,19 +73,46 @@ jobs:
       is_stable: ${{ steps.release.outputs.is_stable }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.release_tag) || github.ref }}
 
       - id: release
         name: Derive a safe SemVer release identity
         shell: bash
         env:
-          TAG: ${{ github.ref_name }}
-          COMMIT: ${{ github.sha }}
+          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
         run: |
           set -euo pipefail
           semver_pattern='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?(\+([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?$'
 
           if [[ ! "$TAG" =~ $semver_pattern ]]; then
             echo "::error::Release tags must use SemVer and begin with v (for example v3.0.0)."
+            exit 1
+          fi
+
+          tag_ref="refs/tags/$TAG"
+          if ! git show-ref --verify --quiet "$tag_ref"; then
+            echo "::error::Release tag $TAG is unavailable."
+            exit 1
+          fi
+          if [[ "$(git cat-file -t "$tag_ref")" != "tag" ]]; then
+            echo "::error::Release tag $TAG must be annotated."
+            exit 1
+          fi
+          direct_target_type="$(git cat-file -p "$tag_ref" | awk '$1 == "type" { print $2; exit }')"
+          if [[ "$direct_target_type" != "commit" ]]; then
+            echo "::error::Release tag $TAG must directly target a commit."
+            exit 1
+          fi
+          if [[ "$(git cat-file -t "$TAG^{}")" != "commit" ]]; then
+            echo "::error::Release tag $TAG must resolve to a commit."
+            exit 1
+          fi
+
+          commit="$(git rev-parse "$tag_ref^{}")"
+          if [[ "$(git rev-parse HEAD)" != "$commit" ]]; then
+            echo "::error::Release checkout does not match tag $TAG."
             exit 1
           fi
 
@@ -99,7 +136,7 @@ jobs:
           {
             echo "tag=$TAG"
             echo "version=$version"
-            echo "commit=$COMMIT"
+            echo "commit=$commit"
             echo "is_stable=$is_stable"
           } >> "$GITHUB_OUTPUT"
 
@@ -114,6 +151,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: ${{ needs.validate-release.outputs.tag }}
 
       - uses: actions/setup-python@v6
         with:
@@ -124,6 +162,12 @@ jobs:
 
       - name: Install documentation dependencies
         run: poetry sync --with dev
+
+      - name: Configure generated documentation commit identity
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Fetch gh-pages when it already exists
         shell: bash
