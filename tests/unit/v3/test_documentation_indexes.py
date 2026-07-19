@@ -396,6 +396,22 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 primary_action.evaluate("element => getComputedStyle(element).color")
                 == "rgb(0, 0, 0)"
             )
+            wordmark = desktop.locator(".md-header__button.md-logo")
+            product_name = desktop.locator(".md-header__topic .md-ellipsis").first
+
+            assert wordmark.get_attribute("aria-label") == "IG Trading Library"
+            assert (
+                wordmark.evaluate("element => getComputedStyle(element, '::after').content")
+                == '"IG"'
+            )
+            assert (
+                wordmark.evaluate("element => getComputedStyle(element, '::after').color")
+                == "rgb(230, 30, 30)"
+            )
+            assert (
+                product_name.evaluate("element => getComputedStyle(element, '::after').content")
+                == '"Trading Library"'
+            )
 
             light_code = browser.new_page()
             light_code.goto(

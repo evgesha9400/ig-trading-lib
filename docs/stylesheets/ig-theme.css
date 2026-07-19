@@ -91,21 +91,37 @@ pre {
 }
 
 .md-header__button.md-logo {
+  align-items: center;
+  display: flex;
+  justify-content: center;
   margin: 0.35rem 0.1rem 0.35rem 0;
+  width: 1.7rem;
 }
 
 .md-header__button.md-logo::after {
-  background: var(--ig-login-red);
-  border-radius: 50%;
-  content: "";
+  color: var(--ig-login-red);
+  content: "IG";
   display: block;
-  height: 0.6rem;
-  width: 0.6rem;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: -0.12em;
+  line-height: 1;
 }
 
 .md-header__button.md-logo img,
 .md-header__button.md-logo svg {
   display: none;
+}
+
+.md-header__topic:first-child .md-ellipsis {
+  font-size: 0;
+}
+
+.md-header__topic:first-child .md-ellipsis::after {
+  color: var(--ig-login-white);
+  content: "Trading Library";
+  font-size: 0.8rem;
 }
 
 .md-search__form {
