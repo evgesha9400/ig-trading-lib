@@ -244,6 +244,7 @@ def test_agent_discovery_recipe_only_selects_documented_operations() -> None:
 
     assert context["generated_from"]["contract"] == "docs/contracts/public-api.yml"
     assert operation == {
+        "category": "markets",
         "method": "GET",
         "name": "market_search",
         "path_template": "/markets",

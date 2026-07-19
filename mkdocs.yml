@@ -37,23 +37,28 @@ extra:
 
 nav:
   - Overview: index.md
-  - Getting started: getting-started.md
-  - Guides:
-      - Credentials and environments: guides/credentials.md
-      - Accounts and preferences: guides/accounts.md
-      - Markets and history: guides/markets-and-history.md
-      - Positions and working orders: guides/positions-and-working-orders.md
-      - Confirmations: guides/confirmations.md
-      - Streaming: guides/streaming.md
-      - Errors and observability: guides/errors-and-observability.md
-      - Pagination and rate limits: guides/pagination-and-rate-limits.md
-      - v1 through v4 façades: guides/version-facades.md
-      - Safety: guides/safety.md
+  - API guide:
+      - Getting started: getting-started.md
+      - HTTP requests: api-guide/http-requests.md
+      - Authentication and authorisation: api-guide/authentication-and-authorisation.md
+      - Paging: api-guide/paging.md
+      - Errors: api-guide/errors.md
+      - Trading safety: api-guide/trading-safety.md
+  - REST API reference:
+      - Account: rest-api-reference/account.md
+      - Dealing: rest-api-reference/dealing.md
+      - Markets: rest-api-reference/markets.md
+      - Watchlists: rest-api-reference/watchlists.md
+      - Client sentiment: rest-api-reference/client-sentiment.md
+      - Login: rest-api-reference/login.md
+      - Indicative costs and charges: rest-api-reference/indicative-costs-and-charges.md
+      - General: rest-api-reference/general.md
+  - Streaming API: streaming-api.md
   - Recipes: recipes/index.md
-  - Reference:
+  - Library reference:
       - Agent API index: reference/agent-api-index.md
       - Public API: reference/public-api.md
-      - Endpoint matrix: reference/endpoint-matrix.md
+      - Version compatibility: reference/version-compatibility.md
       - Migrate from v2: migration-v2-to-v3.md
 
 plugins:

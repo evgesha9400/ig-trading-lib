@@ -492,7 +492,15 @@
           "name",
           "path_template",
           "method",
-          "versions"
+          "versions",
+          "category"
+        ],
+        "methods": {}
+      },
+      "ig_trading_lib.endpoint_catalog.RestReferenceSection": {
+        "fields": [
+          "slug",
+          "title"
         ],
         "methods": {}
       },
@@ -1261,9 +1269,9 @@
     }
   },
   "contract_schema_version": 1,
-  "endpoint_matrix": "docs/reference/endpoint-matrix.md",
   "endpoints": [
     {
+      "category": "account",
       "method": "GET",
       "name": "accounts",
       "path_template": "/accounts",
@@ -1272,6 +1280,7 @@
       ]
     },
     {
+      "category": "account",
       "method": "GET",
       "name": "account_preferences",
       "path_template": "/accounts/preferences",
@@ -1280,6 +1289,7 @@
       ]
     },
     {
+      "category": "account",
       "method": "PUT",
       "name": "account_preferences",
       "path_template": "/accounts/preferences",
@@ -1288,6 +1298,7 @@
       ]
     },
     {
+      "category": "account",
       "method": "GET",
       "name": "activity",
       "path_template": "/history/activity",
@@ -1297,6 +1308,7 @@
       ]
     },
     {
+      "category": "account",
       "method": "GET",
       "name": "activity_date_range",
       "path_template": "/history/activity/{from_date}/{to_date}",
@@ -1305,6 +1317,7 @@
       ]
     },
     {
+      "category": "account",
       "method": "GET",
       "name": "activity_period",
       "path_template": "/history/activity/{last_period}",
@@ -1313,6 +1326,7 @@
       ]
     },
     {
+      "category": "account",
       "method": "GET",
       "name": "transactions",
       "path_template": "/history/transactions",
@@ -1321,6 +1335,7 @@
       ]
     },
     {
+      "category": "account",
       "method": "GET",
       "name": "transactions_date_range",
       "path_template": "/history/transactions/{transaction_type}/{from_date}/{to_date}",
@@ -1329,6 +1344,7 @@
       ]
     },
     {
+      "category": "account",
       "method": "GET",
       "name": "transactions_period",
       "path_template": "/history/transactions/{transaction_type}/{last_period}",
@@ -1337,6 +1353,7 @@
       ]
     },
     {
+      "category": "dealing",
       "method": "GET",
       "name": "confirmation",
       "path_template": "/confirms/{deal_reference}",
@@ -1345,6 +1362,7 @@
       ]
     },
     {
+      "category": "dealing",
       "method": "GET",
       "name": "positions",
       "path_template": "/positions",
@@ -1354,6 +1372,7 @@
       ]
     },
     {
+      "category": "dealing",
       "method": "GET",
       "name": "position",
       "path_template": "/positions/{deal_id}",
@@ -1363,6 +1382,7 @@
       ]
     },
     {
+      "category": "dealing",
       "method": "POST",
       "name": "otc_position",
       "path_template": "/positions/otc",
@@ -1372,6 +1392,7 @@
       ]
     },
     {
+      "category": "dealing",
       "method": "DELETE",
       "name": "otc_position",
       "path_template": "/positions/otc",
@@ -1380,6 +1401,7 @@
       ]
     },
     {
+      "category": "dealing",
       "method": "PUT",
       "name": "otc_position_by_deal",
       "path_template": "/positions/otc/{deal_id}",
@@ -1389,6 +1411,7 @@
       ]
     },
     {
+      "category": "dealing",
       "method": "GET",
       "name": "working_orders",
       "path_template": "/working-orders",
@@ -1398,6 +1421,7 @@
       ]
     },
     {
+      "category": "dealing",
       "method": "POST",
       "name": "otc_working_order",
       "path_template": "/working-orders/otc",
@@ -1407,6 +1431,7 @@
       ]
     },
     {
+      "category": "dealing",
       "method": "DELETE",
       "name": "otc_working_order_by_deal",
       "path_template": "/working-orders/otc/{deal_id}",
@@ -1416,6 +1441,7 @@
       ]
     },
     {
+      "category": "dealing",
       "method": "PUT",
       "name": "otc_working_order_by_deal",
       "path_template": "/working-orders/otc/{deal_id}",
@@ -1425,6 +1451,7 @@
       ]
     },
     {
+      "category": "dealing",
       "method": "GET",
       "name": "repeat_dealing_window",
       "path_template": "/repeat-dealing-window",
@@ -1433,6 +1460,7 @@
       ]
     },
     {
+      "category": "markets",
       "method": "GET",
       "name": "categories",
       "path_template": "/categories",
@@ -1441,6 +1469,7 @@
       ]
     },
     {
+      "category": "markets",
       "method": "GET",
       "name": "category_instruments",
       "path_template": "/categories/{category_id}/instruments",
@@ -1449,6 +1478,7 @@
       ]
     },
     {
+      "category": "markets",
       "method": "GET",
       "name": "markets",
       "path_template": "/markets",
@@ -1458,6 +1488,7 @@
       ]
     },
     {
+      "category": "markets",
       "method": "GET",
       "name": "market",
       "path_template": "/markets/{epic}",
@@ -1469,6 +1500,7 @@
       ]
     },
     {
+      "category": "markets",
       "method": "GET",
       "name": "market_search",
       "path_template": "/markets",
@@ -1477,6 +1509,7 @@
       ]
     },
     {
+      "category": "markets",
       "method": "GET",
       "name": "prices",
       "path_template": "/prices/{epic}",
@@ -1485,6 +1518,7 @@
       ]
     },
     {
+      "category": "markets",
       "method": "GET",
       "name": "prices_points",
       "path_template": "/prices/{epic}/{resolution}/{num_points}",
@@ -1494,6 +1528,7 @@
       ]
     },
     {
+      "category": "markets",
       "method": "GET",
       "name": "prices_date_range",
       "path_template": "/prices/{epic}/{resolution}/{start_date}/{end_date}",
@@ -1503,6 +1538,7 @@
       ]
     },
     {
+      "category": "watchlists",
       "method": "GET",
       "name": "watchlists",
       "path_template": "/watchlists",
@@ -1511,6 +1547,7 @@
       ]
     },
     {
+      "category": "watchlists",
       "method": "POST",
       "name": "watchlists",
       "path_template": "/watchlists",
@@ -1519,6 +1556,7 @@
       ]
     },
     {
+      "category": "watchlists",
       "method": "GET",
       "name": "watchlist",
       "path_template": "/watchlists/{watchlist_id}",
@@ -1527,6 +1565,7 @@
       ]
     },
     {
+      "category": "watchlists",
       "method": "PUT",
       "name": "watchlist",
       "path_template": "/watchlists/{watchlist_id}",
@@ -1535,6 +1574,7 @@
       ]
     },
     {
+      "category": "watchlists",
       "method": "DELETE",
       "name": "watchlist",
       "path_template": "/watchlists/{watchlist_id}",
@@ -1543,6 +1583,7 @@
       ]
     },
     {
+      "category": "watchlists",
       "method": "DELETE",
       "name": "watchlist_market",
       "path_template": "/watchlists/{watchlist_id}/{epic}",
@@ -1551,6 +1592,7 @@
       ]
     },
     {
+      "category": "client-sentiment",
       "method": "GET",
       "name": "client_sentiment",
       "path_template": "/client-sentiment",
@@ -1559,6 +1601,7 @@
       ]
     },
     {
+      "category": "client-sentiment",
       "method": "GET",
       "name": "client_sentiment_market",
       "path_template": "/client-sentiment/{market_id}",
@@ -1567,6 +1610,7 @@
       ]
     },
     {
+      "category": "client-sentiment",
       "method": "GET",
       "name": "client_sentiment_related",
       "path_template": "/client-sentiment/related/{market_id}",
@@ -1575,6 +1619,7 @@
       ]
     },
     {
+      "category": "login",
       "method": "GET",
       "name": "session",
       "path_template": "/session",
@@ -1583,6 +1628,7 @@
       ]
     },
     {
+      "category": "login",
       "method": "DELETE",
       "name": "session",
       "path_template": "/session",
@@ -1591,6 +1637,7 @@
       ]
     },
     {
+      "category": "login",
       "method": "POST",
       "name": "session",
       "path_template": "/session",
@@ -1601,6 +1648,7 @@
       ]
     },
     {
+      "category": "login",
       "method": "PUT",
       "name": "session",
       "path_template": "/session",
@@ -1609,6 +1657,7 @@
       ]
     },
     {
+      "category": "login",
       "method": "GET",
       "name": "encryption_key",
       "path_template": "/session/encryptionKey",
@@ -1617,6 +1666,7 @@
       ]
     },
     {
+      "category": "login",
       "method": "POST",
       "name": "refresh_token",
       "path_template": "/session/refresh-token",
@@ -1625,6 +1675,7 @@
       ]
     },
     {
+      "category": "indicative-costs-and-charges",
       "method": "POST",
       "name": "indicative_costs_close",
       "path_template": "/indicativecostsandcharges/close",
@@ -1633,6 +1684,7 @@
       ]
     },
     {
+      "category": "indicative-costs-and-charges",
       "method": "GET",
       "name": "indicative_costs_durable_medium",
       "path_template": "/indicativecostsandcharges/durablemedium/{indicative_quote_reference}",
@@ -1641,6 +1693,7 @@
       ]
     },
     {
+      "category": "indicative-costs-and-charges",
       "method": "POST",
       "name": "indicative_costs_edit",
       "path_template": "/indicativecostsandcharges/edit",
@@ -1649,6 +1702,7 @@
       ]
     },
     {
+      "category": "indicative-costs-and-charges",
       "method": "GET",
       "name": "indicative_costs_history",
       "path_template": "/indicativecostsandcharges/history/from/{from_date}/to/{to_date}",
@@ -1657,6 +1711,7 @@
       ]
     },
     {
+      "category": "indicative-costs-and-charges",
       "method": "POST",
       "name": "indicative_costs_open",
       "path_template": "/indicativecostsandcharges/open",
@@ -1665,6 +1720,7 @@
       ]
     },
     {
+      "category": "general",
       "method": "GET",
       "name": "applications",
       "path_template": "/operations/application",
@@ -1673,6 +1729,7 @@
       ]
     },
     {
+      "category": "general",
       "method": "PUT",
       "name": "applications",
       "path_template": "/operations/application",
@@ -1681,6 +1738,7 @@
       ]
     },
     {
+      "category": "general",
       "method": "PUT",
       "name": "application_disable",
       "path_template": "/operations/application/disable",
@@ -4619,25 +4677,62 @@
   "mutation_safety_rules": [
     {
       "id": "permit-scope",
-      "path": "docs/guides/safety.md",
+      "path": "docs/api-guide/trading-safety.md",
       "text": "Guarded typed mutations are positions.create, positions.update, positions.close, accounts.update_preferences, and create, update, or delete on watchlists, working_orders, costs, and applications."
     },
     {
       "id": "raw-version-scope",
-      "path": "docs/guides/safety.md",
+      "path": "docs/api-guide/trading-safety.md",
       "text": "Every POST, PUT, or DELETE through a v1, v2, v3, or v4 VersionFacade or VersionedResource requires TradingPermit on a live account."
     },
     {
       "id": "unguarded-resource-scope",
-      "path": "docs/guides/safety.md",
+      "path": "docs/api-guide/trading-safety.md",
       "text": "Do not infer that every ResourceClient mutation is guarded: guards are installed only for the typed client attributes named above."
     },
     {
       "id": "ambiguous-execution",
-      "path": "docs/guides/safety.md",
+      "path": "docs/api-guide/trading-safety.md",
       "text": "After AmbiguousExecutionError, verify the outcome with a confirmation or relevant deal reference before considering another mutation."
     }
   ],
+  "rest_reference": {
+    "directory": "docs/rest-api-reference",
+    "sections": [
+      {
+        "slug": "account",
+        "title": "Account"
+      },
+      {
+        "slug": "dealing",
+        "title": "Dealing"
+      },
+      {
+        "slug": "markets",
+        "title": "Markets"
+      },
+      {
+        "slug": "watchlists",
+        "title": "Watchlists"
+      },
+      {
+        "slug": "client-sentiment",
+        "title": "Client sentiment"
+      },
+      {
+        "slug": "login",
+        "title": "Login"
+      },
+      {
+        "slug": "indicative-costs-and-charges",
+        "title": "Indicative costs and charges"
+      },
+      {
+        "slug": "general",
+        "title": "General"
+      }
+    ]
+  },
   "root_exports": [
     "AmbiguousExecutionError",
     "AsyncIGClient",
@@ -4664,5 +4759,5 @@
     "TradingPermit",
     "TransportError"
   ],
-  "schema_version": 2
+  "schema_version": 3
 }

@@ -56,4 +56,4 @@ asyncio.run(main())
 
 ## Live mutations
 
-Live accounts require an explicit permit for the guarded mutation surfaces. Read [Safety](guides/safety.md) before passing `TradingPermit()`.
+Live accounts require an explicit permit for the guarded mutation surfaces. Read [Trading safety](api-guide/trading-safety.md) before passing `TradingPermit()`.

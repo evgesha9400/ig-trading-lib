@@ -14,6 +14,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 
+import yaml
 from playwright.sync_api import expect, sync_playwright
 from pytest import MonkeyPatch
 
@@ -24,7 +25,7 @@ from scripts.generate_documentation_indexes import (
     build_api_index,
     build_client_entry_points_document,
     build_llms_document,
-    load_endpoint_index,
+    load_endpoint_reference,
     load_public_contract,
 )
 
@@ -137,8 +138,8 @@ def test_getting_started_examples_are_independently_copyable_and_offline_runnabl
 def test_api_index_and_llms_are_exactly_generated_from_the_public_contract() -> None:
     """Committed agent artifacts must be a deterministic projection of canonical sources."""
     contract = load_public_contract(PROJECT_ROOT)
-    endpoints = load_endpoint_index(PROJECT_ROOT)
-    expected_index = build_api_index(PROJECT_ROOT, contract, endpoints)
+    endpoints, sections = load_endpoint_reference(PROJECT_ROOT)
+    expected_index = build_api_index(PROJECT_ROOT, contract, endpoints, sections)
     expected_llms = build_llms_document(expected_index, site_root=True)
     expected_entry_points = build_client_entry_points_document(expected_index)
 
@@ -153,10 +154,14 @@ def test_api_index_and_llms_are_exactly_generated_from_the_public_contract() -> 
         expected_index,
         site_root=False,
     )
-    assert actual_index["schema_version"] == 2
+    assert actual_index["schema_version"] == 3
     assert actual_index["contract_schema_version"] == contract["schema_version"]
     assert actual_index["root_exports"] == contract["root_exports"]
     assert actual_index["endpoints"] == endpoints
+    assert actual_index["rest_reference"] == {
+        "directory": "docs/rest-api-reference",
+        "sections": sections,
+    }
     assert actual_index["complete_reference"] == {
         "classes": contract["classes"],
         "functions": contract["functions"],
@@ -225,8 +230,32 @@ def test_generated_index_declares_its_canonical_sources() -> None:
     assert any(endpoint["name"] == "market_search" for endpoint in index["endpoints"])
 
 
-def test_mkdocs_navigation_and_search_expose_the_conceptual_guides(tmp_path: Path) -> None:
-    """A local Chromium browser can navigate guides and find them through MkDocs search."""
+def test_mkdocs_navigation_and_search_mirror_ig_api_information_architecture(
+    tmp_path: Path,
+) -> None:
+    """The local navigation follows the official IG API guide and reference order."""
+    configuration = yaml.safe_load((PROJECT_ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
+    navigation = configuration["nav"]
+
+    assert [next(iter(item)) for item in navigation] == [
+        "Overview",
+        "API guide",
+        "REST API reference",
+        "Streaming API",
+        "Recipes",
+        "Library reference",
+    ]
+    assert [next(iter(item)) for item in navigation[2]["REST API reference"]] == [
+        "Account",
+        "Dealing",
+        "Markets",
+        "Watchlists",
+        "Client sentiment",
+        "Login",
+        "Indicative costs and charges",
+        "General",
+    ]
+
     site_dir = tmp_path / "site"
     subprocess.run(
         [
@@ -243,15 +272,20 @@ def test_mkdocs_navigation_and_search_expose_the_conceptual_guides(tmp_path: Pat
     )
 
     expected_pages = {
-        "guides/credentials/",
-        "guides/accounts/",
-        "guides/markets-and-history/",
-        "guides/positions-and-working-orders/",
-        "guides/confirmations/",
-        "guides/streaming/",
-        "guides/errors-and-observability/",
-        "guides/pagination-and-rate-limits/",
-        "guides/version-facades/",
+        "api-guide/http-requests/",
+        "api-guide/authentication-and-authorisation/",
+        "api-guide/paging/",
+        "api-guide/errors/",
+        "api-guide/trading-safety/",
+        "rest-api-reference/account/",
+        "rest-api-reference/dealing/",
+        "rest-api-reference/markets/",
+        "rest-api-reference/watchlists/",
+        "rest-api-reference/client-sentiment/",
+        "rest-api-reference/login/",
+        "rest-api-reference/indicative-costs-and-charges/",
+        "rest-api-reference/general/",
+        "streaming-api/",
         "recipes/",
         "reference/agent-api-index/",
     }
@@ -264,9 +298,9 @@ def test_mkdocs_navigation_and_search_expose_the_conceptual_guides(tmp_path: Pat
     locations = {document["location"] for document in search_index["docs"]}
     titles = {document["title"] for document in search_index["docs"]}
 
-    assert "guides/credentials/" in locations
+    assert "rest-api-reference/dealing/" in locations
     assert "recipes/" in locations
-    assert "Credentials and environments" in titles
+    assert "Authentication and authorisation" in titles
     assert "Sync and async recipes" in titles
 
     with _serve_static_site(site_dir) as base_url, sync_playwright() as playwright:
@@ -274,16 +308,18 @@ def test_mkdocs_navigation_and_search_expose_the_conceptual_guides(tmp_path: Pat
         try:
             page = browser.new_page()
             page.goto(base_url, wait_until="networkidle")
-            page.get_by_role("link", name="Credentials and environments").first.click()
-            expect(page).to_have_url(f"{base_url}/guides/credentials/")
-            expect(page).to_have_title("Credentials and environments - IG Trading Library")
+            page.get_by_role("link", name="Account").first.click()
+            expect(page).to_have_url(f"{base_url}/rest-api-reference/account/")
+            expect(page).to_have_title("Account - IG Trading Library")
 
             page.goto(base_url, wait_until="networkidle")
             page.locator("input[data-md-component='search-query']").fill("TradingPermit")
-            safety_result = page.locator("a.md-search-result__link[href*='guides/safety/']")
+            safety_result = page.locator(
+                "a.md-search-result__link[href*='api-guide/trading-safety/']"
+            )
             expect(safety_result.first).to_be_visible(timeout=10_000)
             safety_result.first.click()
-            expect(page).to_have_url(re.compile(r".*/guides/safety/(?:\?h=)?$"))
+            expect(page).to_have_url(re.compile(r".*/api-guide/trading-safety/(?:\?h=)?$"))
         finally:
             browser.close()
 
@@ -347,7 +383,10 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             )
 
             light_code = browser.new_page()
-            light_code.goto(f"{base_url}/guides/credentials/", wait_until="networkidle")
+            light_code.goto(
+                f"{base_url}/api-guide/authentication-and-authorisation/",
+                wait_until="networkidle",
+            )
             code_block = light_code.locator(".md-typeset .highlight").first
             code_pre = code_block.locator("pre")
 
@@ -373,7 +412,7 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             assert mobile.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
 
             dark = browser.new_page(color_scheme="dark")
-            dark.goto(f"{base_url}/guides/markets-and-history/", wait_until="networkidle")
+            dark.goto(f"{base_url}/rest-api-reference/markets/", wait_until="networkidle")
             assert dark.locator("body").get_attribute("data-md-color-scheme") == "ig-login-dark"
             assert (
                 dark.locator(".md-typeset p").first.evaluate(

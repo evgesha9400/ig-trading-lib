@@ -74,14 +74,14 @@ def test_documentation_contract_rejects_missing_parameter_description(tmp_path: 
         raise AssertionError("A missing parameter description must be rejected.")
 
 
-def test_documentation_contract_rejects_missing_endpoint_entries(tmp_path: Path) -> None:
-    """The endpoint matrix is a release gate, not an informational table."""
+def test_documentation_contract_rejects_missing_rest_reference_entries(tmp_path: Path) -> None:
+    """Each generated REST category is a release gate, not an informational table."""
     project_root = tmp_path / "project"
     for directory_name in ("docs", "examples", "src"):
         shutil.copytree(PROJECT_ROOT / directory_name, project_root / directory_name)
-    endpoint_matrix = project_root / "docs" / "reference" / "endpoint-matrix.md"
-    endpoint_matrix.write_text(
-        endpoint_matrix.read_text(encoding="utf-8").replace(
+    endpoint_table = project_root / "docs" / "rest-api-reference" / ".account-endpoints.md"
+    endpoint_table.write_text(
+        endpoint_table.read_text(encoding="utf-8").replace(
             "| accounts | GET | `/accounts` | v1 |\n", "", 1
         ),
         encoding="utf-8",
@@ -90,9 +90,9 @@ def test_documentation_contract_rejects_missing_endpoint_entries(tmp_path: Path)
     try:
         validate_documentation_contract(project_root)
     except DocumentationContractError as error:
-        assert "Endpoint matrix" in str(error)
+        assert "REST reference section" in str(error)
     else:
-        raise AssertionError("A missing endpoint-matrix entry must be rejected.")
+        raise AssertionError("A missing REST reference entry must be rejected.")
 
 
 def test_documentation_contract_rejects_missing_public_module_reference(tmp_path: Path) -> None:

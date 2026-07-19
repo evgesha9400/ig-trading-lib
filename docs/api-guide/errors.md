@@ -1,4 +1,4 @@
-# Errors and observability
+# Errors
 
 All operational REST failures derive from `IGError`; `LiveTradingPermissionError` is a separate `PermissionError` raised before a protected live mutation reaches authentication or the network.
 
@@ -19,3 +19,9 @@ All operational REST failures derive from `IGError`; `LiveTradingPermissionError
 ## Successful response logs
 
 The standard-library logger is `ig_trading_lib.transport`. On successful HTTP responses it emits the message `ig.http.response` with structured fields including method, path, status code, provider request ID, operation ID, and retry count. It is not a log event for failed responses. Configure this logger in your application and avoid recording credentials or raw provider tokens in surrounding logs.
+
+## Rate limits and retry decisions
+
+For retriable reads, catch `RateLimitError` or `TransportError` and let a caller-owned scheduler choose whether and when to retry. `RateLimitError.retry_after_seconds` is optional and is only set when IG supplies a usable `Retry-After` header.
+
+Never reuse this read-recovery pattern for a mutation after `AmbiguousExecutionError`. Verify with a confirmation or relevant read first. The [error recovery recipe](../recipes/index.md#error-recovery) makes one retry decision signal and intentionally does not send another request.

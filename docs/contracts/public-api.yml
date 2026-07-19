@@ -237,6 +237,12 @@ classes:
     - path_template
     - method
     - versions
+    - category
+    methods: {}
+  ig_trading_lib.endpoint_catalog.RestReferenceSection:
+    fields:
+    - slug
+    - title
     methods: {}
   ig_trading_lib.errors.IGError:
     fields: []
@@ -862,19 +868,19 @@ examples:
   contains: 'with IGClient(config) as client:'
 mutation_safety_rules:
 - id: permit-scope
-  path: docs/guides/safety.md
+  path: docs/api-guide/trading-safety.md
   text: Guarded typed mutations are positions.create, positions.update, positions.close, accounts.update_preferences,
     and create, update, or delete on watchlists, working_orders, costs, and applications.
 - id: raw-version-scope
-  path: docs/guides/safety.md
+  path: docs/api-guide/trading-safety.md
   text: Every POST, PUT, or DELETE through a v1, v2, v3, or v4 VersionFacade or VersionedResource requires
     TradingPermit on a live account.
 - id: unguarded-resource-scope
-  path: docs/guides/safety.md
+  path: docs/api-guide/trading-safety.md
   text: 'Do not infer that every ResourceClient mutation is guarded: guards are installed only for the
     typed client attributes named above.'
 - id: ambiguous-execution
-  path: docs/guides/safety.md
+  path: docs/api-guide/trading-safety.md
   text: After AmbiguousExecutionError, verify the outcome with a confirmation or relevant deal reference
     before considering another mutation.
-endpoint_matrix: docs/reference/endpoint-matrix.md
+endpoint_reference: docs/rest-api-reference

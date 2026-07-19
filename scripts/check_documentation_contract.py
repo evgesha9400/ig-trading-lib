@@ -75,7 +75,7 @@ class DocumentationPaths:
     project_root: Path
     manifest: Path
     contract: Path
-    endpoint_matrix: Path
+    rest_reference_directory: Path
 
     @classmethod
     def from_project_root(cls, project_root: Path) -> DocumentationPaths:
@@ -84,7 +84,7 @@ class DocumentationPaths:
             project_root=project_root,
             manifest=docs_root / "library.yml",
             contract=docs_root / "contracts" / "public-api.yml",
-            endpoint_matrix=docs_root / "reference" / "endpoint-matrix.md",
+            rest_reference_directory=docs_root / "rest-api-reference",
         )
 
 
@@ -104,7 +104,7 @@ def validate_documentation_contract(project_root: Path) -> None:
     _validate_pydantic_fields(source_modules, contract)
     _validate_documented_examples(paths.project_root, contract)
     _validate_mutation_safety_rules(paths.project_root, contract)
-    _validate_endpoint_matrix(paths, contract)
+    _validate_rest_reference(paths, contract)
 
 
 def _load_yaml_mapping(path: Path) -> dict[str, Any]:
@@ -141,7 +141,7 @@ def _validate_contract_shape(contract: Mapping[str, Any]) -> None:
         "pydantic_fields",
         "examples",
         "mutation_safety_rules",
-        "endpoint_matrix",
+        "endpoint_reference",
     }
     if set(contract) != required_fields or contract["schema_version"] != 1:
         raise DocumentationContractError(
@@ -491,39 +491,54 @@ def _validate_mutation_safety_rules(project_root: Path, contract: Mapping[str, A
             raise DocumentationContractError(f"Mutation-safety rule is undocumented: {rule['id']}")
 
 
-def _validate_endpoint_matrix(paths: DocumentationPaths, contract: Mapping[str, Any]) -> None:
-    if contract["endpoint_matrix"] != "docs/reference/endpoint-matrix.md":
+def _validate_rest_reference(paths: DocumentationPaths, contract: Mapping[str, Any]) -> None:
+    """Require generated category tables to match the official endpoint catalog exactly."""
+    if contract["endpoint_reference"] != "docs/rest-api-reference":
         raise DocumentationContractError(
-            "Endpoint matrix path must be part of the public API contract."
+            "REST reference directory must be part of the public API contract."
         )
-    expected_rows = _source_endpoint_rows(paths.project_root)
-    actual_rows = _documented_endpoint_rows(paths.endpoint_matrix)
-    if actual_rows != expected_rows:
-        raise DocumentationContractError("Endpoint matrix must exactly match DOCUMENTED_ENDPOINTS.")
+    sections, expected_rows = _source_endpoint_reference(paths.project_root)
+    for section in sections:
+        page_path = paths.rest_reference_directory / f"{section}.md"
+        table_path = paths.rest_reference_directory / f".{section}-endpoints.md"
+        include = f'--8<-- "docs/rest-api-reference/.{section}-endpoints.md"'
+        if not page_path.is_file() or include not in page_path.read_text(encoding="utf-8"):
+            raise DocumentationContractError(f"REST reference page is incomplete: {section}")
+        actual_rows = _documented_endpoint_rows(table_path)
+        if actual_rows != expected_rows[section]:
+            raise DocumentationContractError(
+                f"REST reference section must exactly match DOCUMENTED_ENDPOINTS: {section}"
+            )
 
 
-def _source_endpoint_rows(project_root: Path) -> list[tuple[str, str, str, str]]:
+def _source_endpoint_reference(
+    project_root: Path,
+) -> tuple[tuple[str, ...], dict[str, list[tuple[str, str, str, str]]]]:
+    """Load official section order and endpoint rows directly from source metadata."""
     source_path = str(project_root / "src")
     sys.path.insert(0, source_path)
     try:
-        from ig_trading_lib.endpoint_catalog import DOCUMENTED_ENDPOINTS
+        from ig_trading_lib.endpoint_catalog import DOCUMENTED_ENDPOINTS, REST_REFERENCE_SECTIONS
 
-        return [
-            (
-                endpoint.name,
-                endpoint.method,
-                endpoint.path_template,
-                _format_versions(endpoint.versions),
+        sections = tuple(section.slug for section in REST_REFERENCE_SECTIONS)
+        rows = {section: [] for section in sections}
+        for endpoint in DOCUMENTED_ENDPOINTS:
+            rows[endpoint.category].append(
+                (
+                    endpoint.name,
+                    endpoint.method,
+                    endpoint.path_template,
+                    _format_versions(endpoint.versions),
+                )
             )
-            for endpoint in DOCUMENTED_ENDPOINTS
-        ]
+        return sections, rows
     finally:
         sys.path.remove(source_path)
 
 
 def _documented_endpoint_rows(path: Path) -> list[tuple[str, str, str, str]]:
     if not path.is_file():
-        raise DocumentationContractError(f"Missing endpoint matrix: {path}")
+        raise DocumentationContractError(f"Missing generated REST reference table: {path}")
     rows: list[tuple[str, str, str, str]] = []
     for line in path.read_text(encoding="utf-8").splitlines():
         cells = [cell.strip().strip("`") for cell in line.strip().strip("|").split("|")]

@@ -18,11 +18,20 @@ The library supports demo and live IG environments, canonical snake-case respons
 - Pass `TradingPermit()` only when a live mutation is intentional.
 - Treat `AmbiguousExecutionError` as an outcome that needs verification, not a signal to retry blindly.
 
-## Find the right guide
+## REST API reference
 
-- [Credentials and environments](guides/credentials.md)
-- [Markets and history](guides/markets-and-history.md)
-- [Positions and working orders](guides/positions-and-working-orders.md)
-- [Streaming](guides/streaming.md)
+- [Account](rest-api-reference/account.md)
+- [Dealing](rest-api-reference/dealing.md)
+- [Markets](rest-api-reference/markets.md)
+- [Watchlists](rest-api-reference/watchlists.md)
+- [Client sentiment](rest-api-reference/client-sentiment.md)
+- [Login](rest-api-reference/login.md)
+- [Indicative costs and charges](rest-api-reference/indicative-costs-and-charges.md)
+- [General](rest-api-reference/general.md)
+
+## Build an integration
+
+- [API guide](api-guide/authentication-and-authorisation.md)
+- [Streaming API](streaming-api.md)
 - [Sync and async recipes](recipes/index.md)
-- [Agent API index](reference/agent-api-index.md)
+- [Library reference](reference/public-api.md)

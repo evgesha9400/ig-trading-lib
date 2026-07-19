@@ -1,4 +1,4 @@
-# Safety
+# Trading safety
 
 `Environment.DEMO` is the default place to develop an integration. Credentials and token values are redacted from supported diagnostic representations.
 

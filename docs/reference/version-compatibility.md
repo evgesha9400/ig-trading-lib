@@ -1,4 +1,4 @@
-# v1 through v4 façades
+# Version compatibility
 
 `client.v1`, `client.v2`, `client.v3`, and `client.v4` expose exact-version resource namespaces. Their asynchronous equivalents have the same raw request shape.
 
@@ -14,7 +14,7 @@ with IGClient(config) as client:
 
 ## What they do not provide
 
-These are generic route helpers, not separate semantic implementations for every endpoint catalog row. Do not infer a dedicated method, payload schema, parameter validation, or current provider availability from a facade attribute. Consult the [endpoint matrix](../reference/endpoint-matrix.md) for the maintained route/version catalog and IG's provider documentation for request bodies.
+These are generic route helpers, not separate semantic implementations for every endpoint catalog row. Do not infer a dedicated method, payload schema, parameter validation, or current provider availability from a facade attribute. Consult the relevant [REST API reference](../rest-api-reference/account.md) section for the maintained route/version catalog and IG's provider documentation for request bodies.
 
 ## Live boundary
 

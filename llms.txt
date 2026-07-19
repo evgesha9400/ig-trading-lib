@@ -6,12 +6,12 @@
 
 - [Overview](docs/index.md)
 - [Getting started](docs/getting-started.md)
-- [Safety boundary](docs/guides/safety.md)
-- [Conceptual guides](docs/guides/credentials.md)
+- [Trading safety](docs/api-guide/trading-safety.md)
+- [API guide](docs/api-guide/authentication-and-authorisation.md)
+- [REST API reference](docs/rest-api-reference/account.md)
 - [Sync and async recipes](docs/recipes/index.md)
 - [Machine-readable API index](docs/reference/public-api-index.json)
 - [Human API reference](docs/reference/public-api.md)
-- [Endpoint matrix](docs/reference/endpoint-matrix.md)
 
 ## Agent rules
 

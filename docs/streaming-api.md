@@ -1,4 +1,4 @@
-# Streaming
+# Streaming API
 
 `StreamSubscription` declares a Lightstreamer subscription. No streaming session is opened until `iter_updates()` or `aiter_updates()` begins consuming it.
 

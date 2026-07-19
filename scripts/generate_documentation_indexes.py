@@ -18,8 +18,9 @@ CONTRACT_PATH = Path("docs/contracts/public-api.yml")
 ENDPOINT_CATALOG_PATH = Path("src/ig_trading_lib/endpoint_catalog.py")
 CLIENT_SOURCE_PATH = Path("src/ig_trading_lib/client.py")
 LLMS_PATH = Path("docs/llms.txt")
+REST_REFERENCE_DIRECTORY = Path("docs/rest-api-reference")
 ROOT_LLMS_PATH = Path("llms.txt")
-AGENT_INDEX_SCHEMA_VERSION = 2
+AGENT_INDEX_SCHEMA_VERSION = 3
 CLIENT_ENTRY_POINT_NAMES = ("IGClient", "AsyncIGClient")
 
 
@@ -38,28 +39,37 @@ def load_public_contract(project_root: Path) -> dict[str, Any]:
     return contract
 
 
-def load_endpoint_index(project_root: Path) -> list[dict[str, Any]]:
-    """Project the maintained endpoint catalog into JSON-safe entries."""
+def load_endpoint_reference(
+    project_root: Path,
+) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    """Project the maintained endpoint catalog and official section order into JSON-safe data."""
     source_path = str(project_root / "src")
     sys.path.insert(0, source_path)
     try:
-        from ig_trading_lib.endpoint_catalog import DOCUMENTED_ENDPOINTS
+        from ig_trading_lib.endpoint_catalog import DOCUMENTED_ENDPOINTS, REST_REFERENCE_SECTIONS
 
-        return [
-            {
-                "name": endpoint.name,
-                "path_template": endpoint.path_template,
-                "method": endpoint.method,
-                "versions": list(endpoint.versions),
-            }
-            for endpoint in DOCUMENTED_ENDPOINTS
-        ]
+        return (
+            [
+                {
+                    "name": endpoint.name,
+                    "path_template": endpoint.path_template,
+                    "method": endpoint.method,
+                    "versions": list(endpoint.versions),
+                    "category": endpoint.category,
+                }
+                for endpoint in DOCUMENTED_ENDPOINTS
+            ],
+            [{"slug": section.slug, "title": section.title} for section in REST_REFERENCE_SECTIONS],
+        )
     finally:
         sys.path.remove(source_path)
 
 
 def build_api_index(
-    project_root: Path, contract: Mapping[str, Any], endpoints: list[dict[str, Any]]
+    project_root: Path,
+    contract: Mapping[str, Any],
+    endpoints: list[dict[str, Any]],
+    rest_reference_sections: list[dict[str, str]],
 ) -> dict[str, Any]:
     """Return the machine-readable projection without hand-maintained signatures."""
     entry_points = load_client_entry_points(project_root, contract)
@@ -81,7 +91,10 @@ def build_api_index(
         },
         "examples": contract["examples"],
         "mutation_safety_rules": contract["mutation_safety_rules"],
-        "endpoint_matrix": contract["endpoint_matrix"],
+        "rest_reference": {
+            "directory": contract["endpoint_reference"],
+            "sections": rest_reference_sections,
+        },
         "endpoints": endpoints,
     }
 
@@ -283,12 +296,12 @@ def build_llms_document(api_index: Mapping[str, Any], *, site_root: bool) -> str
 
 - [Overview]({link_prefix}index{documentation_suffix})
 - [Getting started]({link_prefix}getting-started{documentation_suffix})
-- [Safety boundary]({link_prefix}guides/safety{documentation_suffix})
-- [Conceptual guides]({link_prefix}guides/credentials{documentation_suffix})
+- [Trading safety]({link_prefix}api-guide/trading-safety{documentation_suffix})
+- [API guide]({link_prefix}api-guide/authentication-and-authorisation{documentation_suffix})
+- [REST API reference]({link_prefix}rest-api-reference/account{documentation_suffix})
 - [Sync and async recipes]({recipes_path})
 - [Machine-readable API index]({link_prefix}reference/public-api-index.json)
 - [Human API reference]({link_prefix}reference/public-api{documentation_suffix})
-- [Endpoint matrix]({link_prefix}reference/endpoint-matrix{documentation_suffix})
 
 ## Agent rules
 
@@ -401,7 +414,8 @@ def render_api_index(api_index: Mapping[str, Any]) -> str:
 def generate_documentation_indexes(project_root: Path) -> None:
     """Write all agent-facing indexes from the public contract and endpoint catalog."""
     contract = load_public_contract(project_root)
-    api_index = build_api_index(project_root, contract, load_endpoint_index(project_root))
+    endpoints, sections = load_endpoint_reference(project_root)
+    api_index = build_api_index(project_root, contract, endpoints, sections)
     _write_text(project_root / API_INDEX_PATH, render_api_index(api_index))
     _write_text(
         project_root / CLIENT_ENTRY_POINTS_PATH,
@@ -409,17 +423,29 @@ def generate_documentation_indexes(project_root: Path) -> None:
     )
     _write_text(project_root / LLMS_PATH, build_llms_document(api_index, site_root=True))
     _write_text(project_root / ROOT_LLMS_PATH, build_llms_document(api_index, site_root=False))
+    for section in sections:
+        _write_text(
+            project_root / _rest_reference_table_path(section["slug"]),
+            build_rest_reference_table(section, endpoints),
+        )
 
 
 def check_documentation_indexes(project_root: Path) -> None:
     """Fail when checked-in generated documentation is absent or out of date."""
     contract = load_public_contract(project_root)
-    api_index = build_api_index(project_root, contract, load_endpoint_index(project_root))
+    endpoints, sections = load_endpoint_reference(project_root)
+    api_index = build_api_index(project_root, contract, endpoints, sections)
     expected_outputs = {
         API_INDEX_PATH: render_api_index(api_index),
         CLIENT_ENTRY_POINTS_PATH: build_client_entry_points_document(api_index),
         LLMS_PATH: build_llms_document(api_index, site_root=True),
         ROOT_LLMS_PATH: build_llms_document(api_index, site_root=False),
+        **{
+            _rest_reference_table_path(section["slug"]): build_rest_reference_table(
+                section, endpoints
+            )
+            for section in sections
+        },
     }
     stale_paths = [
         str(path)
@@ -438,6 +464,31 @@ def check_documentation_indexes(project_root: Path) -> None:
 def _write_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def build_rest_reference_table(section: Mapping[str, str], endpoints: list[dict[str, Any]]) -> str:
+    """Render one official IG REST category from the maintained endpoint catalog."""
+    rows = [
+        "<!-- Generated from src/ig_trading_lib/endpoint_catalog.py. -->",
+        "## Endpoint compatibility",
+        "",
+        "| Operation | Method | Path | Supported IG API versions |",
+        "| --- | --- | --- | --- |",
+    ]
+    for endpoint in endpoints:
+        if endpoint["category"] != section["slug"]:
+            continue
+        versions = ", ".join(f"v{version}" for version in endpoint["versions"])
+        rows.append(
+            f"| {endpoint['name']} | {endpoint['method']} | "
+            f"`{endpoint['path_template']}` | {versions} |"
+        )
+    return "\n".join(rows) + "\n"
+
+
+def _rest_reference_table_path(section_slug: str) -> Path:
+    """Return the generated hidden endpoint table path for one reference section."""
+    return REST_REFERENCE_DIRECTORY / f".{section_slug}-endpoints.md"
 
 
 def _parse_arguments() -> argparse.Namespace:

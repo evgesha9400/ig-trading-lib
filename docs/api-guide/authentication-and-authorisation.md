@@ -1,8 +1,8 @@
-# Credentials and environments
+# Authentication and authorisation
 
 Create one immutable `IGConfig` for each IG environment and account context. The library does not persist credentials, session tokens, or refresh tokens to disk.
 
-## Select an authentication flow
+## Authentication flow
 
 | Credential object | Session version | Use when |
 | --- | --- | --- |
@@ -11,7 +11,7 @@ Create one immutable `IGConfig` for each IG environment and account context. The
 
 Both objects require `api_key`, `identifier`, and `password`. Their representations redact those values, but application code must still keep them in a secret manager or environment variables and must never commit them.
 
-## Select an environment explicitly
+## Environment and account
 
 `Environment.DEMO` targets IG's demo gateway and is the intended place to build and validate an integration. `Environment.LIVE` targets the live gateway. `IGConfig.account_id` is optional configuration carried by the client; confirm the active account through IG before relying on a mutation.
 
@@ -29,4 +29,4 @@ config = IGConfig(
 )
 ```
 
-Close clients with a context manager so caller-owned network resources are released. Read [live permits](safety.md) before constructing a live client with a mutation permit.
+Close clients with a context manager so caller-owned network resources are released. Read [trading safety](trading-safety.md) before constructing a live client with a mutation permit.
