@@ -1,0 +1,1770 @@
+{
+  "classes": {
+    "ig_trading_lib.async_services.AsyncAccountsClient": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Authenticated HTTP transport used for provider requests.",
+            "name": "transport",
+            "type": "AsyncTransport"
+          },
+          {
+            "description": "Live-mutation guard used before protected requests.",
+            "name": "guard",
+            "type": "TradingGuard"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "list": {
+          "exceptions": [],
+          "parameters": [],
+          "returns": "Page[IGModel]"
+        },
+        "preferences": {
+          "exceptions": [],
+          "parameters": [],
+          "returns": "IGModel"
+        },
+        "update_preferences": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "body",
+              "type": "Mapping[str, Any]"
+            }
+          ],
+          "returns": "IGModel"
+        }
+      }
+    },
+    "ig_trading_lib.async_services.AsyncMarketsClient": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Authenticated HTTP transport used for provider requests.",
+            "name": "transport",
+            "type": "AsyncTransport"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "search": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Human-readable market search term.",
+              "name": "search_term",
+              "type": "str"
+            }
+          ],
+          "returns": "Page[IGModel]"
+        }
+      }
+    },
+    "ig_trading_lib.async_services.AsyncResourceClient": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Authenticated HTTP transport used for provider requests.",
+            "name": "transport",
+            "type": "AsyncTransport"
+          },
+          {
+            "description": "IG REST resource path.",
+            "name": "path",
+            "type": "str"
+          },
+          {
+            "description": "Explicit IG REST API version.",
+            "name": "version",
+            "type": "int"
+          },
+          {
+            "description": "Live-mutation guard used before protected requests.",
+            "name": "guard",
+            "type": "TradingGuard | None"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "create": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "body",
+              "type": "Mapping[str, Any]"
+            },
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            }
+          ],
+          "returns": "IGModel"
+        },
+        "delete": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            }
+          ],
+          "returns": "IGModel"
+        },
+        "get": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            },
+            {
+              "description": "Optional query parameters sent to IG.",
+              "name": "params",
+              "type": "Mapping[str, Any] | None"
+            }
+          ],
+          "returns": "IGModel"
+        },
+        "iter_pages": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Optional query parameters sent to IG.",
+              "name": "params",
+              "type": "Mapping[str, Any] | None"
+            },
+            {
+              "description": "Response field containing page items.",
+              "name": "item_key",
+              "type": "str | None"
+            }
+          ],
+          "returns": "AsyncIterator[IGModel]"
+        },
+        "list": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Optional query parameters sent to IG.",
+              "name": "params",
+              "type": "Mapping[str, Any] | None"
+            },
+            {
+              "description": "Response field containing page items.",
+              "name": "item_key",
+              "type": "str | None"
+            }
+          ],
+          "returns": "Page[IGModel]"
+        },
+        "update": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "body",
+              "type": "Mapping[str, Any]"
+            },
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            }
+          ],
+          "returns": "IGModel"
+        }
+      }
+    },
+    "ig_trading_lib.client.AsyncIGClient": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Immutable environment, credentials, timeout, retry, and account configuration.",
+            "name": "config",
+            "type": "IGConfig"
+          },
+          {
+            "description": "Explicit acknowledgement required for guarded live mutations.",
+            "name": "trading_permit",
+            "type": "TradingPermit | None"
+          },
+          {
+            "description": "Optional caller-owned HTTP client.",
+            "name": "http_client",
+            "type": "httpx.AsyncClient | None"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "close": {
+          "exceptions": [],
+          "parameters": [],
+          "returns": "None"
+        }
+      }
+    },
+    "ig_trading_lib.client.AsyncPositionsClient": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Live-mutation guard used before protected requests.",
+            "name": "guard",
+            "type": "TradingGuard"
+          },
+          {
+            "description": "Authenticated HTTP transport used for provider requests.",
+            "name": "transport",
+            "type": "AsyncTransport"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "close": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "request",
+              "type": "Mapping[str, Any]"
+            }
+          ],
+          "returns": "IGModel"
+        },
+        "create": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "request",
+              "type": "Mapping[str, Any]"
+            }
+          ],
+          "returns": "IGModel"
+        },
+        "get": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "IG deal identifier.",
+              "name": "deal_id",
+              "type": "str"
+            }
+          ],
+          "returns": "IGModel"
+        },
+        "list": {
+          "exceptions": [],
+          "parameters": [],
+          "returns": "IGModel"
+        },
+        "update": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "IG deal identifier.",
+              "name": "deal_id",
+              "type": "str"
+            },
+            {
+              "description": "Provider request body mapping.",
+              "name": "request",
+              "type": "Mapping[str, Any]"
+            }
+          ],
+          "returns": "IGModel"
+        }
+      }
+    },
+    "ig_trading_lib.client.IGClient": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Immutable environment, credentials, timeout, retry, and account configuration.",
+            "name": "config",
+            "type": "IGConfig"
+          },
+          {
+            "description": "Explicit acknowledgement required for guarded live mutations.",
+            "name": "trading_permit",
+            "type": "TradingPermit | None"
+          },
+          {
+            "description": "Optional caller-owned HTTP client.",
+            "name": "http_client",
+            "type": "httpx.Client | None"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "close": {
+          "exceptions": [],
+          "parameters": [],
+          "returns": "None"
+        }
+      }
+    },
+    "ig_trading_lib.client.PositionsClient": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Live-mutation guard used before protected requests.",
+            "name": "guard",
+            "type": "TradingGuard"
+          },
+          {
+            "description": "Authenticated HTTP transport used for provider requests.",
+            "name": "transport",
+            "type": "SyncTransport"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "close": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "request",
+              "type": "Mapping[str, Any]"
+            }
+          ],
+          "returns": "IGModel"
+        },
+        "create": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "request",
+              "type": "Mapping[str, Any]"
+            }
+          ],
+          "returns": "IGModel"
+        },
+        "get": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "IG deal identifier.",
+              "name": "deal_id",
+              "type": "str"
+            }
+          ],
+          "returns": "IGModel"
+        },
+        "list": {
+          "exceptions": [],
+          "parameters": [],
+          "returns": "IGModel"
+        },
+        "update": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "IG deal identifier.",
+              "name": "deal_id",
+              "type": "str"
+            },
+            {
+              "description": "Provider request body mapping.",
+              "name": "request",
+              "type": "Mapping[str, Any]"
+            }
+          ],
+          "returns": "IGModel"
+        }
+      }
+    },
+    "ig_trading_lib.core.Environment": {
+      "fields": [],
+      "methods": {}
+    },
+    "ig_trading_lib.core.IGConfig": {
+      "fields": [
+        "environment",
+        "credentials",
+        "timeout_seconds",
+        "max_retries",
+        "account_id"
+      ],
+      "methods": {
+        "base_url": {
+          "exceptions": [],
+          "parameters": [],
+          "returns": "str"
+        }
+      }
+    },
+    "ig_trading_lib.core.LiveTradingPermissionError": {
+      "fields": [],
+      "methods": {}
+    },
+    "ig_trading_lib.core.OAuthCredentials": {
+      "fields": [
+        "api_key",
+        "identifier",
+        "password",
+        "version"
+      ],
+      "methods": {}
+    },
+    "ig_trading_lib.core.SessionCredentials": {
+      "fields": [
+        "api_key",
+        "identifier",
+        "password",
+        "version"
+      ],
+      "methods": {}
+    },
+    "ig_trading_lib.core.StreamingSession": {
+      "fields": [
+        "endpoint",
+        "account_id",
+        "cst",
+        "security_token"
+      ],
+      "methods": {}
+    },
+    "ig_trading_lib.core.TradingGuard": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Immutable environment, credentials, timeout, retry, and account configuration.",
+            "name": "config",
+            "type": "IGConfig"
+          },
+          {
+            "description": "Optional acknowledgement for live mutations.",
+            "name": "permit",
+            "type": "TradingPermit | None"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "require_mutation_permission": {
+          "exceptions": [],
+          "parameters": [],
+          "returns": "None"
+        }
+      }
+    },
+    "ig_trading_lib.core.TradingPermit": {
+      "fields": [
+        "acknowledged"
+      ],
+      "methods": {}
+    },
+    "ig_trading_lib.endpoint_catalog.EndpointSpec": {
+      "fields": [
+        "name",
+        "path_template",
+        "method",
+        "versions"
+      ],
+      "methods": {}
+    },
+    "ig_trading_lib.errors.AmbiguousExecutionError": {
+      "fields": [],
+      "methods": {}
+    },
+    "ig_trading_lib.errors.AuthenticationError": {
+      "fields": [],
+      "methods": {}
+    },
+    "ig_trading_lib.errors.AuthorizationError": {
+      "fields": [],
+      "methods": {}
+    },
+    "ig_trading_lib.errors.IGError": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Human-readable error message.",
+            "name": "message",
+            "type": "str"
+          },
+          {
+            "description": "Optional HTTP response status code.",
+            "name": "status_code",
+            "type": "int | None"
+          },
+          {
+            "description": "Optional IG provider error code.",
+            "name": "error_code",
+            "type": "str | None"
+          },
+          {
+            "description": "Optional IG provider request identifier.",
+            "name": "request_id",
+            "type": "str | None"
+          },
+          {
+            "description": "Optional client operation correlation identifier.",
+            "name": "operation_id",
+            "type": "str | None"
+          },
+          {
+            "description": "Optional server-provided retry delay in seconds.",
+            "name": "retry_after_seconds",
+            "type": "float | None"
+          },
+          {
+            "description": "Optional provider diagnostics retained after redaction.",
+            "name": "details",
+            "type": "dict[str, Any] | None"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {}
+    },
+    "ig_trading_lib.errors.ProviderRejectionError": {
+      "fields": [],
+      "methods": {}
+    },
+    "ig_trading_lib.errors.RateLimitError": {
+      "fields": [],
+      "methods": {}
+    },
+    "ig_trading_lib.errors.ResourceNotFoundError": {
+      "fields": [],
+      "methods": {}
+    },
+    "ig_trading_lib.errors.StreamingDataLossError": {
+      "fields": [],
+      "methods": {}
+    },
+    "ig_trading_lib.errors.StreamingSubscriptionError": {
+      "fields": [],
+      "methods": {}
+    },
+    "ig_trading_lib.errors.TransportError": {
+      "fields": [],
+      "methods": {}
+    },
+    "ig_trading_lib.models.IGModel": {
+      "fields": [],
+      "methods": {
+        "normalize_wire_keys": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider value to normalize.",
+              "name": "value",
+              "type": "Any"
+            }
+          ],
+          "returns": "Any"
+        }
+      }
+    },
+    "ig_trading_lib.models.Page": {
+      "fields": [
+        "items",
+        "next_path"
+      ],
+      "methods": {}
+    },
+    "ig_trading_lib.services.AccountsClient": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Authenticated HTTP transport used for provider requests.",
+            "name": "transport",
+            "type": "SyncTransport"
+          },
+          {
+            "description": "Live-mutation guard used before protected requests.",
+            "name": "guard",
+            "type": "TradingGuard"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "list": {
+          "exceptions": [],
+          "parameters": [],
+          "returns": "Page[IGModel]"
+        },
+        "preferences": {
+          "exceptions": [],
+          "parameters": [],
+          "returns": "IGModel"
+        },
+        "update_preferences": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "body",
+              "type": "Mapping[str, Any]"
+            }
+          ],
+          "returns": "IGModel"
+        }
+      }
+    },
+    "ig_trading_lib.services.MarketsClient": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Authenticated HTTP transport used for provider requests.",
+            "name": "transport",
+            "type": "SyncTransport"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "search": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Human-readable market search term.",
+              "name": "search_term",
+              "type": "str"
+            }
+          ],
+          "returns": "Page[IGModel]"
+        }
+      }
+    },
+    "ig_trading_lib.services.ResourceClient": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Authenticated HTTP transport used for provider requests.",
+            "name": "transport",
+            "type": "SyncTransport"
+          },
+          {
+            "description": "IG REST resource path.",
+            "name": "path",
+            "type": "str"
+          },
+          {
+            "description": "Explicit IG REST API version.",
+            "name": "version",
+            "type": "int"
+          },
+          {
+            "description": "Live-mutation guard used before protected requests.",
+            "name": "guard",
+            "type": "TradingGuard | None"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "create": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "body",
+              "type": "Mapping[str, Any]"
+            },
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            }
+          ],
+          "returns": "IGModel"
+        },
+        "delete": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            }
+          ],
+          "returns": "IGModel"
+        },
+        "get": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            },
+            {
+              "description": "Optional query parameters sent to IG.",
+              "name": "params",
+              "type": "Mapping[str, Any] | None"
+            }
+          ],
+          "returns": "IGModel"
+        },
+        "iter_pages": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Optional query parameters sent to IG.",
+              "name": "params",
+              "type": "Mapping[str, Any] | None"
+            },
+            {
+              "description": "Response field containing page items.",
+              "name": "item_key",
+              "type": "str | None"
+            }
+          ],
+          "returns": "Iterator[IGModel]"
+        },
+        "list": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Optional query parameters sent to IG.",
+              "name": "params",
+              "type": "Mapping[str, Any] | None"
+            },
+            {
+              "description": "Response field containing page items.",
+              "name": "item_key",
+              "type": "str | None"
+            }
+          ],
+          "returns": "Page[IGModel]"
+        },
+        "update": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "body",
+              "type": "Mapping[str, Any]"
+            },
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            }
+          ],
+          "returns": "IGModel"
+        }
+      }
+    },
+    "ig_trading_lib.streaming.AsyncStreamingClient": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Callable that provides the active streaming session.",
+            "name": "session_provider",
+            "type": "Callable[[], Awaitable[StreamingSession]]"
+          },
+          {
+            "description": "Callable that provides a refreshed streaming session.",
+            "name": "refresh_session_provider",
+            "type": "Callable[[], Awaitable[StreamingSession]]"
+          },
+          {
+            "description": "Optional factory for the Lightstreamer client.",
+            "name": "client_factory",
+            "type": "Callable[[str, str | None], Any] | None"
+          },
+          {
+            "description": "Optional factory for the Lightstreamer subscription.",
+            "name": "subscription_factory",
+            "type": "Callable[[str, list[str], list[str]], Any] | None"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "aiter_updates": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Streaming subscription specification.",
+              "name": "subscription",
+              "type": "StreamSubscription"
+            }
+          ],
+          "returns": "AsyncIterator[StreamUpdate]"
+        },
+        "close": {
+          "exceptions": [],
+          "parameters": [],
+          "returns": "None"
+        }
+      }
+    },
+    "ig_trading_lib.streaming.StreamSubscription": {
+      "fields": [
+        "key",
+        "mode",
+        "items",
+        "fields",
+        "data_adapter",
+        "snapshot",
+        "max_frequency"
+      ],
+      "methods": {}
+    },
+    "ig_trading_lib.streaming.StreamUpdate": {
+      "fields": [
+        "subscription_key",
+        "item_name",
+        "item_position",
+        "fields",
+        "changed_fields",
+        "is_snapshot"
+      ],
+      "methods": {}
+    },
+    "ig_trading_lib.streaming.StreamingClient": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Callable that provides the active streaming session.",
+            "name": "session_provider",
+            "type": "Callable[[], StreamingSession]"
+          },
+          {
+            "description": "Callable that provides a refreshed streaming session.",
+            "name": "refresh_session_provider",
+            "type": "Callable[[], StreamingSession] | None"
+          },
+          {
+            "description": "Optional factory for the Lightstreamer client.",
+            "name": "client_factory",
+            "type": "Callable[[str, str | None], Any] | None"
+          },
+          {
+            "description": "Optional factory for the Lightstreamer subscription.",
+            "name": "subscription_factory",
+            "type": "Callable[[str, list[str], list[str]], Any] | None"
+          },
+          {
+            "description": "Maximum number of buffered stream events.",
+            "name": "queue_size",
+            "type": "int"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "aiter_updates": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Streaming subscription specification.",
+              "name": "subscription",
+              "type": "StreamSubscription"
+            }
+          ],
+          "returns": "AsyncIterator[StreamUpdate]"
+        },
+        "close": {
+          "exceptions": [],
+          "parameters": [],
+          "returns": "None"
+        },
+        "iter_updates": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Streaming subscription specification.",
+              "name": "subscription",
+              "type": "StreamSubscription"
+            }
+          ],
+          "returns": "Iterator[StreamUpdate]"
+        }
+      }
+    },
+    "ig_trading_lib.versions.AsyncVersionFacade": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Authenticated HTTP transport used for provider requests.",
+            "name": "transport",
+            "type": "AsyncTransport"
+          },
+          {
+            "description": "Live-mutation guard used before protected requests.",
+            "name": "guard",
+            "type": "TradingGuard"
+          },
+          {
+            "description": "Explicit IG REST API version.",
+            "name": "version",
+            "type": "int"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "request": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "HTTP method for the explicit-version request.",
+              "name": "method",
+              "type": "str"
+            },
+            {
+              "description": "IG REST resource path.",
+              "name": "path",
+              "type": "str"
+            },
+            {
+              "description": "Optional query parameters sent to IG.",
+              "name": "params",
+              "type": "Mapping[str, Any] | None"
+            },
+            {
+              "description": "Optional JSON request body mapping.",
+              "name": "json",
+              "type": "Mapping[str, Any] | None"
+            }
+          ],
+          "returns": "Any"
+        }
+      }
+    },
+    "ig_trading_lib.versions.AsyncVersionedResource": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Authenticated HTTP transport used for provider requests.",
+            "name": "transport",
+            "type": "AsyncTransport"
+          },
+          {
+            "description": "Live-mutation guard used before protected requests.",
+            "name": "guard",
+            "type": "TradingGuard"
+          },
+          {
+            "description": "Explicit IG REST API version.",
+            "name": "version",
+            "type": "int"
+          },
+          {
+            "description": "IG REST resource path.",
+            "name": "path",
+            "type": "str"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "create": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "body",
+              "type": "Mapping[str, Any]"
+            },
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            }
+          ],
+          "returns": "Any"
+        },
+        "delete": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            },
+            {
+              "description": "Optional query parameters sent to IG.",
+              "name": "params",
+              "type": "Mapping[str, Any] | None"
+            }
+          ],
+          "returns": "Any"
+        },
+        "get": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            },
+            {
+              "description": "Optional query parameters sent to IG.",
+              "name": "params",
+              "type": "Mapping[str, Any] | None"
+            }
+          ],
+          "returns": "Any"
+        },
+        "update": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "body",
+              "type": "Mapping[str, Any]"
+            },
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            }
+          ],
+          "returns": "Any"
+        }
+      }
+    },
+    "ig_trading_lib.versions.VersionFacade": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Authenticated HTTP transport used for provider requests.",
+            "name": "transport",
+            "type": "SyncTransport"
+          },
+          {
+            "description": "Live-mutation guard used before protected requests.",
+            "name": "guard",
+            "type": "TradingGuard"
+          },
+          {
+            "description": "Explicit IG REST API version.",
+            "name": "version",
+            "type": "int"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "request": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "HTTP method for the explicit-version request.",
+              "name": "method",
+              "type": "str"
+            },
+            {
+              "description": "IG REST resource path.",
+              "name": "path",
+              "type": "str"
+            },
+            {
+              "description": "Optional query parameters sent to IG.",
+              "name": "params",
+              "type": "Mapping[str, Any] | None"
+            },
+            {
+              "description": "Optional JSON request body mapping.",
+              "name": "json",
+              "type": "Mapping[str, Any] | None"
+            }
+          ],
+          "returns": "Any"
+        }
+      }
+    },
+    "ig_trading_lib.versions.VersionedResource": {
+      "constructor": {
+        "exceptions": [],
+        "parameters": [
+          {
+            "description": "Authenticated HTTP transport used for provider requests.",
+            "name": "transport",
+            "type": "SyncTransport"
+          },
+          {
+            "description": "Live-mutation guard used before protected requests.",
+            "name": "guard",
+            "type": "TradingGuard"
+          },
+          {
+            "description": "Explicit IG REST API version.",
+            "name": "version",
+            "type": "int"
+          },
+          {
+            "description": "IG REST resource path.",
+            "name": "path",
+            "type": "str"
+          }
+        ],
+        "returns": "None"
+      },
+      "fields": [],
+      "methods": {
+        "create": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "body",
+              "type": "Mapping[str, Any]"
+            },
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            }
+          ],
+          "returns": "Any"
+        },
+        "delete": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            },
+            {
+              "description": "Optional query parameters sent to IG.",
+              "name": "params",
+              "type": "Mapping[str, Any] | None"
+            }
+          ],
+          "returns": "Any"
+        },
+        "get": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            },
+            {
+              "description": "Optional query parameters sent to IG.",
+              "name": "params",
+              "type": "Mapping[str, Any] | None"
+            }
+          ],
+          "returns": "Any"
+        },
+        "update": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Provider request body mapping.",
+              "name": "body",
+              "type": "Mapping[str, Any]"
+            },
+            {
+              "description": "Path suffix appended to the resource route.",
+              "name": "suffix",
+              "type": "str"
+            }
+          ],
+          "returns": "Any"
+        }
+      }
+    }
+  },
+  "endpoint_matrix": "docs/reference/endpoint-matrix.md",
+  "endpoints": [
+    {
+      "method": "GET",
+      "name": "accounts",
+      "path_template": "/accounts",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "account_preferences",
+      "path_template": "/accounts/preferences",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "PUT",
+      "name": "account_preferences",
+      "path_template": "/accounts/preferences",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "activity",
+      "path_template": "/history/activity",
+      "versions": [
+        2,
+        3
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "activity_date_range",
+      "path_template": "/history/activity/{from_date}/{to_date}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "activity_period",
+      "path_template": "/history/activity/{last_period}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "transactions",
+      "path_template": "/history/transactions",
+      "versions": [
+        2
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "transactions_date_range",
+      "path_template": "/history/transactions/{transaction_type}/{from_date}/{to_date}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "transactions_period",
+      "path_template": "/history/transactions/{transaction_type}/{last_period}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "confirmation",
+      "path_template": "/confirms/{deal_reference}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "positions",
+      "path_template": "/positions",
+      "versions": [
+        1,
+        2
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "position",
+      "path_template": "/positions/{deal_id}",
+      "versions": [
+        1,
+        2
+      ]
+    },
+    {
+      "method": "POST",
+      "name": "otc_position",
+      "path_template": "/positions/otc",
+      "versions": [
+        1,
+        2
+      ]
+    },
+    {
+      "method": "DELETE",
+      "name": "otc_position",
+      "path_template": "/positions/otc",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "PUT",
+      "name": "otc_position_by_deal",
+      "path_template": "/positions/otc/{deal_id}",
+      "versions": [
+        1,
+        2
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "working_orders",
+      "path_template": "/working-orders",
+      "versions": [
+        1,
+        2
+      ]
+    },
+    {
+      "method": "POST",
+      "name": "otc_working_order",
+      "path_template": "/working-orders/otc",
+      "versions": [
+        1,
+        2
+      ]
+    },
+    {
+      "method": "DELETE",
+      "name": "otc_working_order_by_deal",
+      "path_template": "/working-orders/otc/{deal_id}",
+      "versions": [
+        1,
+        2
+      ]
+    },
+    {
+      "method": "PUT",
+      "name": "otc_working_order_by_deal",
+      "path_template": "/working-orders/otc/{deal_id}",
+      "versions": [
+        1,
+        2
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "repeat_dealing_window",
+      "path_template": "/repeat-dealing-window",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "categories",
+      "path_template": "/categories",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "category_instruments",
+      "path_template": "/categories/{category_id}/instruments",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "markets",
+      "path_template": "/markets",
+      "versions": [
+        1,
+        2
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "market",
+      "path_template": "/markets/{epic}",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "market_search",
+      "path_template": "/markets",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "prices",
+      "path_template": "/prices/{epic}",
+      "versions": [
+        3
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "prices_points",
+      "path_template": "/prices/{epic}/{resolution}/{num_points}",
+      "versions": [
+        1,
+        2
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "prices_date_range",
+      "path_template": "/prices/{epic}/{resolution}/{start_date}/{end_date}",
+      "versions": [
+        1,
+        2
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "watchlists",
+      "path_template": "/watchlists",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "POST",
+      "name": "watchlists",
+      "path_template": "/watchlists",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "watchlist",
+      "path_template": "/watchlists/{watchlist_id}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "PUT",
+      "name": "watchlist",
+      "path_template": "/watchlists/{watchlist_id}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "DELETE",
+      "name": "watchlist",
+      "path_template": "/watchlists/{watchlist_id}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "DELETE",
+      "name": "watchlist_market",
+      "path_template": "/watchlists/{watchlist_id}/{epic}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "client_sentiment",
+      "path_template": "/client-sentiment",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "client_sentiment_market",
+      "path_template": "/client-sentiment/{market_id}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "client_sentiment_related",
+      "path_template": "/client-sentiment/related/{market_id}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "session",
+      "path_template": "/session",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "DELETE",
+      "name": "session",
+      "path_template": "/session",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "POST",
+      "name": "session",
+      "path_template": "/session",
+      "versions": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "method": "PUT",
+      "name": "session",
+      "path_template": "/session",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "encryption_key",
+      "path_template": "/session/encryptionKey",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "POST",
+      "name": "refresh_token",
+      "path_template": "/session/refresh-token",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "POST",
+      "name": "indicative_costs_close",
+      "path_template": "/indicativecostsandcharges/close",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "indicative_costs_durable_medium",
+      "path_template": "/indicativecostsandcharges/durablemedium/{indicative_quote_reference}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "POST",
+      "name": "indicative_costs_edit",
+      "path_template": "/indicativecostsandcharges/edit",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "indicative_costs_history",
+      "path_template": "/indicativecostsandcharges/history/from/{from_date}/to/{to_date}",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "POST",
+      "name": "indicative_costs_open",
+      "path_template": "/indicativecostsandcharges/open",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "GET",
+      "name": "applications",
+      "path_template": "/operations/application",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "PUT",
+      "name": "applications",
+      "path_template": "/operations/application",
+      "versions": [
+        1
+      ]
+    },
+    {
+      "method": "PUT",
+      "name": "application_disable",
+      "path_template": "/operations/application/disable",
+      "versions": [
+        1
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "contains": "with IGClient(config) as client:",
+      "id": "synchronous-demo-client",
+      "path": "docs/getting-started.md"
+    },
+    {
+      "contains": "async with AsyncIGClient(config) as client:",
+      "id": "asynchronous-demo-client",
+      "path": "docs/getting-started.md"
+    },
+    {
+      "contains": "with IGClient(config) as client:",
+      "id": "runnable-basic-usage",
+      "path": "examples/basic_usage.py"
+    }
+  ],
+  "exceptions": {
+    "ig_trading_lib.core.LiveTradingPermissionError": "PermissionError",
+    "ig_trading_lib.errors.AmbiguousExecutionError": "IGError",
+    "ig_trading_lib.errors.AuthenticationError": "IGError",
+    "ig_trading_lib.errors.AuthorizationError": "IGError",
+    "ig_trading_lib.errors.IGError": "RuntimeError",
+    "ig_trading_lib.errors.ProviderRejectionError": "IGError",
+    "ig_trading_lib.errors.RateLimitError": "IGError",
+    "ig_trading_lib.errors.ResourceNotFoundError": "IGError",
+    "ig_trading_lib.errors.StreamingDataLossError": "IGError",
+    "ig_trading_lib.errors.StreamingSubscriptionError": "IGError",
+    "ig_trading_lib.errors.TransportError": "IGError"
+  },
+  "functions": {
+    "ig_trading_lib.models.normalize_wire_value": {
+      "exceptions": [],
+      "parameters": [
+        {
+          "description": "Provider value to normalize.",
+          "name": "value",
+          "type": "Any"
+        }
+      ],
+      "returns": "Any"
+    },
+    "ig_trading_lib.models.to_snake_case": {
+      "exceptions": [],
+      "parameters": [
+        {
+          "description": "Provider value to normalize.",
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "returns": "str"
+    }
+  },
+  "generated_from": {
+    "contract": "docs/contracts/public-api.yml",
+    "endpoint_catalog": "src/ig_trading_lib/endpoint_catalog.py"
+  },
+  "mutation_safety_rules": [
+    {
+      "id": "permit-scope",
+      "path": "docs/guides/safety.md",
+      "text": "Guarded typed mutations are positions.create, positions.update, positions.close, accounts.update_preferences, and create, update, or delete on watchlists, working_orders, costs, and applications."
+    },
+    {
+      "id": "raw-version-scope",
+      "path": "docs/guides/safety.md",
+      "text": "Every POST, PUT, or DELETE through a v1, v2, v3, or v4 VersionFacade or VersionedResource requires TradingPermit on a live account."
+    },
+    {
+      "id": "unguarded-resource-scope",
+      "path": "docs/guides/safety.md",
+      "text": "Do not infer that every ResourceClient mutation is guarded: guards are installed only for the typed client attributes named above."
+    },
+    {
+      "id": "ambiguous-execution",
+      "path": "docs/guides/safety.md",
+      "text": "After AmbiguousExecutionError, verify the outcome with a confirmation or relevant deal reference before considering another mutation."
+    }
+  ],
+  "public_modules": [
+    "ig_trading_lib.client",
+    "ig_trading_lib.core",
+    "ig_trading_lib.endpoint_catalog",
+    "ig_trading_lib.errors",
+    "ig_trading_lib.models",
+    "ig_trading_lib.services",
+    "ig_trading_lib.async_services",
+    "ig_trading_lib.streaming",
+    "ig_trading_lib.versions"
+  ],
+  "pydantic_fields": {
+    "ig_trading_lib.models.IGModel": []
+  },
+  "root_exports": [
+    "AmbiguousExecutionError",
+    "AsyncIGClient",
+    "AsyncStreamingClient",
+    "AuthenticationError",
+    "AuthorizationError",
+    "Environment",
+    "IGClient",
+    "IGConfig",
+    "IGError",
+    "IGModel",
+    "LiveTradingPermissionError",
+    "OAuthCredentials",
+    "Page",
+    "ProviderRejectionError",
+    "RateLimitError",
+    "ResourceNotFoundError",
+    "SessionCredentials",
+    "StreamSubscription",
+    "StreamUpdate",
+    "StreamingClient",
+    "StreamingDataLossError",
+    "StreamingSubscriptionError",
+    "TradingPermit",
+    "TransportError"
+  ],
+  "schema_version": 1
+}
