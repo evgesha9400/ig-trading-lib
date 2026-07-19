@@ -1,6 +1,13 @@
-# IG Trading Library
-
-Safe, typed synchronous and asynchronous IG REST and streaming clients.
+<section class="ig-docs-hero" aria-labelledby="ig-docs-title">
+  <p class="ig-docs-eyebrow">IG API · Python SDK</p>
+  <h1 id="ig-docs-title">IG Trading Library</h1>
+  <p class="ig-docs-lede">Safe, typed synchronous and asynchronous IG REST and streaming clients.</p>
+  <div class="ig-docs-actions">
+    <a class="ig-docs-primary-action" href="getting-started/">Start with a demo</a>
+    <a class="ig-docs-secondary-action" href="reference/public-api/">Explore the API</a>
+  </div>
+  <p class="ig-docs-disclaimer">Independent open-source documentation. This project is not affiliated with IG.</p>
+</section>
 
 The library supports demo and live IG environments, canonical snake-case response models, typed provider failures, and Lightstreamer subscriptions. It does not store credentials or tokens on disk.
 
@@ -10,10 +17,6 @@ The library supports demo and live IG environments, canonical snake-case respons
 - Keep credentials outside source control.
 - Pass `TradingPermit()` only when a live mutation is intentional.
 - Treat `AmbiguousExecutionError` as an outcome that needs verification, not a signal to retry blindly.
-
-## Documentation contract
-
-The checked [public API contract](contracts/public-api.yml) records the exported API, source signatures, errors, model fields, examples, live-mutation rules, and every endpoint-matrix row. Continuous integration validates it before the documentation build.
 
 ## Find the right guide
 

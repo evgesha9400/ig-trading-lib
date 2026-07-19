@@ -1,6 +1,6 @@
 # Getting started
 
-Install the package into your application environment.
+Use Python 3.11, 3.12, or 3.13, then install the package into your application environment.
 
 ```bash
 pip install ig-trading-lib
@@ -31,11 +31,27 @@ with IGClient(config) as client:
 ## Asynchronous client
 
 ```python
-from ig_trading_lib import AsyncIGClient
+import asyncio
 
-async with AsyncIGClient(config) as client:
-    accounts = await client.accounts.list()
-    print(accounts.items)
+from ig_trading_lib import AsyncIGClient, Environment, IGConfig, SessionCredentials
+
+
+async def main() -> None:
+    config = IGConfig(
+        environment=Environment.DEMO,
+        credentials=SessionCredentials(
+            api_key="…",
+            identifier="…",
+            password="…",
+        ),
+    )
+
+    async with AsyncIGClient(config) as client:
+        accounts = await client.accounts.list()
+        print(accounts.items)
+
+
+asyncio.run(main())
 ```
 
 ## Live mutations

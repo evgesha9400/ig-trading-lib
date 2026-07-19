@@ -20,6 +20,9 @@
   not an independent authority.
 - The endpoint catalog records the library's maintained compatibility matrix;
   it is not a live verification of IG availability.
+- Construct service clients only through the generated entry points below. Obtain
+  `positions`, `markets`, `streaming`, `v1` through `v4`, and every other service
+  namespace from that client; do not construct service implementation classes.
 - `v1` through `v4` are generic, raw-payload facades. Do not infer a dedicated
   helper or a provider payload schema from a resource name.
 - A `TradingPermit` protects live mutations on guarded typed resources and all
@@ -54,17 +57,10 @@
 - `TradingPermit`
 - `TransportError`
 
-## Public modules
+## Service entry points
 
-- `ig_trading_lib.client`
-- `ig_trading_lib.core`
-- `ig_trading_lib.endpoint_catalog`
-- `ig_trading_lib.errors`
-- `ig_trading_lib.models`
-- `ig_trading_lib.services`
-- `ig_trading_lib.async_services`
-- `ig_trading_lib.streaming`
-- `ig_trading_lib.versions`
+- `from ig_trading_lib import IGClient` — `IGClient(config: IGConfig, *, trading_permit: TradingPermit | None = None, http_client: httpx.Client | None = None)`
+- `from ig_trading_lib import AsyncIGClient` — `AsyncIGClient(config: IGConfig, *, trading_permit: TradingPermit | None = None, http_client: httpx.AsyncClient | None = None)`
 
 ## Safety rules
 
