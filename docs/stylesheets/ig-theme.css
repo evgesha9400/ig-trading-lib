@@ -197,6 +197,34 @@ pre {
   margin: 0;
 }
 
+.md-typeset .md-code__nav,
+.md-typeset .md-code__button,
+.md-typeset .md-code__button:hover,
+.md-typeset .md-code__button:focus {
+  background-color: transparent;
+}
+
+.md-typeset .md-code__button {
+  color: var(--ig-login-grey-60);
+}
+
+.md-typeset .md-code__button:hover {
+  color: var(--ig-login-red-dark);
+}
+
+.md-typeset .md-code__button:focus-visible {
+  outline: 2px solid var(--ig-login-red);
+  outline-offset: 2px;
+}
+
+[data-md-color-scheme="ig-login-dark"] .md-typeset .md-code__button {
+  color: var(--ig-login-grey-20);
+}
+
+[data-md-color-scheme="ig-login-dark"] .md-typeset .md-code__button:hover {
+  color: #ff9292;
+}
+
 .md-typeset .admonition,
 .md-typeset details {
   border-width: 0 0 0 0.22rem;

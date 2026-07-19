@@ -346,7 +346,9 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 == "rgb(0, 0, 0)"
             )
 
-            code_block = desktop.locator(".md-typeset .highlight").first
+            light_code = browser.new_page()
+            light_code.goto(f"{base_url}/guides/credentials/", wait_until="networkidle")
+            code_block = light_code.locator(".md-typeset .highlight").first
             code_pre = code_block.locator("pre")
 
             assert (
@@ -354,6 +356,17 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             )
             assert code_pre.evaluate("element => getComputedStyle(element).borderTopWidth") == "0px"
             assert code_pre.evaluate("element => getComputedStyle(element).marginTop") == "0px"
+            light_copy_button = code_block.locator(".md-code__button")
+            light_copy_nav = code_block.locator(".md-code__nav")
+
+            assert (
+                light_copy_button.evaluate("element => getComputedStyle(element).color")
+                == "rgb(111, 111, 111)"
+            )
+            assert (
+                light_copy_nav.evaluate("element => getComputedStyle(element).backgroundColor")
+                == "rgba(0, 0, 0, 0)"
+            )
 
             mobile = browser.new_page(viewport={"width": 390, "height": 844})
             mobile.goto(base_url, wait_until="networkidle")
@@ -385,6 +398,12 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             assert (
                 copy_button.evaluate("element => getComputedStyle(element).color")
                 == "rgb(224, 224, 224)"
+            )
+            assert (
+                copy_button.locator("xpath=..").evaluate(
+                    "element => getComputedStyle(element).backgroundColor"
+                )
+                == "rgba(0, 0, 0, 0)"
             )
 
             reference = browser.new_page(viewport={"width": 1440, "height": 1000})
