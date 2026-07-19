@@ -248,7 +248,6 @@ def test_agent_discovery_recipe_only_selects_documented_operations() -> None:
         "method": "GET",
         "name": "market_search",
         "path_template": "/markets",
-        "versions": [1],
     }
     with pytest.raises(KeyError):
         select_documented_operation(context, "invented_operation")

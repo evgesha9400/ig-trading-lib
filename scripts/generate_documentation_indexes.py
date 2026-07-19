@@ -20,8 +20,9 @@ CLIENT_SOURCE_PATH = Path("src/ig_trading_lib/client.py")
 LLMS_PATH = Path("docs/llms.txt")
 REST_REFERENCE_DIRECTORY = Path("docs/rest-api-reference")
 ROOT_LLMS_PATH = Path("llms.txt")
-AGENT_INDEX_SCHEMA_VERSION = 3
+AGENT_INDEX_SCHEMA_VERSION = 4
 CLIENT_ENTRY_POINT_NAMES = ("IGClient", "AsyncIGClient")
+HIDDEN_CLIENT_NAMESPACE_NAMES = frozenset({"v1", "v2", "v3", "v4"})
 
 
 class DocumentationIndexError(RuntimeError):
@@ -54,7 +55,6 @@ def load_endpoint_reference(
                     "name": endpoint.name,
                     "path_template": endpoint.path_template,
                     "method": endpoint.method,
-                    "versions": list(endpoint.versions),
                     "category": endpoint.category,
                 }
                 for endpoint in DOCUMENTED_ENDPOINTS
@@ -228,12 +228,19 @@ def _client_namespaces(
     namespaces = [
         _namespace_from_assignment(statement, class_contracts, class_references)
         for statement in constructor.body
-        if _is_client_namespace_assignment(statement)
+        if _is_client_namespace_assignment(statement) and _is_documented_client_namespace(statement)
     ]
     names = [namespace["name"] for namespace in namespaces]
     if len(names) != len(set(names)):
         raise DocumentationIndexError("Client namespaces must have unique names.")
     return namespaces
+
+
+def _is_documented_client_namespace(statement: ast.stmt) -> bool:
+    """Keep generated guides focused on typed service namespaces."""
+    target = statement.targets[0]
+    assert isinstance(target, ast.Attribute)
+    return target.attr not in HIDDEN_CLIENT_NAMESPACE_NAMES
 
 
 def _is_client_namespace_assignment(statement: ast.stmt) -> bool:
@@ -311,12 +318,10 @@ def build_llms_document(api_index: Mapping[str, Any], *, site_root: bool) -> str
 - The endpoint catalog records the library's maintained compatibility matrix;
   it is not a live verification of IG availability.
 - Construct service clients only through the generated entry points below. Obtain
-  `positions`, `markets`, `streaming`, `v1` through `v4`, and every other service
-  namespace from that client; do not construct service implementation classes.
-- `v1` through `v4` are generic, raw-payload facades. Do not infer a dedicated
-  helper or a provider payload schema from a resource name.
-- A `TradingPermit` protects live mutations on guarded typed resources and all
-  raw version-facade mutations. It does not guard every possible `ResourceClient` instance.
+  typed service namespaces from that client; do not construct service implementation
+  classes.
+- A `TradingPermit` protects live mutations on guarded typed resources. It does
+  not guard every possible `ResourceClient` instance.
 - A mutation that raises `AmbiguousExecutionError` needs confirmation or
   deal-reference verification before another mutation.
 
@@ -472,16 +477,14 @@ def build_rest_reference_table(section: Mapping[str, str], endpoints: list[dict[
         "<!-- Generated from src/ig_trading_lib/endpoint_catalog.py. -->",
         "## Endpoint compatibility",
         "",
-        "| Operation | Method | Path | Supported IG API versions |",
-        "| --- | --- | --- | --- |",
+        "| Operation | Method | Path |",
+        "| --- | --- | --- |",
     ]
     for endpoint in endpoints:
         if endpoint["category"] != section["slug"]:
             continue
-        versions = ", ".join(f"v{version}" for version in endpoint["versions"])
         rows.append(
-            f"| {endpoint['name']} | {endpoint['method']} | "
-            f"`{endpoint['path_template']}` | {versions} |"
+            f"| {endpoint['name']} | {endpoint['method']} | `{endpoint['path_template']}` |"
         )
     return "\n".join(rows) + "\n"
 

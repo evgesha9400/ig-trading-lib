@@ -67,7 +67,7 @@ The guarded typed surfaces are `positions.create`, `positions.update`, `position
 
 Do not retry a failed mutation yourself. The client raises `AmbiguousExecutionError` when a network failure means IG may have accepted it; resolve that outcome with the deal reference or a confirmation before issuing another order.
 
-## REST services and versions
+## REST services
 
 Canonical services normalise provider keys to `snake_case` and paginate with `Page` plus lazy `iter_pages` / async `iter_pages` methods.
 
@@ -80,15 +80,7 @@ with IGClient(config) as client:
     confirmation = client.confirms.get("/DEAL_REFERENCE")
 ```
 
-The version facades preserve raw provider payloads and provide a generic explicit-version path entry point. Use them when a provider-specific schema or historical endpoint version is required; they do not promise a dedicated helper for every documented operation.
-
-```python
-with IGClient(config) as client:
-    raw_market = client.v4.markets.get("/CS.D.EURUSD.TODAY.IP")
-    raw_prices = client.v2.prices.get("/CS.D.EURUSD.TODAY.IP/MINUTE/10")
-```
-
-The endpoint/version catalog is maintained in `ig_trading_lib.endpoint_catalog` and contract-tested against the maintained `DOCUMENTED_ENDPOINTS` catalog.
+The endpoint catalog is maintained in `ig_trading_lib.endpoint_catalog` and contract-tested against the maintained `DOCUMENTED_ENDPOINTS` catalog.
 
 ## Streaming
 
@@ -155,8 +147,6 @@ poetry build
 ```
 
 The default test suite is deterministic and has no IG network dependency. Demo integration runs are deliberately separate and must be invoked only with explicit credentials and opt-in approval. Never store credentials in the repository.
-
-See [the v2-to-v3 migration guide](docs/migration-v2-to-v3.md) for the clean-break migration.
 
 ## Documentation releases
 

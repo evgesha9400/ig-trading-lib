@@ -4,10 +4,10 @@ Create one immutable `IGConfig` for each IG environment and account context. The
 
 ## Authentication flow
 
-| Credential object | Session version | Use when |
-| --- | --- | --- |
-| `SessionCredentials` | v2 | Your IG application uses the legacy session flow. |
-| `OAuthCredentials` | v3 | Your IG application uses the OAuth session flow. |
+| Credential object | Use when |
+| --- | --- |
+| `SessionCredentials` | Your IG application uses session credentials. |
+| `OAuthCredentials` | Your IG application uses OAuth credentials. |
 
 Both objects require `api_key`, `identifier`, and `password`. Their representations redact those values, but application code must still keep them in a secret manager or environment variables and must never commit them.
 

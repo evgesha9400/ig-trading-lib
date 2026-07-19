@@ -1,6 +1,6 @@
 # Client sentiment
 
-`client.sentiment` is the typed v1 client-sentiment resource. Use `get()` with the appropriate provider suffix for a market or related-market request. Response fields remain IG-controlled and are normalised to `snake_case`.
+`client.sentiment` is the typed client-sentiment resource. Use `get()` with the appropriate provider suffix for a market or related-market request. Response fields remain IG-controlled and are normalised to `snake_case`.
 
 ```python
 with IGClient(config) as client:

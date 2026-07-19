@@ -15,7 +15,7 @@ class Environment(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class SessionCredentials:
-    """Credentials for IG's legacy v1/v2 session authentication."""
+    """Credentials for IG session authentication."""
 
     api_key: str = field(repr=False)
     identifier: str = field(repr=False)
@@ -25,7 +25,7 @@ class SessionCredentials:
 
 @dataclass(frozen=True, slots=True)
 class OAuthCredentials:
-    """Credentials for IG's OAuth v3 session authentication."""
+    """Credentials for IG OAuth session authentication."""
 
     api_key: str = field(repr=False)
     identifier: str = field(repr=False)

@@ -1,6 +1,6 @@
 # Watchlists
 
-`client.watchlists` is the typed v1 watchlist resource. It exposes `list()` for one page, `get()` for one watchlist, and generic `create()`, `update()`, and `delete()` methods for provider-defined watchlist operations.
+`client.watchlists` is the typed watchlist resource. It exposes `list()` for one page, `get()` for one watchlist, and generic `create()`, `update()`, and `delete()` methods for provider-defined watchlist operations.
 
 ## Mutation boundary
 
@@ -12,6 +12,6 @@ with IGClient(config, trading_permit=TradingPermit()) as client:
     response = client.watchlists.create(provider_request)
 ```
 
-For a route that needs an exact version or suffix, use a version façade and consult [Trading safety](../api-guide/trading-safety.md).
+Consult [Trading safety](../api-guide/trading-safety.md) before changing a live watchlist.
 
 --8<-- "docs/rest-api-reference/.watchlists-endpoints.md"

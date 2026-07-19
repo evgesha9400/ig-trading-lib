@@ -6,6 +6,6 @@
 
 Cost and charge requests that create or amend an indicative quote are guarded for live accounts. A `TradingPermit()` expresses intent; it does not validate provider request fields or make a quote executable.
 
-Use the exact compatibility table below before choosing an operation. For an IG version or path not represented by the high-level resource, use a version façade.
+Use the operation table below before choosing a supported cost or charge operation.
 
 --8<-- "docs/rest-api-reference/.indicative-costs-and-charges-endpoints.md"

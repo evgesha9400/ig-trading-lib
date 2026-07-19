@@ -154,7 +154,7 @@ def test_api_index_and_llms_are_exactly_generated_from_the_public_contract() -> 
         expected_index,
         site_root=False,
     )
-    assert actual_index["schema_version"] == 3
+    assert actual_index["schema_version"] == 4
     assert actual_index["contract_schema_version"] == contract["schema_version"]
     assert actual_index["root_exports"] == contract["root_exports"]
     assert actual_index["endpoints"] == endpoints
@@ -217,17 +217,32 @@ def test_generated_index_declares_its_canonical_sources() -> None:
         "prices",
         "session",
         "streaming",
-        "v1",
-        "v2",
-        "v3",
-        "v4",
     }
+    assert all("versions" not in endpoint for endpoint in index["endpoints"])
     assert "ig_trading_lib.async_services.AsyncResourceClient" not in index["entry_points"]
     assert (
         "ig_trading_lib.async_services.AsyncResourceClient"
         in index["complete_reference"]["classes"]
     )
     assert any(endpoint["name"] == "market_search" for endpoint in index["endpoints"])
+
+
+def test_documentation_exposes_only_the_current_library_surface() -> None:
+    """Legacy migration and version-facade guidance must never re-enter published docs."""
+    documentation_paths = [
+        PROJECT_ROOT / "README.md",
+        PROJECT_ROOT / "llms.txt",
+        *(PROJECT_ROOT / "docs").rglob("*.json"),
+        *(PROJECT_ROOT / "docs").rglob("*.md"),
+        *(PROJECT_ROOT / "docs").rglob("*.yml"),
+        PROJECT_ROOT / "mkdocs.yml",
+    ]
+    documentation = "\n".join(path.read_text(encoding="utf-8") for path in documentation_paths)
+
+    assert "v2" not in documentation.casefold()
+    assert "migration" not in documentation.casefold()
+    assert not (PROJECT_ROOT / "docs" / "migration-v2-to-v3.md").exists()
+    assert not (PROJECT_ROOT / "docs" / "reference" / "version-compatibility.md").exists()
 
 
 def test_mkdocs_navigation_and_search_mirror_ig_api_information_architecture(
@@ -451,7 +466,7 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 heading.strip() for heading in reference.locator("main h2").all_text_contents()
             ]
 
-            assert reference_headings[:10] == [
+            assert reference_headings[:8] == [
                 "Client construction",
                 "Client façades",
                 "Configuration and safety primitives",
@@ -460,8 +475,6 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 "Synchronous services",
                 "Asynchronous services",
                 "Streaming",
-                "Explicit-version façades",
-                "Endpoint catalogue model",
             ]
             assert not any(heading.startswith("ig_trading_lib.") for heading in reference_headings)
             reference_text = reference.locator("main").inner_text()

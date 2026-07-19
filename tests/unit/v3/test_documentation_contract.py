@@ -82,7 +82,7 @@ def test_documentation_contract_rejects_missing_rest_reference_entries(tmp_path:
     endpoint_table = project_root / "docs" / "rest-api-reference" / ".account-endpoints.md"
     endpoint_table.write_text(
         endpoint_table.read_text(encoding="utf-8").replace(
-            "| accounts | GET | `/accounts` | v1 |\n", "", 1
+            "| accounts | GET | `/accounts` |\n", "", 1
         ),
         encoding="utf-8",
     )

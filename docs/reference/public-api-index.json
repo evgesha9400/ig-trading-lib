@@ -487,23 +487,6 @@
         ],
         "methods": {}
       },
-      "ig_trading_lib.endpoint_catalog.EndpointSpec": {
-        "fields": [
-          "name",
-          "path_template",
-          "method",
-          "versions",
-          "category"
-        ],
-        "methods": {}
-      },
-      "ig_trading_lib.endpoint_catalog.RestReferenceSection": {
-        "fields": [
-          "slug",
-          "title"
-        ],
-        "methods": {}
-      },
       "ig_trading_lib.errors.AmbiguousExecutionError": {
         "fields": [],
         "methods": {}
@@ -931,300 +914,6 @@
             "returns": "Iterator[StreamUpdate]"
           }
         }
-      },
-      "ig_trading_lib.versions.AsyncVersionFacade": {
-        "constructor": {
-          "exceptions": [],
-          "parameters": [
-            {
-              "description": "Authenticated HTTP transport used for provider requests.",
-              "name": "transport",
-              "type": "AsyncTransport"
-            },
-            {
-              "description": "Live-mutation guard used before protected requests.",
-              "name": "guard",
-              "type": "TradingGuard"
-            },
-            {
-              "description": "Explicit IG REST API version.",
-              "name": "version",
-              "type": "int"
-            }
-          ],
-          "returns": "None"
-        },
-        "fields": [],
-        "methods": {
-          "request": {
-            "exceptions": [],
-            "parameters": [
-              {
-                "description": "HTTP method for the explicit-version request.",
-                "name": "method",
-                "type": "str"
-              },
-              {
-                "description": "IG REST resource path.",
-                "name": "path",
-                "type": "str"
-              },
-              {
-                "description": "Optional query parameters sent to IG.",
-                "name": "params",
-                "type": "Mapping[str, Any] | None"
-              },
-              {
-                "description": "Optional JSON request body mapping.",
-                "name": "json",
-                "type": "Mapping[str, Any] | None"
-              }
-            ],
-            "returns": "Any"
-          }
-        }
-      },
-      "ig_trading_lib.versions.AsyncVersionedResource": {
-        "constructor": {
-          "exceptions": [],
-          "parameters": [
-            {
-              "description": "Authenticated HTTP transport used for provider requests.",
-              "name": "transport",
-              "type": "AsyncTransport"
-            },
-            {
-              "description": "Live-mutation guard used before protected requests.",
-              "name": "guard",
-              "type": "TradingGuard"
-            },
-            {
-              "description": "Explicit IG REST API version.",
-              "name": "version",
-              "type": "int"
-            },
-            {
-              "description": "IG REST resource path.",
-              "name": "path",
-              "type": "str"
-            }
-          ],
-          "returns": "None"
-        },
-        "fields": [],
-        "methods": {
-          "create": {
-            "exceptions": [],
-            "parameters": [
-              {
-                "description": "Provider request body mapping.",
-                "name": "body",
-                "type": "Mapping[str, Any]"
-              },
-              {
-                "description": "Path suffix appended to the resource route.",
-                "name": "suffix",
-                "type": "str"
-              }
-            ],
-            "returns": "Any"
-          },
-          "delete": {
-            "exceptions": [],
-            "parameters": [
-              {
-                "description": "Path suffix appended to the resource route.",
-                "name": "suffix",
-                "type": "str"
-              },
-              {
-                "description": "Optional query parameters sent to IG.",
-                "name": "params",
-                "type": "Mapping[str, Any] | None"
-              }
-            ],
-            "returns": "Any"
-          },
-          "get": {
-            "exceptions": [],
-            "parameters": [
-              {
-                "description": "Path suffix appended to the resource route.",
-                "name": "suffix",
-                "type": "str"
-              },
-              {
-                "description": "Optional query parameters sent to IG.",
-                "name": "params",
-                "type": "Mapping[str, Any] | None"
-              }
-            ],
-            "returns": "Any"
-          },
-          "update": {
-            "exceptions": [],
-            "parameters": [
-              {
-                "description": "Provider request body mapping.",
-                "name": "body",
-                "type": "Mapping[str, Any]"
-              },
-              {
-                "description": "Path suffix appended to the resource route.",
-                "name": "suffix",
-                "type": "str"
-              }
-            ],
-            "returns": "Any"
-          }
-        }
-      },
-      "ig_trading_lib.versions.VersionFacade": {
-        "constructor": {
-          "exceptions": [],
-          "parameters": [
-            {
-              "description": "Authenticated HTTP transport used for provider requests.",
-              "name": "transport",
-              "type": "SyncTransport"
-            },
-            {
-              "description": "Live-mutation guard used before protected requests.",
-              "name": "guard",
-              "type": "TradingGuard"
-            },
-            {
-              "description": "Explicit IG REST API version.",
-              "name": "version",
-              "type": "int"
-            }
-          ],
-          "returns": "None"
-        },
-        "fields": [],
-        "methods": {
-          "request": {
-            "exceptions": [],
-            "parameters": [
-              {
-                "description": "HTTP method for the explicit-version request.",
-                "name": "method",
-                "type": "str"
-              },
-              {
-                "description": "IG REST resource path.",
-                "name": "path",
-                "type": "str"
-              },
-              {
-                "description": "Optional query parameters sent to IG.",
-                "name": "params",
-                "type": "Mapping[str, Any] | None"
-              },
-              {
-                "description": "Optional JSON request body mapping.",
-                "name": "json",
-                "type": "Mapping[str, Any] | None"
-              }
-            ],
-            "returns": "Any"
-          }
-        }
-      },
-      "ig_trading_lib.versions.VersionedResource": {
-        "constructor": {
-          "exceptions": [],
-          "parameters": [
-            {
-              "description": "Authenticated HTTP transport used for provider requests.",
-              "name": "transport",
-              "type": "SyncTransport"
-            },
-            {
-              "description": "Live-mutation guard used before protected requests.",
-              "name": "guard",
-              "type": "TradingGuard"
-            },
-            {
-              "description": "Explicit IG REST API version.",
-              "name": "version",
-              "type": "int"
-            },
-            {
-              "description": "IG REST resource path.",
-              "name": "path",
-              "type": "str"
-            }
-          ],
-          "returns": "None"
-        },
-        "fields": [],
-        "methods": {
-          "create": {
-            "exceptions": [],
-            "parameters": [
-              {
-                "description": "Provider request body mapping.",
-                "name": "body",
-                "type": "Mapping[str, Any]"
-              },
-              {
-                "description": "Path suffix appended to the resource route.",
-                "name": "suffix",
-                "type": "str"
-              }
-            ],
-            "returns": "Any"
-          },
-          "delete": {
-            "exceptions": [],
-            "parameters": [
-              {
-                "description": "Path suffix appended to the resource route.",
-                "name": "suffix",
-                "type": "str"
-              },
-              {
-                "description": "Optional query parameters sent to IG.",
-                "name": "params",
-                "type": "Mapping[str, Any] | None"
-              }
-            ],
-            "returns": "Any"
-          },
-          "get": {
-            "exceptions": [],
-            "parameters": [
-              {
-                "description": "Path suffix appended to the resource route.",
-                "name": "suffix",
-                "type": "str"
-              },
-              {
-                "description": "Optional query parameters sent to IG.",
-                "name": "params",
-                "type": "Mapping[str, Any] | None"
-              }
-            ],
-            "returns": "Any"
-          },
-          "update": {
-            "exceptions": [],
-            "parameters": [
-              {
-                "description": "Provider request body mapping.",
-                "name": "body",
-                "type": "Mapping[str, Any]"
-              },
-              {
-                "description": "Path suffix appended to the resource route.",
-                "name": "suffix",
-                "type": "str"
-              }
-            ],
-            "returns": "Any"
-          }
-        }
       }
     },
     "exceptions": {
@@ -1274,477 +963,307 @@
       "category": "account",
       "method": "GET",
       "name": "accounts",
-      "path_template": "/accounts",
-      "versions": [
-        1
-      ]
+      "path_template": "/accounts"
     },
     {
       "category": "account",
       "method": "GET",
       "name": "account_preferences",
-      "path_template": "/accounts/preferences",
-      "versions": [
-        1
-      ]
+      "path_template": "/accounts/preferences"
     },
     {
       "category": "account",
       "method": "PUT",
       "name": "account_preferences",
-      "path_template": "/accounts/preferences",
-      "versions": [
-        1
-      ]
+      "path_template": "/accounts/preferences"
     },
     {
       "category": "account",
       "method": "GET",
       "name": "activity",
-      "path_template": "/history/activity",
-      "versions": [
-        2,
-        3
-      ]
+      "path_template": "/history/activity"
     },
     {
       "category": "account",
       "method": "GET",
       "name": "activity_date_range",
-      "path_template": "/history/activity/{from_date}/{to_date}",
-      "versions": [
-        1
-      ]
+      "path_template": "/history/activity/{from_date}/{to_date}"
     },
     {
       "category": "account",
       "method": "GET",
       "name": "activity_period",
-      "path_template": "/history/activity/{last_period}",
-      "versions": [
-        1
-      ]
+      "path_template": "/history/activity/{last_period}"
     },
     {
       "category": "account",
       "method": "GET",
       "name": "transactions",
-      "path_template": "/history/transactions",
-      "versions": [
-        2
-      ]
+      "path_template": "/history/transactions"
     },
     {
       "category": "account",
       "method": "GET",
       "name": "transactions_date_range",
-      "path_template": "/history/transactions/{transaction_type}/{from_date}/{to_date}",
-      "versions": [
-        1
-      ]
+      "path_template": "/history/transactions/{transaction_type}/{from_date}/{to_date}"
     },
     {
       "category": "account",
       "method": "GET",
       "name": "transactions_period",
-      "path_template": "/history/transactions/{transaction_type}/{last_period}",
-      "versions": [
-        1
-      ]
+      "path_template": "/history/transactions/{transaction_type}/{last_period}"
     },
     {
       "category": "dealing",
       "method": "GET",
       "name": "confirmation",
-      "path_template": "/confirms/{deal_reference}",
-      "versions": [
-        1
-      ]
+      "path_template": "/confirms/{deal_reference}"
     },
     {
       "category": "dealing",
       "method": "GET",
       "name": "positions",
-      "path_template": "/positions",
-      "versions": [
-        1,
-        2
-      ]
+      "path_template": "/positions"
     },
     {
       "category": "dealing",
       "method": "GET",
       "name": "position",
-      "path_template": "/positions/{deal_id}",
-      "versions": [
-        1,
-        2
-      ]
+      "path_template": "/positions/{deal_id}"
     },
     {
       "category": "dealing",
       "method": "POST",
       "name": "otc_position",
-      "path_template": "/positions/otc",
-      "versions": [
-        1,
-        2
-      ]
+      "path_template": "/positions/otc"
     },
     {
       "category": "dealing",
       "method": "DELETE",
       "name": "otc_position",
-      "path_template": "/positions/otc",
-      "versions": [
-        1
-      ]
+      "path_template": "/positions/otc"
     },
     {
       "category": "dealing",
       "method": "PUT",
       "name": "otc_position_by_deal",
-      "path_template": "/positions/otc/{deal_id}",
-      "versions": [
-        1,
-        2
-      ]
+      "path_template": "/positions/otc/{deal_id}"
     },
     {
       "category": "dealing",
       "method": "GET",
       "name": "working_orders",
-      "path_template": "/working-orders",
-      "versions": [
-        1,
-        2
-      ]
+      "path_template": "/working-orders"
     },
     {
       "category": "dealing",
       "method": "POST",
       "name": "otc_working_order",
-      "path_template": "/working-orders/otc",
-      "versions": [
-        1,
-        2
-      ]
+      "path_template": "/working-orders/otc"
     },
     {
       "category": "dealing",
       "method": "DELETE",
       "name": "otc_working_order_by_deal",
-      "path_template": "/working-orders/otc/{deal_id}",
-      "versions": [
-        1,
-        2
-      ]
+      "path_template": "/working-orders/otc/{deal_id}"
     },
     {
       "category": "dealing",
       "method": "PUT",
       "name": "otc_working_order_by_deal",
-      "path_template": "/working-orders/otc/{deal_id}",
-      "versions": [
-        1,
-        2
-      ]
+      "path_template": "/working-orders/otc/{deal_id}"
     },
     {
       "category": "dealing",
       "method": "GET",
       "name": "repeat_dealing_window",
-      "path_template": "/repeat-dealing-window",
-      "versions": [
-        1
-      ]
+      "path_template": "/repeat-dealing-window"
     },
     {
       "category": "markets",
       "method": "GET",
       "name": "categories",
-      "path_template": "/categories",
-      "versions": [
-        1
-      ]
+      "path_template": "/categories"
     },
     {
       "category": "markets",
       "method": "GET",
       "name": "category_instruments",
-      "path_template": "/categories/{category_id}/instruments",
-      "versions": [
-        1
-      ]
+      "path_template": "/categories/{category_id}/instruments"
     },
     {
       "category": "markets",
       "method": "GET",
       "name": "markets",
-      "path_template": "/markets",
-      "versions": [
-        1,
-        2
-      ]
+      "path_template": "/markets"
     },
     {
       "category": "markets",
       "method": "GET",
       "name": "market",
-      "path_template": "/markets/{epic}",
-      "versions": [
-        1,
-        2,
-        3,
-        4
-      ]
+      "path_template": "/markets/{epic}"
     },
     {
       "category": "markets",
       "method": "GET",
       "name": "market_search",
-      "path_template": "/markets",
-      "versions": [
-        1
-      ]
+      "path_template": "/markets"
     },
     {
       "category": "markets",
       "method": "GET",
       "name": "prices",
-      "path_template": "/prices/{epic}",
-      "versions": [
-        3
-      ]
+      "path_template": "/prices/{epic}"
     },
     {
       "category": "markets",
       "method": "GET",
       "name": "prices_points",
-      "path_template": "/prices/{epic}/{resolution}/{num_points}",
-      "versions": [
-        1,
-        2
-      ]
+      "path_template": "/prices/{epic}/{resolution}/{num_points}"
     },
     {
       "category": "markets",
       "method": "GET",
       "name": "prices_date_range",
-      "path_template": "/prices/{epic}/{resolution}/{start_date}/{end_date}",
-      "versions": [
-        1,
-        2
-      ]
+      "path_template": "/prices/{epic}/{resolution}/{start_date}/{end_date}"
     },
     {
       "category": "watchlists",
       "method": "GET",
       "name": "watchlists",
-      "path_template": "/watchlists",
-      "versions": [
-        1
-      ]
+      "path_template": "/watchlists"
     },
     {
       "category": "watchlists",
       "method": "POST",
       "name": "watchlists",
-      "path_template": "/watchlists",
-      "versions": [
-        1
-      ]
+      "path_template": "/watchlists"
     },
     {
       "category": "watchlists",
       "method": "GET",
       "name": "watchlist",
-      "path_template": "/watchlists/{watchlist_id}",
-      "versions": [
-        1
-      ]
+      "path_template": "/watchlists/{watchlist_id}"
     },
     {
       "category": "watchlists",
       "method": "PUT",
       "name": "watchlist",
-      "path_template": "/watchlists/{watchlist_id}",
-      "versions": [
-        1
-      ]
+      "path_template": "/watchlists/{watchlist_id}"
     },
     {
       "category": "watchlists",
       "method": "DELETE",
       "name": "watchlist",
-      "path_template": "/watchlists/{watchlist_id}",
-      "versions": [
-        1
-      ]
+      "path_template": "/watchlists/{watchlist_id}"
     },
     {
       "category": "watchlists",
       "method": "DELETE",
       "name": "watchlist_market",
-      "path_template": "/watchlists/{watchlist_id}/{epic}",
-      "versions": [
-        1
-      ]
+      "path_template": "/watchlists/{watchlist_id}/{epic}"
     },
     {
       "category": "client-sentiment",
       "method": "GET",
       "name": "client_sentiment",
-      "path_template": "/client-sentiment",
-      "versions": [
-        1
-      ]
+      "path_template": "/client-sentiment"
     },
     {
       "category": "client-sentiment",
       "method": "GET",
       "name": "client_sentiment_market",
-      "path_template": "/client-sentiment/{market_id}",
-      "versions": [
-        1
-      ]
+      "path_template": "/client-sentiment/{market_id}"
     },
     {
       "category": "client-sentiment",
       "method": "GET",
       "name": "client_sentiment_related",
-      "path_template": "/client-sentiment/related/{market_id}",
-      "versions": [
-        1
-      ]
+      "path_template": "/client-sentiment/related/{market_id}"
     },
     {
       "category": "login",
       "method": "GET",
       "name": "session",
-      "path_template": "/session",
-      "versions": [
-        1
-      ]
+      "path_template": "/session"
     },
     {
       "category": "login",
       "method": "DELETE",
       "name": "session",
-      "path_template": "/session",
-      "versions": [
-        1
-      ]
+      "path_template": "/session"
     },
     {
       "category": "login",
       "method": "POST",
       "name": "session",
-      "path_template": "/session",
-      "versions": [
-        1,
-        2,
-        3
-      ]
+      "path_template": "/session"
     },
     {
       "category": "login",
       "method": "PUT",
       "name": "session",
-      "path_template": "/session",
-      "versions": [
-        1
-      ]
+      "path_template": "/session"
     },
     {
       "category": "login",
       "method": "GET",
       "name": "encryption_key",
-      "path_template": "/session/encryptionKey",
-      "versions": [
-        1
-      ]
+      "path_template": "/session/encryptionKey"
     },
     {
       "category": "login",
       "method": "POST",
       "name": "refresh_token",
-      "path_template": "/session/refresh-token",
-      "versions": [
-        1
-      ]
+      "path_template": "/session/refresh-token"
     },
     {
       "category": "indicative-costs-and-charges",
       "method": "POST",
       "name": "indicative_costs_close",
-      "path_template": "/indicativecostsandcharges/close",
-      "versions": [
-        1
-      ]
+      "path_template": "/indicativecostsandcharges/close"
     },
     {
       "category": "indicative-costs-and-charges",
       "method": "GET",
       "name": "indicative_costs_durable_medium",
-      "path_template": "/indicativecostsandcharges/durablemedium/{indicative_quote_reference}",
-      "versions": [
-        1
-      ]
+      "path_template": "/indicativecostsandcharges/durablemedium/{indicative_quote_reference}"
     },
     {
       "category": "indicative-costs-and-charges",
       "method": "POST",
       "name": "indicative_costs_edit",
-      "path_template": "/indicativecostsandcharges/edit",
-      "versions": [
-        1
-      ]
+      "path_template": "/indicativecostsandcharges/edit"
     },
     {
       "category": "indicative-costs-and-charges",
       "method": "GET",
       "name": "indicative_costs_history",
-      "path_template": "/indicativecostsandcharges/history/from/{from_date}/to/{to_date}",
-      "versions": [
-        1
-      ]
+      "path_template": "/indicativecostsandcharges/history/from/{from_date}/to/{to_date}"
     },
     {
       "category": "indicative-costs-and-charges",
       "method": "POST",
       "name": "indicative_costs_open",
-      "path_template": "/indicativecostsandcharges/open",
-      "versions": [
-        1
-      ]
+      "path_template": "/indicativecostsandcharges/open"
     },
     {
       "category": "general",
       "method": "GET",
       "name": "applications",
-      "path_template": "/operations/application",
-      "versions": [
-        1
-      ]
+      "path_template": "/operations/application"
     },
     {
       "category": "general",
       "method": "PUT",
       "name": "applications",
-      "path_template": "/operations/application",
-      "versions": [
-        1
-      ]
+      "path_template": "/operations/application"
     },
     {
       "category": "general",
       "method": "PUT",
       "name": "application_disable",
-      "path_template": "/operations/application/disable",
-      "versions": [
-        1
-      ]
+      "path_template": "/operations/application/disable"
     }
   ],
   "entry_points": {
@@ -3061,134 +2580,6 @@
             }
           },
           "reference": "ig_trading_lib.streaming.AsyncStreamingClient"
-        },
-        {
-          "name": "v1",
-          "operations": {
-            "request": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "HTTP method for the explicit-version request.",
-                  "name": "method",
-                  "type": "str"
-                },
-                {
-                  "description": "IG REST resource path.",
-                  "name": "path",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Optional JSON request body mapping.",
-                  "name": "json",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "Any"
-            }
-          },
-          "reference": "ig_trading_lib.versions.AsyncVersionFacade"
-        },
-        {
-          "name": "v2",
-          "operations": {
-            "request": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "HTTP method for the explicit-version request.",
-                  "name": "method",
-                  "type": "str"
-                },
-                {
-                  "description": "IG REST resource path.",
-                  "name": "path",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Optional JSON request body mapping.",
-                  "name": "json",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "Any"
-            }
-          },
-          "reference": "ig_trading_lib.versions.AsyncVersionFacade"
-        },
-        {
-          "name": "v3",
-          "operations": {
-            "request": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "HTTP method for the explicit-version request.",
-                  "name": "method",
-                  "type": "str"
-                },
-                {
-                  "description": "IG REST resource path.",
-                  "name": "path",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Optional JSON request body mapping.",
-                  "name": "json",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "Any"
-            }
-          },
-          "reference": "ig_trading_lib.versions.AsyncVersionFacade"
-        },
-        {
-          "name": "v4",
-          "operations": {
-            "request": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "HTTP method for the explicit-version request.",
-                  "name": "method",
-                  "type": "str"
-                },
-                {
-                  "description": "IG REST resource path.",
-                  "name": "path",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Optional JSON request body mapping.",
-                  "name": "json",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "Any"
-            }
-          },
-          "reference": "ig_trading_lib.versions.AsyncVersionFacade"
         }
       ],
       "reference": "ig_trading_lib.client.AsyncIGClient",
@@ -4518,134 +3909,6 @@
             }
           },
           "reference": "ig_trading_lib.streaming.StreamingClient"
-        },
-        {
-          "name": "v1",
-          "operations": {
-            "request": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "HTTP method for the explicit-version request.",
-                  "name": "method",
-                  "type": "str"
-                },
-                {
-                  "description": "IG REST resource path.",
-                  "name": "path",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Optional JSON request body mapping.",
-                  "name": "json",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "Any"
-            }
-          },
-          "reference": "ig_trading_lib.versions.VersionFacade"
-        },
-        {
-          "name": "v2",
-          "operations": {
-            "request": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "HTTP method for the explicit-version request.",
-                  "name": "method",
-                  "type": "str"
-                },
-                {
-                  "description": "IG REST resource path.",
-                  "name": "path",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Optional JSON request body mapping.",
-                  "name": "json",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "Any"
-            }
-          },
-          "reference": "ig_trading_lib.versions.VersionFacade"
-        },
-        {
-          "name": "v3",
-          "operations": {
-            "request": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "HTTP method for the explicit-version request.",
-                  "name": "method",
-                  "type": "str"
-                },
-                {
-                  "description": "IG REST resource path.",
-                  "name": "path",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Optional JSON request body mapping.",
-                  "name": "json",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "Any"
-            }
-          },
-          "reference": "ig_trading_lib.versions.VersionFacade"
-        },
-        {
-          "name": "v4",
-          "operations": {
-            "request": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "HTTP method for the explicit-version request.",
-                  "name": "method",
-                  "type": "str"
-                },
-                {
-                  "description": "IG REST resource path.",
-                  "name": "path",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Optional JSON request body mapping.",
-                  "name": "json",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "Any"
-            }
-          },
-          "reference": "ig_trading_lib.versions.VersionFacade"
         }
       ],
       "reference": "ig_trading_lib.client.IGClient",
@@ -4679,11 +3942,6 @@
       "id": "permit-scope",
       "path": "docs/api-guide/trading-safety.md",
       "text": "Guarded typed mutations are positions.create, positions.update, positions.close, accounts.update_preferences, and create, update, or delete on watchlists, working_orders, costs, and applications."
-    },
-    {
-      "id": "raw-version-scope",
-      "path": "docs/api-guide/trading-safety.md",
-      "text": "Every POST, PUT, or DELETE through a v1, v2, v3, or v4 VersionFacade or VersionedResource requires TradingPermit on a live account."
     },
     {
       "id": "unguarded-resource-scope",
@@ -4759,5 +4017,5 @@
     "TradingPermit",
     "TransportError"
   ],
-  "schema_version": 3
+  "schema_version": 4
 }

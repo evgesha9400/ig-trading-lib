@@ -38,13 +38,11 @@ MANIFEST_VALUES = {
 SOURCE_MODULES = (
     "ig_trading_lib.client",
     "ig_trading_lib.core",
-    "ig_trading_lib.endpoint_catalog",
     "ig_trading_lib.errors",
     "ig_trading_lib.models",
     "ig_trading_lib.services",
     "ig_trading_lib.async_services",
     "ig_trading_lib.streaming",
-    "ig_trading_lib.versions",
 )
 PUBLIC_API_REFERENCE_PATH = Path("docs/reference/public-api.md")
 KNOWN_EXCEPTIONS = frozenset(
@@ -513,7 +511,7 @@ def _validate_rest_reference(paths: DocumentationPaths, contract: Mapping[str, A
 
 def _source_endpoint_reference(
     project_root: Path,
-) -> tuple[tuple[str, ...], dict[str, list[tuple[str, str, str, str]]]]:
+) -> tuple[tuple[str, ...], dict[str, list[tuple[str, str, str]]]]:
     """Load official section order and endpoint rows directly from source metadata."""
     source_path = str(project_root / "src")
     sys.path.insert(0, source_path)
@@ -528,7 +526,6 @@ def _source_endpoint_reference(
                     endpoint.name,
                     endpoint.method,
                     endpoint.path_template,
-                    _format_versions(endpoint.versions),
                 )
             )
         return sections, rows
@@ -536,22 +533,18 @@ def _source_endpoint_reference(
         sys.path.remove(source_path)
 
 
-def _documented_endpoint_rows(path: Path) -> list[tuple[str, str, str, str]]:
+def _documented_endpoint_rows(path: Path) -> list[tuple[str, str, str]]:
     if not path.is_file():
         raise DocumentationContractError(f"Missing generated REST reference table: {path}")
-    rows: list[tuple[str, str, str, str]] = []
+    rows: list[tuple[str, str, str]] = []
     for line in path.read_text(encoding="utf-8").splitlines():
         cells = [cell.strip().strip("`") for cell in line.strip().strip("|").split("|")]
-        if len(cells) != 4 or cells[0] in {"Operation", "---"}:
+        if len(cells) != 3 or cells[0] in {"Operation", "---"}:
             continue
         if all(cell and set(cell) <= {"-", ":"} for cell in cells):
             continue
         rows.append(tuple(cells))
     return rows
-
-
-def _format_versions(versions: tuple[int, ...]) -> str:
-    return ", ".join(f"v{version}" for version in versions)
 
 
 if __name__ == "__main__":
