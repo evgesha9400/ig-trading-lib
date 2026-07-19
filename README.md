@@ -167,7 +167,9 @@ Documentation is validated on pull requests, `main`, and `develop`, but those ru
 | `v3.0.0` | `https://evgesha9400.github.io/ig-trading-lib/3.0.0/` | Updated to `3.0.0` |
 | `v3.1.0-rc.1` | `https://evgesha9400.github.io/ig-trading-lib/3.1.0-rc.1/` | Unchanged |
 
-Each versioned site is immutable: the workflow rejects an existing version before `mike` deploys it. Publish a corrected release under a new SemVer tag instead of changing a published tag.
+Each versioned site is immutable: a tagged workflow rejects an existing version before `mike` deploys it. Publish a corrected release under a new SemVer tag instead of changing published documentation.
+
+If a tagged run has already deployed documentation from the exact tag commit but fails before creating its GitHub Release record, maintainers may use the manual `release_tag` recovery input. The workflow verifies the deployment provenance in `gh-pages`, retains the existing immutable files without writing them, then completes only the missing release record and portal hand-off.
 
 ```bash
 git tag -a v3.0.0 -m "Release v3.0.0"

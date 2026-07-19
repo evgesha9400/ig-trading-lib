@@ -55,6 +55,26 @@ def test_release_documentation_workflow_configures_a_generated_docs_commit_ident
     )
 
 
+def test_release_documentation_workflow_allows_only_proven_existing_docs_to_resume() -> None:
+    """Manual recovery retains, rather than replaces, docs from the exact tag commit."""
+    workflow = (PROJECT_ROOT / WORKFLOW_PATH).read_text(encoding="utf-8")
+
+    assert "ALLOW_EXISTING_DOCUMENTATION:" in workflow
+    assert "COMMIT: ${{ needs.validate-release.outputs.commit }}" in workflow
+    assert "git log origin/gh-pages --format=%s" in workflow
+    assert "does not prove deployment from release commit" in workflow
+    assert 'echo "DOCUMENTATION_ALREADY_PUBLISHED=true" >> "$GITHUB_ENV"' in workflow
+    assert 'if [[ "${DOCUMENTATION_ALREADY_PUBLISHED:-false}" == "true" ]]; then' in workflow
+
+
+def test_release_documentation_workflow_scopes_release_commands_to_this_repository() -> None:
+    """The release-record job must not depend on a disposable runner checkout."""
+    workflow = (PROJECT_ROOT / WORKFLOW_PATH).read_text(encoding="utf-8")
+
+    assert 'gh release view "$TAG" --repo "$LIBRARY_REPOSITORY"' in workflow
+    assert 'gh release create "$TAG" "${release_flags[@]}" --repo "$LIBRARY_REPOSITORY"' in workflow
+
+
 def test_release_documentation_workflow_rejects_an_unpinned_recovery_checkout(
     tmp_path: Path,
 ) -> None:
@@ -101,6 +121,38 @@ def test_release_documentation_workflow_rejects_a_shallow_release_checkout(
     workflow_path.write_text(workflow.replace("fetch-depth: 0", "fetch-depth: 1"), encoding="utf-8")
 
     with pytest.raises(ReleaseWorkflowError, match="exact release source"):
+        validate_release_workflow(tmp_path)
+
+
+def test_release_documentation_workflow_rejects_an_unproven_existing_docs_recovery(
+    tmp_path: Path,
+) -> None:
+    """A manual retry cannot treat an unrelated Pages version as this release."""
+    workflow_path = tmp_path / WORKFLOW_PATH
+    workflow_path.parent.mkdir(parents=True)
+    workflow = (PROJECT_ROOT / WORKFLOW_PATH).read_text(encoding="utf-8")
+    workflow_path.write_text(
+        workflow.replace("git log origin/gh-pages --format=%s", "git log --format=%s"),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ReleaseWorkflowError, match="deployment provenance"):
+        validate_release_workflow(tmp_path)
+
+
+def test_release_documentation_workflow_rejects_an_unscoped_release_command(
+    tmp_path: Path,
+) -> None:
+    """A checkout-free release job must name its repository explicitly."""
+    workflow_path = tmp_path / WORKFLOW_PATH
+    workflow_path.parent.mkdir(parents=True)
+    workflow = (PROJECT_ROOT / WORKFLOW_PATH).read_text(encoding="utf-8")
+    workflow_path.write_text(
+        workflow.replace(' --repo "$LIBRARY_REPOSITORY"', ""),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ReleaseWorkflowError, match="fixed repository"):
         validate_release_workflow(tmp_path)
 
 

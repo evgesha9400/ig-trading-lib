@@ -218,6 +218,45 @@ def _validate_publish_job(job: object) -> None:
         "first documentation release",
         "A missing Pages branch must be accepted for the first release.",
     )
+    recovery_environment = _named_step_environment(
+        job, "Refuse to replace immutable versioned documentation"
+    )
+    expected_recovery_environment = {
+        "VERSION": "${{ needs.validate-release.outputs.version }}",
+        "COMMIT": "${{ needs.validate-release.outputs.commit }}",
+        "ALLOW_EXISTING_DOCUMENTATION": (
+            "${{ github.event_name == 'workflow_dispatch' && inputs.release_tag != '' }}"
+        ),
+    }
+    if recovery_environment != expected_recovery_environment:
+        raise ReleaseWorkflowError(
+            "Existing documentation recovery must use only the validated release identity."
+        )
+    _require(
+        commands,
+        'if [[ "$ALLOW_EXISTING_DOCUMENTATION" != "true" ]]; then',
+        "Existing versioned docs must be rejected outside explicit manual recovery.",
+    )
+    _require(
+        commands,
+        "git log origin/gh-pages --format=%s",
+        "Existing documentation recovery must verify deployment provenance.",
+    )
+    _require(
+        commands,
+        "does not prove deployment from release commit",
+        "Existing documentation recovery must reject unproven deployment provenance.",
+    )
+    _require(
+        commands,
+        'echo "DOCUMENTATION_ALREADY_PUBLISHED=true" >> "$GITHUB_ENV"',
+        "Proven existing documentation must be retained without another deployment.",
+    )
+    _require(
+        commands,
+        'if [[ "${DOCUMENTATION_ALREADY_PUBLISHED:-false}" == "true" ]]; then',
+        "Documentation publishing must skip an already proven immutable version.",
+    )
     _require(
         commands, "already exists and is immutable", "Existing versioned docs must be rejected."
     )
@@ -248,7 +287,17 @@ def _validate_github_release_job(job: object) -> None:
         )
     commands = _job_commands(job)
     _require(
+        commands,
+        'gh release view "$TAG" --repo "$LIBRARY_REPOSITORY"',
+        "GitHub Release lookup must name the fixed repository.",
+    )
+    _require(
         commands, "gh release create", "A successful docs deployment must create a GitHub Release."
+    )
+    _require(
+        commands,
+        'gh release create "$TAG" "${release_flags[@]}" --repo "$LIBRARY_REPOSITORY"',
+        "GitHub Release creation must name the fixed repository.",
     )
     if "pypi" in commands.lower() or "twine" in commands.lower():
         raise ReleaseWorkflowError("Release workflow must not publish packages.")
@@ -320,6 +369,21 @@ def _job_environment(job: dict[str, Any]) -> dict[str, str]:
             continue
         environment = step.get("env")
         if isinstance(environment, dict) and "PORTAL_TOKEN" in environment:
+            return {str(key): str(value) for key, value in environment.items()}
+    return {}
+
+
+def _named_step_environment(job: object, name: str) -> dict[str, str]:
+    if not isinstance(job, dict):
+        return {}
+    steps = job.get("steps")
+    if not isinstance(steps, list):
+        return {}
+    for step in steps:
+        if not isinstance(step, dict) or step.get("name") != name:
+            continue
+        environment = step.get("env")
+        if isinstance(environment, dict):
             return {str(key): str(value) for key, value in environment.items()}
     return {}
 

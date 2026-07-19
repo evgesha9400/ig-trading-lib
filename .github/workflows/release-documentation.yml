@@ -195,6 +195,8 @@ jobs:
         shell: bash
         env:
           VERSION: ${{ needs.validate-release.outputs.version }}
+          COMMIT: ${{ needs.validate-release.outputs.commit }}
+          ALLOW_EXISTING_DOCUMENTATION: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag != '' }}
         run: |
           set -euo pipefail
           poetry run mike list --json > /tmp/ig-trading-lib-mike-versions.json
@@ -207,8 +209,20 @@ jobs:
           versions = json.load(sys.stdin)
           raise SystemExit(0 if any(item["version"] == version for item in versions) else 1)
           ' "$VERSION" < /tmp/ig-trading-lib-mike-versions.json; then
-            echo "::error::Documentation for $VERSION already exists and is immutable."
-            exit 1
+            if [[ "$ALLOW_EXISTING_DOCUMENTATION" != "true" ]]; then
+              echo "::error::Documentation for $VERSION already exists and is immutable."
+              exit 1
+            fi
+
+            short_commit="$(git rev-parse --short=7 "$COMMIT")"
+            expected_deployment="Deployed $short_commit to $VERSION with MkDocs"
+            if ! git log origin/gh-pages --format=%s | grep --fixed-strings --quiet -- "$expected_deployment"; then
+              echo "::error::Existing documentation for $VERSION does not prove deployment from release commit $COMMIT."
+              exit 1
+            fi
+
+            echo "Documentation for $VERSION is already immutable from $COMMIT; retaining it during explicit recovery."
+            echo "DOCUMENTATION_ALREADY_PUBLISHED=true" >> "$GITHUB_ENV"
           fi
 
       - name: Publish the immutable version and stable latest alias
@@ -218,6 +232,11 @@ jobs:
           IS_STABLE: ${{ needs.validate-release.outputs.is_stable }}
         run: |
           set -euo pipefail
+
+          if [[ "${DOCUMENTATION_ALREADY_PUBLISHED:-false}" == "true" ]]; then
+            echo "Retaining existing immutable documentation; no Pages files will be changed."
+            exit 0
+          fi
 
           if [[ "$IS_STABLE" == "true" ]]; then
             poetry run mike deploy --push --update-aliases --alias-type redirect "$VERSION" latest
@@ -245,7 +264,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          if gh release view "$TAG" >/dev/null 2>&1; then
+          if gh release view "$TAG" --repo "$LIBRARY_REPOSITORY" >/dev/null 2>&1; then
             echo "GitHub Release $TAG already exists; keeping it unchanged."
             exit 0
           fi
@@ -255,7 +274,7 @@ jobs:
             release_flags+=(--prerelease)
           fi
 
-          gh release create "$TAG" "${release_flags[@]}"
+          gh release create "$TAG" "${release_flags[@]}" --repo "$LIBRARY_REPOSITORY"
 
   dispatch-portal-rebuild:
     name: Dispatch portal rebuild
