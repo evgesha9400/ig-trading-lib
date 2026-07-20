@@ -143,10 +143,11 @@ pre {
   }
 
   .ig-docs-header-search {
-    left: 50%;
+    --ig-docs-search-width: min(34.4rem, calc(100vw - 24rem));
+
+    left: calc(50% - var(--ig-docs-search-width) / 2);
     position: absolute;
-    transform: translateX(-50%);
-    width: min(22rem, calc(100vw - 44rem));
+    width: var(--ig-docs-search-width);
   }
 
   .ig-docs-header-search > .md-header__button {
@@ -171,7 +172,9 @@ pre {
   }
 
   .ig-docs-header-search .md-search__overlay {
-    display: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: transparent;
   }
 
   [data-md-toggle="search"]:checked
@@ -213,6 +216,18 @@ pre {
 
   .ig-docs-header-utilities .md-header__source {
     margin-left: 0.35rem;
+  }
+}
+
+@media screen and (min-width: 60em) and (max-width: 79.984375em) {
+  .ig-docs-header-utilities .md-header__source {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 80em) {
+  .ig-docs-header-utilities {
+    transform: translateX(1.55rem);
   }
 }
 

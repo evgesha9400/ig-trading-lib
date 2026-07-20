@@ -427,21 +427,21 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             expect(desktop).to_have_url(f"{base_url}/")
 
             header = desktop.locator(".md-header")
-            header_inner = desktop.locator(".md-header__inner")
+            content_inner = desktop.locator(".md-content__inner")
             header_search = desktop.locator(".ig-docs-header-search")
             search_form = desktop.locator(".ig-docs-header-search .md-search__form")
             utilities = desktop.locator(".ig-docs-header-utilities")
             palette = utilities.locator(".md-header__option")
             source = utilities.locator(".md-header__source")
             header_box = header.bounding_box()
-            header_inner_box = header_inner.bounding_box()
+            content_inner_box = content_inner.bounding_box()
             search_box = search_form.bounding_box()
             utilities_box = utilities.bounding_box()
             palette_box = palette.bounding_box()
             source_box = source.bounding_box()
 
             assert header_box is not None
-            assert header_inner_box is not None
+            assert content_inner_box is not None
             assert (
                 header_search.evaluate("element => getComputedStyle(element).position")
                 == "absolute"
@@ -457,16 +457,14 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 )
                 <= 1
             )
+            assert search_box["x"] == content_inner_box["x"]
+            assert search_box["width"] == content_inner_box["width"]
+            assert search_box["x"] + search_box["width"] <= palette_box["x"]
             assert palette_box["x"] < source_box["x"]
-            assert (
-                abs(
-                    (utilities_box["x"] + utilities_box["width"])
-                    - (header_inner_box["x"] + header_inner_box["width"])
-                )
-                <= 4
-            )
+            assert utilities_box["x"] + utilities_box["width"] <= header_box["width"]
 
             search_input = desktop.locator("input[data-md-component='search-query']")
+            search_toggle = desktop.locator("#__search")
             search_overlay = desktop.locator(".md-search__overlay")
             search_output = desktop.locator(".md-search__output")
 
@@ -475,6 +473,12 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             focused_search_box = search_form.bounding_box()
 
             expect(search_input).to_be_focused()
+            expect(search_toggle).to_be_checked()
+            expect(search_overlay).to_be_visible()
+            assert (
+                search_overlay.evaluate("element => getComputedStyle(element).backgroundColor")
+                == "rgba(0, 0, 0, 0)"
+            )
             assert focused_search_box is not None
             assert focused_search_box["width"] == search_box["width"]
             assert focused_search_box["x"] == search_box["x"]
@@ -488,7 +492,15 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             assert (
                 search_input.evaluate("element => getComputedStyle(element).outlineStyle") == "none"
             )
-            assert search_overlay.evaluate("element => getComputedStyle(element).display") == "none"
+
+            desktop.mouse.click(20, 200)
+            expect(search_toggle).not_to_be_checked()
+            expect(search_input).not_to_be_focused()
+            expect(search_output).not_to_be_visible()
+
+            search_input.click()
+            expect(search_toggle).to_be_checked()
+            expect(search_input).to_be_focused()
 
             search_input.press_sequentially("TradingPermit")
             desktop.wait_for_timeout(300)
@@ -522,7 +534,9 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 == "rgb(244, 244, 244)"
             )
 
-            desktop.keyboard.press("Escape")
+            desktop.mouse.click(20, 200)
+            expect(search_toggle).not_to_be_checked()
+            expect(search_output).not_to_be_visible()
             theme_toggle = desktop.locator("label[title='Switch to dark mode']")
             theme_toggle.click()
             assert desktop.locator("body").get_attribute("data-md-color-scheme") == "ig-login-dark"
