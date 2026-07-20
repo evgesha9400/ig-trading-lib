@@ -196,6 +196,8 @@ pre {
     box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 14%);
     max-height: 28rem;
     opacity: 1;
+    padding-top: 0.9rem;
+    top: 50%;
   }
 
   [data-md-toggle="search"]:checked
@@ -204,6 +206,21 @@ pre {
     .md-search__scrollwrap {
     max-height: 28rem;
     overflow-y: auto;
+  }
+
+  [data-md-color-scheme="ig-login-dark"]
+    .ig-docs-header-search
+    .md-search__output {
+    --md-code-bg-color: var(--ig-login-grey-10);
+    --md-code-fg-color: var(--ig-login-grey-100);
+    --md-default-bg-color: var(--ig-login-white);
+    --md-default-bg-color--light: var(--ig-login-grey-10);
+    --md-default-fg-color: var(--ig-login-grey-100);
+    --md-default-fg-color--light: var(--ig-login-grey-60);
+    --md-default-fg-color--lighter: var(--ig-login-grey-20);
+    --md-default-fg-color--lightest: var(--ig-login-grey-10);
+
+    color: var(--ig-login-grey-100);
   }
 
   .ig-docs-header-utilities {
@@ -245,6 +262,13 @@ pre {
 
 .md-search__input:focus-visible {
   outline: none;
+}
+
+[data-md-color-scheme="ig-login-dark"]
+  .ig-docs-header-search
+  .md-search__form
+  .md-search__icon {
+  color: var(--ig-login-grey-60);
 }
 
 .md-search__form:focus-within {

@@ -515,20 +515,29 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             search_result = desktop.locator(
                 "a.md-search-result__link[href*='api-guide/trading-safety/']"
             )
+            search_meta = search_output.locator(".md-search-result__meta")
             search_highlight = search_output.locator("mark").first
             populated_search_box = search_form.bounding_box()
             search_output_box = search_output.bounding_box()
+            search_meta_box = search_meta.bounding_box()
 
             expect(search_input).to_have_value("TradingPermit")
             expect(search_result.first).to_be_visible(timeout=10_000)
             expect(search_highlight).to_be_visible()
             assert populated_search_box is not None
             assert search_output_box is not None
+            assert search_meta_box is not None
             assert populated_search_box["width"] == search_box["width"]
             assert populated_search_box["x"] == search_box["x"]
             assert search_output_box["x"] == search_box["x"]
             assert search_output_box["width"] == search_box["width"]
             assert search_output_box["height"] <= 560
+            assert search_output_box["y"] <= (
+                populated_search_box["y"] + populated_search_box["height"] / 2
+            )
+            assert search_meta_box["y"] >= (
+                populated_search_box["y"] + populated_search_box["height"]
+            )
             assert (
                 search_output.evaluate("element => getComputedStyle(element).backgroundColor")
                 == "rgb(255, 255, 255)"
@@ -639,6 +648,9 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             assert dark.locator("body").get_attribute("data-md-color-scheme") == "ig-login-dark"
             dark_search_form = dark.locator(".ig-docs-header-search .md-search__form")
             dark_search_input = dark.locator("input[data-md-component='search-query']")
+            dark_search_icon = dark_search_form.locator("label.md-search__icon")
+            dark_search_meta = dark.locator(".md-search-result__meta")
+            dark_search_scrollwrap = dark.locator(".md-search__scrollwrap")
             resting_search_radius = dark_search_form.evaluate(
                 "element => getComputedStyle(element).borderRadius"
             )
@@ -655,9 +667,14 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 )
                 == "rgb(57, 57, 57)"
             )
+            assert (
+                dark_search_icon.evaluate("element => getComputedStyle(element).color")
+                == "rgb(111, 111, 111)"
+            )
             dark_search_input.click()
             dark.wait_for_timeout(300)
             expect(dark_search_input).to_be_focused()
+            expect(dark_search_meta).to_be_visible()
             assert (
                 dark_search_form.evaluate("element => getComputedStyle(element).backgroundColor")
                 == "rgb(255, 255, 255)"
@@ -671,9 +688,34 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 dark_search_form.evaluate("element => getComputedStyle(element).borderRadius")
                 == resting_search_radius
             )
+            assert (
+                dark_search_meta.evaluate("element => getComputedStyle(element).color")
+                == "rgb(111, 111, 111)"
+            )
+            assert (
+                dark_search_meta.evaluate("element => getComputedStyle(element).backgroundColor")
+                == "rgb(244, 244, 244)"
+            )
+            dark_search_input.press_sequentially("TradingPermit")
+            dark.wait_for_timeout(300)
+            dark_search_result = dark.locator(
+                "a.md-search-result__link[href*='api-guide/trading-safety/']"
+            ).first
+
+            expect(dark_search_result).to_be_visible(timeout=10_000)
+            assert (
+                dark_search_result.evaluate("element => getComputedStyle(element).color")
+                == "rgb(22, 22, 22)"
+            )
+            assert (
+                dark_search_scrollwrap.evaluate(
+                    "element => getComputedStyle(element).backgroundColor"
+                )
+                == "rgb(255, 255, 255)"
+            )
             dark.mouse.click(20, 200)
             assert (
-                dark.locator(".md-typeset p").first.evaluate(
+                dark.locator("main .md-typeset p").first.evaluate(
                     "element => getComputedStyle(element).color"
                 )
                 == "rgb(255, 255, 255)"
