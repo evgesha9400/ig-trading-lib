@@ -2,6 +2,10 @@
 
 Safe, typed synchronous and asynchronous IG REST and streaming clients.
 
+[Documentation](https://evgesha9400.github.io/ig-trading-lib/latest/) ·
+[Source](https://github.com/evgesha9400/ig-trading-lib) ·
+[PyPI](https://pypi.org/project/ig-trading-lib/)
+
 ## Install
 
 ```bash
