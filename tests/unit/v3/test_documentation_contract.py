@@ -20,7 +20,7 @@ def test_public_documentation_contract_is_complete() -> None:
 
 
 def test_portal_manifest_marks_v3_documentation_as_published() -> None:
-    """The v3.0.0 portal manifest must advertise published documentation."""
+    """The current v3 portal manifest must advertise published documentation."""
     manifest_path = PROJECT_ROOT / "docs" / "library.yml"
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
 

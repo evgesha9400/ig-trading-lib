@@ -75,6 +75,22 @@ def test_release_documentation_workflow_scopes_release_commands_to_this_reposito
     assert 'gh release create "$TAG" "${release_flags[@]}" --repo "$LIBRARY_REPOSITORY"' in workflow
 
 
+def test_release_documentation_workflow_publishes_the_validated_tag_to_pypi() -> None:
+    """PyPI receives only a built, validated release after immutable docs succeed."""
+    workflow = (PROJECT_ROOT / WORKFLOW_PATH).read_text(encoding="utf-8")
+
+    assert "  publish-python-package:\n    name: Publish Python package to PyPI\n" in workflow
+    assert "needs: [validate-release, publish-versioned-documentation]" in workflow
+    assert "ref: ${{ needs.validate-release.outputs.tag }}" in workflow
+    assert "run: poetry build" in workflow
+    assert "pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247" in workflow
+    assert "password: ${{ secrets.PYPI_API_TOKEN }}" in workflow
+    assert (
+        "skip-existing: ${{ github.event_name == 'workflow_dispatch' "
+        "&& inputs.release_tag != '' }}" in workflow
+    )
+
+
 def test_release_documentation_workflow_rejects_an_unpinned_recovery_checkout(
     tmp_path: Path,
 ) -> None:
@@ -183,8 +199,10 @@ def _expected_portal_dispatch_header() -> str:
     return (
         "  dispatch-portal-rebuild:\n"
         "    name: Dispatch portal rebuild\n"
-        "    needs: [validate-release, publish-versioned-documentation, create-github-release]\n"
+        "    needs: [validate-release, publish-versioned-documentation, "
+        "publish-python-package, create-github-release]\n"
         "    if: needs.publish-versioned-documentation.result == 'success' "
+        "&& needs.publish-python-package.result == 'success' "
         "&& needs.create-github-release.result == 'success'\n"
     )
 

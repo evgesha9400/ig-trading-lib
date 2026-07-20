@@ -12,6 +12,7 @@ WORKFLOW_PATH = Path(".github/workflows/release-documentation.yml")
 LIBRARY_REPOSITORY = "evgesha9400/ig-trading-lib"
 PORTAL_REPOSITORY = "evgesha9400/evgesha9400.github.io"
 PORTAL_WORKFLOW = "rebuild-library-pages.yml"
+PYPI_PUBLISH_ACTION = "pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247"
 
 
 class ReleaseWorkflowError(ValueError):
@@ -41,9 +42,9 @@ def _validate_secret_references(path: Path) -> None:
     secret_names = re.findall(
         r"secrets\.([A-Za-z_][A-Za-z0-9_]*)", path.read_text(encoding="utf-8")
     )
-    if secret_names != ["LIBRARY_PORTAL_DISPATCH_TOKEN"]:
+    if secret_names != ["PYPI_API_TOKEN", "LIBRARY_PORTAL_DISPATCH_TOKEN"]:
         raise ReleaseWorkflowError(
-            "Only LIBRARY_PORTAL_DISPATCH_TOKEN may be referenced as a secret."
+            "Only the PyPI publication and portal dispatch secrets may be referenced."
         )
 
 
@@ -90,6 +91,7 @@ def _validate_jobs(workflow: dict[str, Any]) -> None:
         "validate-documentation",
         "validate-release",
         "publish-versioned-documentation",
+        "publish-python-package",
         "create-github-release",
         "dispatch-portal-rebuild",
     }
@@ -101,6 +103,7 @@ def _validate_jobs(workflow: dict[str, Any]) -> None:
     _validate_documentation_job(jobs["validate-documentation"])
     _validate_tag_job(jobs["validate-release"])
     _validate_publish_job(jobs["publish-versioned-documentation"])
+    _validate_pypi_publish_job(jobs["publish-python-package"])
     _validate_github_release_job(jobs["create-github-release"])
     _validate_portal_dispatch_job(jobs["dispatch-portal-rebuild"])
 
@@ -285,6 +288,23 @@ def _validate_github_release_job(job: object) -> None:
         raise ReleaseWorkflowError(
             "GitHub Release creation requires only contents: write permission."
         )
+    expected_dependencies = [
+        "validate-release",
+        "publish-versioned-documentation",
+        "publish-python-package",
+    ]
+    if job.get("needs") != expected_dependencies:
+        raise ReleaseWorkflowError(
+            "GitHub Release creation must wait for documentation and PyPI publication."
+        )
+    expected_condition = (
+        "needs.publish-versioned-documentation.result == 'success' "
+        "&& needs.publish-python-package.result == 'success'"
+    )
+    if job.get("if") != expected_condition:
+        raise ReleaseWorkflowError(
+            "GitHub Release creation requires successful documentation and PyPI publication."
+        )
     commands = _job_commands(job)
     _require(
         commands,
@@ -299,8 +319,40 @@ def _validate_github_release_job(job: object) -> None:
         'gh release create "$TAG" "${release_flags[@]}" --repo "$LIBRARY_REPOSITORY"',
         "GitHub Release creation must name the fixed repository.",
     )
-    if "pypi" in commands.lower() or "twine" in commands.lower():
-        raise ReleaseWorkflowError("Release workflow must not publish packages.")
+
+
+def _validate_pypi_publish_job(job: object) -> None:
+    if not isinstance(job, dict) or job.get("permissions") != {"contents": "read"}:
+        raise ReleaseWorkflowError("PyPI publication must retain read-only repository access.")
+    expected_dependencies = ["validate-release", "publish-versioned-documentation"]
+    if job.get("needs") != expected_dependencies:
+        raise ReleaseWorkflowError("PyPI publication must wait for immutable documentation.")
+    if job.get("if") != "needs.publish-versioned-documentation.result == 'success'":
+        raise ReleaseWorkflowError("PyPI publication requires successful documentation.")
+    if _checkout_refs(job) != [
+        "${{ needs.validate-release.outputs.tag }}"
+    ] or _checkout_fetch_depths(job) != ["0"]:
+        raise ReleaseWorkflowError("PyPI publication must check out the validated release tag.")
+    _require(
+        _job_commands(job),
+        "poetry build",
+        "PyPI publication must build the validated package locally.",
+    )
+    publish_step = _step_using(job, PYPI_PUBLISH_ACTION)
+    expected_inputs = {
+        "user": "__token__",
+        "password": "${{ secrets.PYPI_API_TOKEN }}",
+        "packages-dir": "dist/",
+        "skip-existing": (
+            "${{ github.event_name == 'workflow_dispatch' && inputs.release_tag != '' }}"
+        ),
+    }
+    if publish_step.get("with") != expected_inputs:
+        raise ReleaseWorkflowError(
+            "PyPI publication must use only the scoped token and recovery-safe inputs."
+        )
+    if "PYPI_API_TOKEN" in _job_commands(job):
+        raise ReleaseWorkflowError("The PyPI token must never enter a shell command.")
 
 
 def _validate_portal_dispatch_job(job: object) -> None:
@@ -309,6 +361,7 @@ def _validate_portal_dispatch_job(job: object) -> None:
     expected_dependencies = [
         "validate-release",
         "publish-versioned-documentation",
+        "publish-python-package",
         "create-github-release",
     ]
     if job.get("needs") != expected_dependencies:
@@ -317,6 +370,7 @@ def _validate_portal_dispatch_job(job: object) -> None:
         )
     expected_condition = (
         "needs.publish-versioned-documentation.result == 'success' "
+        "&& needs.publish-python-package.result == 'success' "
         "&& needs.create-github-release.result == 'success'"
     )
     if job.get("if") != expected_condition:
@@ -386,6 +440,18 @@ def _named_step_environment(job: object, name: str) -> dict[str, str]:
         if isinstance(environment, dict):
             return {str(key): str(value) for key, value in environment.items()}
     return {}
+
+
+def _step_using(job: dict[str, Any], action: str) -> dict[str, Any]:
+    steps = job.get("steps")
+    if not isinstance(steps, list):
+        raise ReleaseWorkflowError("Release workflow jobs must define steps.")
+    matching_steps = [
+        step for step in steps if isinstance(step, dict) and step.get("uses") == action
+    ]
+    if len(matching_steps) != 1:
+        raise ReleaseWorkflowError(f"Release workflow must use {action} exactly once.")
+    return matching_steps[0]
 
 
 def _checkout_refs(job: dict[str, Any]) -> list[str]:

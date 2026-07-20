@@ -148,9 +148,9 @@ poetry build
 
 The default test suite is deterministic and has no IG network dependency. Demo integration runs are deliberately separate and must be invoked only with explicit credentials and opt-in approval. Never store credentials in the repository.
 
-## Documentation releases
+## Versioned releases
 
-Documentation is validated on pull requests, `main`, and `develop`, but those runs never publish Pages content. Publishing is restricted to a pushed SemVer tag beginning with `v`.
+Documentation and packages are validated on pull requests, `main`, and `develop`, but those runs never publish release artifacts. Publishing is restricted to a pushed SemVer tag beginning with `v`.
 
 | Tag | Published documentation | `latest` and root redirect |
 | --- | --- | --- |
@@ -159,14 +159,14 @@ Documentation is validated on pull requests, `main`, and `develop`, but those ru
 
 Each versioned site is immutable: a tagged workflow rejects an existing version before `mike` deploys it. Publish a corrected release under a new SemVer tag instead of changing published documentation.
 
-If a tagged run has already deployed documentation from the exact tag commit but fails before creating its GitHub Release record, maintainers may use the manual `release_tag` recovery input. The workflow verifies the deployment provenance in `gh-pages`, retains the existing immutable files without writing them, then completes only the missing release record and portal hand-off.
+If a tagged run partially succeeds, maintainers may use the manual `release_tag` recovery input. The workflow verifies documentation provenance, retains existing immutable Pages content, skips existing PyPI artifacts only during explicit recovery, and completes the remaining release steps.
 
 ```bash
-git tag -a v3.0.0 -m "Release v3.0.0"
-git push origin v3.0.0
+git tag -a v3.0.1 -m "Release v3.0.1"
+git push origin v3.0.1
 ```
 
-After documentation deployment succeeds, the workflow creates a GitHub Release record with generated notes; it does not publish to PyPI. It also dispatches `evgesha9400/evgesha9400.github.io`'s `rebuild-library-pages.yml` workflow with the library repository, tag, version, and commit. Configure `LIBRARY_PORTAL_DISPATCH_TOKEN` with access to dispatch that workflow; when it is absent, the release succeeds and the portal hand-off is clearly skipped.
+The tagged workflow publishes immutable documentation, uploads the validated package to PyPI, creates the GitHub Release record, and dispatches `evgesha9400/evgesha9400.github.io`'s `rebuild-library-pages.yml` workflow. Configure `PYPI_API_TOKEN` for package publication and `LIBRARY_PORTAL_DISPATCH_TOKEN` for the portal hand-off.
 
 ## Disclaimer
 

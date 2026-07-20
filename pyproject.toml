@@ -1,6 +1,6 @@
 [project]
 name = "ig-trading-lib"
-version = "3.0.0"
+version = "3.0.1"
 description = "Safe, typed synchronous and asynchronous clients for IG Trading APIs"
 authors = [{ name = "Evgeny Aleshin" }]
 license = "MIT"
