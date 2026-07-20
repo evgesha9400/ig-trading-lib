@@ -425,6 +425,14 @@ pre {
   color: var(--ig-login-grey-100);
 }
 
+#handle-typed-failures
+  + .md-typeset__scrollwrap
+  table:not([class])
+  td:first-child
+  code {
+  white-space: nowrap;
+}
+
 [data-md-color-scheme="ig-login-dark"] .md-typeset table:not([class]) {
   border-color: var(--ig-login-grey-80);
 }

@@ -599,6 +599,18 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 == "rgba(0, 0, 0, 0)"
             )
 
+            errors = browser.new_page(viewport={"width": 1440, "height": 1000})
+            errors.goto(f"{base_url}/api-guide/errors/", wait_until="networkidle")
+            failure_names = errors.locator(
+                "#handle-typed-failures + .md-typeset__scrollwrap tbody td:first-child code"
+            )
+
+            expect(failure_names).to_have_count(7)
+            assert failure_names.evaluate_all(
+                "elements => elements.every(element => element.getClientRects().length === 1)"
+            )
+            assert errors.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+
             mobile = browser.new_page(viewport={"width": 390, "height": 844})
             mobile.goto(base_url, wait_until="networkidle")
             mobile_brand_box = mobile.locator(".md-header__brand").bounding_box()
