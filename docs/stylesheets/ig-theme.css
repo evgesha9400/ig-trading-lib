@@ -124,6 +124,57 @@ pre {
   color: #ff6c6c;
 }
 
+.md-header__brand:focus-visible .ig-docs-brand-name,
+.md-header__brand:hover .ig-docs-brand-name {
+  text-decoration-color: #ff6c6c;
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.1rem;
+  text-underline-offset: 0.25rem;
+}
+
+@media screen and (min-width: 60em) {
+  .md-header__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem) minmax(0, 1fr);
+  }
+
+  .md-header__brand {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .ig-docs-header-search {
+    grid-column: 2;
+    width: 100%;
+  }
+
+  .ig-docs-header-search > .md-header__button {
+    display: none;
+  }
+
+  .ig-docs-header-search .md-search,
+  .ig-docs-header-search .md-search__inner,
+  .ig-docs-header-search .md-search__form {
+    width: 100%;
+  }
+
+  .ig-docs-header-search .md-search__inner {
+    float: none;
+  }
+
+  .ig-docs-header-utilities {
+    align-items: center;
+    display: flex;
+    grid-column: 3;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+
+  .ig-docs-header-utilities .md-header__source {
+    margin-left: 0.35rem;
+  }
+}
+
 .md-search__form {
   background-color: var(--ig-login-white);
   border-radius: var(--ig-login-pill-radius);

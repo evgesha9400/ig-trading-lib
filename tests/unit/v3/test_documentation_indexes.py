@@ -415,8 +415,43 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 brand_mark.evaluate("element => getComputedStyle(element).color")
                 == "rgb(255, 108, 108)"
             )
+            assert product_name.evaluate(
+                "element => getComputedStyle(element).textDecorationLine"
+            ) == ("underline")
             wordmark.click()
             expect(desktop).to_have_url(f"{base_url}/")
+
+            header = desktop.locator(".md-header__inner")
+            search_form = desktop.locator(".ig-docs-header-search .md-search__form")
+            utilities = desktop.locator(".ig-docs-header-utilities")
+            palette = utilities.locator(".md-header__option")
+            source = utilities.locator(".md-header__source")
+            header_box = header.bounding_box()
+            search_box = search_form.bounding_box()
+            utilities_box = utilities.bounding_box()
+            palette_box = palette.bounding_box()
+            source_box = source.bounding_box()
+
+            assert header_box is not None
+            assert search_box is not None
+            assert utilities_box is not None
+            assert palette_box is not None
+            assert source_box is not None
+            assert (
+                abs(
+                    (search_box["x"] + search_box["width"] / 2)
+                    - (header_box["x"] + header_box["width"] / 2)
+                )
+                <= 1
+            )
+            assert palette_box["x"] < source_box["x"]
+            assert (
+                abs(
+                    (utilities_box["x"] + utilities_box["width"])
+                    - (header_box["x"] + header_box["width"])
+                )
+                <= 4
+            )
 
             light_code = browser.new_page()
             light_code.goto(
