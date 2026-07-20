@@ -416,13 +416,21 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 == "rgb(255, 255, 255)"
             )
             wordmark.hover()
+            desktop.wait_for_timeout(200)
             assert (
                 brand_mark.evaluate("element => getComputedStyle(element).color")
                 == "rgb(255, 108, 108)"
             )
+            assert (
+                product_name.evaluate("element => getComputedStyle(element).color")
+                == "rgb(224, 224, 224)"
+            )
+            assert brand_mark.evaluate(
+                "element => getComputedStyle(element).textDecorationLine"
+            ) == ("none")
             assert product_name.evaluate(
                 "element => getComputedStyle(element).textDecorationLine"
-            ) == ("underline")
+            ) == ("none")
             wordmark.click()
             expect(desktop).to_have_url(f"{base_url}/")
 

@@ -108,10 +108,12 @@ pre {
   font-weight: 900;
   letter-spacing: -0.12em;
   line-height: 1;
+  transition: color 125ms ease;
 }
 
 .ig-docs-brand-name {
   color: var(--ig-login-white);
+  transition: color 125ms ease;
 }
 
 .md-header__brand:focus-visible,
@@ -126,10 +128,8 @@ pre {
 
 .md-header__brand:focus-visible .ig-docs-brand-name,
 .md-header__brand:hover .ig-docs-brand-name {
-  text-decoration-color: #ff6c6c;
-  text-decoration-line: underline;
-  text-decoration-thickness: 0.1rem;
-  text-underline-offset: 0.25rem;
+  color: var(--ig-login-grey-20);
+  text-decoration: none;
 }
 
 @media screen and (min-width: 60em) {
