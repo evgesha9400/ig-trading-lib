@@ -421,18 +421,26 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             wordmark.click()
             expect(desktop).to_have_url(f"{base_url}/")
 
-            header = desktop.locator(".md-header__inner")
+            header = desktop.locator(".md-header")
+            header_inner = desktop.locator(".md-header__inner")
+            header_search = desktop.locator(".ig-docs-header-search")
             search_form = desktop.locator(".ig-docs-header-search .md-search__form")
             utilities = desktop.locator(".ig-docs-header-utilities")
             palette = utilities.locator(".md-header__option")
             source = utilities.locator(".md-header__source")
             header_box = header.bounding_box()
+            header_inner_box = header_inner.bounding_box()
             search_box = search_form.bounding_box()
             utilities_box = utilities.bounding_box()
             palette_box = palette.bounding_box()
             source_box = source.bounding_box()
 
             assert header_box is not None
+            assert header_inner_box is not None
+            assert (
+                header_search.evaluate("element => getComputedStyle(element).position")
+                == "absolute"
+            )
             assert search_box is not None
             assert utilities_box is not None
             assert palette_box is not None
@@ -448,9 +456,32 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             assert (
                 abs(
                     (utilities_box["x"] + utilities_box["width"])
-                    - (header_box["x"] + header_box["width"])
+                    - (header_inner_box["x"] + header_inner_box["width"])
                 )
                 <= 4
+            )
+
+            api_guide = desktop.locator(
+                ".md-nav--primary > .md-nav__list > .md-nav__item--section"
+            ).filter(has_text="API guide")
+            section_title = api_guide.locator(":scope > .md-nav__link")
+            section_pages = api_guide.locator(":scope > .md-nav > .md-nav__list")
+            first_section_page = section_pages.locator(
+                ":scope > .md-nav__item > .md-nav__link"
+            ).first
+            section_title_box = section_title.bounding_box()
+            first_section_page_box = first_section_page.bounding_box()
+
+            assert section_title_box is not None
+            assert first_section_page_box is not None
+            assert (
+                section_title.evaluate("element => getComputedStyle(element).color")
+                == "rgb(22, 22, 22)"
+            )
+            assert first_section_page_box["x"] - section_title_box["x"] >= 8
+            assert (
+                section_pages.evaluate("element => getComputedStyle(element).borderLeftWidth")
+                == "2px"
             )
 
             light_code = browser.new_page()
