@@ -54,8 +54,10 @@ nav:
       - Indicative costs and charges: rest-api-reference/indicative-costs-and-charges.md
       - Dealing: rest-api-reference/dealing.md
       - General: rest-api-reference/general.md
-  - Streaming API: streaming-api.md
-  - Recipes: recipes/index.md
+  - Integration guides:
+      - Overview: integration-guides/index.md
+      - Streaming API: streaming-api.md
+      - Recipes: recipes/index.md
   - Library reference:
       - Agent API index: reference/agent-api-index.md
       - Public API: reference/public-api.md

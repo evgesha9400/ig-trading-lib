@@ -256,8 +256,7 @@ def test_mkdocs_navigation_and_search_mirror_ig_api_information_architecture(
         "Overview",
         "API guide",
         "REST API reference",
-        "Streaming API",
-        "Recipes",
+        "Integration guides",
         "Library reference",
     ]
     assert [next(iter(item)) for item in navigation[2]["REST API reference"]] == [
@@ -269,6 +268,11 @@ def test_mkdocs_navigation_and_search_mirror_ig_api_information_architecture(
         "Indicative costs and charges",
         "Dealing",
         "General",
+    ]
+    assert [next(iter(item)) for item in navigation[3]["Integration guides"]] == [
+        "Overview",
+        "Streaming API",
+        "Recipes",
     ]
 
     site_dir = tmp_path / "site"
@@ -300,6 +304,7 @@ def test_mkdocs_navigation_and_search_mirror_ig_api_information_architecture(
         "rest-api-reference/login/",
         "rest-api-reference/indicative-costs-and-charges/",
         "rest-api-reference/general/",
+        "integration-guides/",
         "streaming-api/",
         "recipes/",
         "reference/agent-api-index/",
@@ -461,6 +466,69 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 <= 4
             )
 
+            search_input = desktop.locator("input[data-md-component='search-query']")
+            search_overlay = desktop.locator(".md-search__overlay")
+            search_output = desktop.locator(".md-search__output")
+
+            search_input.click()
+            desktop.wait_for_timeout(300)
+            focused_search_box = search_form.bounding_box()
+
+            expect(search_input).to_be_focused()
+            assert focused_search_box is not None
+            assert focused_search_box["width"] == search_box["width"]
+            assert focused_search_box["x"] == search_box["x"]
+            assert (
+                abs(
+                    (focused_search_box["x"] + focused_search_box["width"] / 2)
+                    - (header_box["x"] + header_box["width"] / 2)
+                )
+                <= 1
+            )
+            assert (
+                search_input.evaluate("element => getComputedStyle(element).outlineStyle") == "none"
+            )
+            assert search_overlay.evaluate("element => getComputedStyle(element).display") == "none"
+
+            search_input.press_sequentially("TradingPermit")
+            desktop.wait_for_timeout(300)
+            search_result = desktop.locator(
+                "a.md-search-result__link[href*='api-guide/trading-safety/']"
+            )
+            search_highlight = search_output.locator("mark").first
+            populated_search_box = search_form.bounding_box()
+            search_output_box = search_output.bounding_box()
+
+            expect(search_input).to_have_value("TradingPermit")
+            expect(search_result.first).to_be_visible(timeout=10_000)
+            expect(search_highlight).to_be_visible()
+            assert populated_search_box is not None
+            assert search_output_box is not None
+            assert populated_search_box["width"] == search_box["width"]
+            assert populated_search_box["x"] == search_box["x"]
+            assert search_output_box["x"] == search_box["x"]
+            assert search_output_box["width"] == search_box["width"]
+            assert search_output_box["height"] <= 560
+            assert (
+                search_output.evaluate("element => getComputedStyle(element).backgroundColor")
+                == "rgb(255, 255, 255)"
+            )
+            assert (
+                search_highlight.evaluate("element => getComputedStyle(element).color")
+                == "rgb(22, 22, 22)"
+            )
+            assert (
+                search_highlight.evaluate("element => getComputedStyle(element).backgroundColor")
+                == "rgb(244, 244, 244)"
+            )
+
+            desktop.keyboard.press("Escape")
+            theme_toggle = desktop.locator("label[title='Switch to dark mode']")
+            theme_toggle.click()
+            assert desktop.locator("body").get_attribute("data-md-color-scheme") == "ig-login-dark"
+            desktop.locator("label[title='Switch to light mode']").click()
+            assert desktop.locator("body").get_attribute("data-md-color-scheme") == "ig-login-light"
+
             api_guide = desktop.locator(
                 ".md-nav--primary > .md-nav__list > .md-nav__item--section"
             ).filter(has_text="API guide")
@@ -511,7 +579,26 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
 
             mobile = browser.new_page(viewport={"width": 390, "height": 844})
             mobile.goto(base_url, wait_until="networkidle")
+            mobile_brand_box = mobile.locator(".md-header__brand").bounding_box()
+            mobile_search_box = mobile.locator(
+                ".ig-docs-header-search > .md-header__button"
+            ).bounding_box()
+            mobile_palette_box = mobile.locator(".ig-docs-header-utilities").bounding_box()
+
+            assert mobile_brand_box is not None
+            assert mobile_search_box is not None
+            assert mobile_palette_box is not None
+            assert mobile_brand_box["x"] + mobile_brand_box["width"] <= mobile_search_box["x"]
+            assert mobile_search_box["x"] + mobile_search_box["width"] <= mobile_palette_box["x"]
+            expect(mobile.locator(".md-header__source")).not_to_be_visible()
             assert mobile.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+
+            keyboard = browser.new_page(viewport={"width": 1440, "height": 1000})
+            keyboard.goto(base_url, wait_until="networkidle")
+            keyboard.keyboard.press("Tab")
+            keyboard.keyboard.press("Tab")
+            keyboard.keyboard.press("Tab")
+            expect(keyboard.locator("input[data-md-component='search-query']")).to_be_focused()
 
             dark = browser.new_page(color_scheme="dark")
             dark.goto(f"{base_url}/rest-api-reference/markets/", wait_until="networkidle")
