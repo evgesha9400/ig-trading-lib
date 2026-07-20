@@ -181,8 +181,8 @@ pre {
     ~ .md-header
     .ig-docs-header-search
     .md-search__form {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+    background-color: var(--ig-login-white);
+    border-radius: var(--ig-login-pill-radius);
   }
 
   [data-md-toggle="search"]:checked
@@ -231,7 +231,8 @@ pre {
   }
 }
 
-.md-search__form {
+.md-search__form,
+.md-search__form:hover {
   background-color: var(--ig-login-white);
   border-radius: var(--ig-login-pill-radius);
   color: var(--ig-login-black);

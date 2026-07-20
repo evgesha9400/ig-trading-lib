@@ -617,6 +617,41 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             dark = browser.new_page(color_scheme="dark")
             dark.goto(f"{base_url}/rest-api-reference/markets/", wait_until="networkidle")
             assert dark.locator("body").get_attribute("data-md-color-scheme") == "ig-login-dark"
+            dark_search_form = dark.locator(".ig-docs-header-search .md-search__form")
+            dark_search_input = dark.locator("input[data-md-component='search-query']")
+            resting_search_radius = dark_search_form.evaluate(
+                "element => getComputedStyle(element).borderRadius"
+            )
+
+            dark_search_form.hover()
+            dark.wait_for_timeout(300)
+            assert (
+                dark_search_form.evaluate("element => getComputedStyle(element).backgroundColor")
+                == "rgb(255, 255, 255)"
+            )
+            assert (
+                dark_search_input.evaluate(
+                    "element => getComputedStyle(element, '::placeholder').color"
+                )
+                == "rgb(57, 57, 57)"
+            )
+            dark_search_input.click()
+            dark.wait_for_timeout(300)
+            expect(dark_search_input).to_be_focused()
+            assert (
+                dark_search_form.evaluate("element => getComputedStyle(element).backgroundColor")
+                == "rgb(255, 255, 255)"
+            )
+            assert (
+                dark_search_input.evaluate("element => getComputedStyle(element).color")
+                == "rgb(57, 57, 57)"
+            )
+            assert resting_search_radius == "999px"
+            assert (
+                dark_search_form.evaluate("element => getComputedStyle(element).borderRadius")
+                == resting_search_radius
+            )
+            dark.mouse.click(20, 200)
             assert (
                 dark.locator(".md-typeset p").first.evaluate(
                     "element => getComputedStyle(element).color"
