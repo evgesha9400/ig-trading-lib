@@ -1,0 +1,67 @@
+# IG Trading Library
+
+> Safe, typed synchronous and asynchronous clients for IG REST and streaming APIs.
+
+## Start here
+
+- [Overview](index/)
+- [Getting started](getting-started/)
+- [Trading safety](api-guide/trading-safety/)
+- [API guide](api-guide/authentication-and-authorisation/)
+- [REST API reference](rest-api-reference/account/)
+- [Sync and async recipes](recipes/)
+- [Machine-readable API index](reference/public-api-index.json)
+- [Human API reference](reference/public-api/)
+
+## Agent rules
+
+- Read `docs/contracts/public-api.yml` when exact signatures, return types, or parameters matter.
+- Treat `docs/reference/public-api-index.json` as generated discovery data,
+  not an independent authority.
+- The endpoint catalog records the library's maintained compatibility matrix;
+  it is not a live verification of IG availability.
+- Construct service clients only through the generated entry points below. Obtain
+  typed service namespaces from that client; do not construct service implementation
+  classes.
+- A `TradingPermit` protects live mutations on guarded typed resources. It does
+  not guard every possible `ResourceClient` instance.
+- A mutation that raises `AmbiguousExecutionError` needs confirmation or
+  deal-reference verification before another mutation.
+
+## Supported root exports
+
+- `AmbiguousExecutionError`
+- `AsyncIGClient`
+- `AsyncStreamingClient`
+- `AuthenticationError`
+- `AuthorizationError`
+- `Environment`
+- `IGClient`
+- `IGConfig`
+- `IGError`
+- `IGModel`
+- `LiveTradingPermissionError`
+- `OAuthCredentials`
+- `Page`
+- `ProviderRejectionError`
+- `RateLimitError`
+- `ResourceNotFoundError`
+- `SessionCredentials`
+- `StreamSubscription`
+- `StreamUpdate`
+- `StreamingClient`
+- `StreamingDataLossError`
+- `StreamingSubscriptionError`
+- `TradingPermit`
+- `TransportError`
+
+## Service entry points
+
+- `from ig_trading_lib import IGClient` — `IGClient(config: IGConfig, *, trading_permit: TradingPermit | None = None, http_client: httpx.Client | None = None)`
+- `from ig_trading_lib import AsyncIGClient` — `AsyncIGClient(config: IGConfig, *, trading_permit: TradingPermit | None = None, http_client: httpx.AsyncClient | None = None)`
+
+## Safety rules
+
+- Guarded typed mutations are positions.create, positions.update, positions.close, accounts.update_preferences, and create, update, or delete on watchlists, working_orders, costs, and applications.
+- Do not infer that every ResourceClient mutation is guarded: guards are installed only for the typed client attributes named above.
+- After AmbiguousExecutionError, verify the outcome with a confirmation or relevant deal reference before considering another mutation.
