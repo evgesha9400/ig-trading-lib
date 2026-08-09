@@ -176,7 +176,7 @@
       "namespace": "client_sentiment",
       "operations": [
         {
-          "async_signature": "() -> 'ClientSentimentsResponse'",
+          "async_signature": "(market_ids: 'tuple[str, ...] | None' = None) -> 'ClientSentimentsResponse'",
           "http_method": "GET",
           "method": "list",
           "mutation": false,
@@ -184,7 +184,7 @@
           "path": "/client-sentiment",
           "protocol_version": 1,
           "return_type": "ig_trading_lib.operations.sentiment.ClientSentimentsResponse",
-          "sync_signature": "() -> 'ClientSentimentsResponse'"
+          "sync_signature": "(market_ids: 'tuple[str, ...] | None' = None) -> 'ClientSentimentsResponse'"
         },
         {
           "async_signature": "(market_id: 'str') -> 'ClientSentimentResponse'",
@@ -276,7 +276,7 @@
           "sync_signature": "(quote_reference: 'str') -> 'DurableMediumResponse'"
         },
         {
-          "async_signature": "(from_date: 'datetime | str', to_date: 'datetime | str') -> 'IndicativeCostHistoryResponse'",
+          "async_signature": "(from_date: 'datetime | str', to_date: 'datetime | str', query: 'IndicativeCostHistoryQuery | None' = None) -> 'IndicativeCostHistoryResponse'",
           "http_method": "GET",
           "method": "history",
           "mutation": false,
@@ -284,7 +284,7 @@
           "path": "/indicativecostsandcharges/history/from/{from_date}/to/{to_date}",
           "protocol_version": 1,
           "return_type": "ig_trading_lib.operations.costs.IndicativeCostHistoryResponse",
-          "sync_signature": "(from_date: 'datetime | str', to_date: 'datetime | str') -> 'IndicativeCostHistoryResponse'"
+          "sync_signature": "(from_date: 'datetime | str', to_date: 'datetime | str', query: 'IndicativeCostHistoryQuery | None' = None) -> 'IndicativeCostHistoryResponse'"
         }
       ],
       "path": "ig.operations.indicative_costs"

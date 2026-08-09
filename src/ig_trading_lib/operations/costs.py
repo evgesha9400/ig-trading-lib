@@ -106,6 +106,12 @@ class IndicativeCostHistoryPagination(IGModel):
     total_pages: int | None = None
 
 
+class IndicativeCostHistoryQuery(IGRequest):
+    page_size: int | None = Field(default=None, ge=0)
+    page_number: int | None = Field(default=None, ge=0)
+    type: str | None = Field(default=None, min_length=1)
+
+
 class IndicativeCostHistoryResponse(IGModel):
     costs_and_charges_history: tuple[IndicativeCostHistoryEntry, ...] = ()
     pagination: IndicativeCostHistoryPagination | None = None
@@ -149,12 +155,16 @@ class IndicativeCostsOperations:
         )
 
     def history(
-        self, from_date: datetime | str, to_date: datetime | str
+        self,
+        from_date: datetime | str,
+        to_date: datetime | str,
+        query: IndicativeCostHistoryQuery | None = None,
     ) -> IndicativeCostHistoryResponse:
         return self._executor.execute(
             "indicative_costs.history",
             IndicativeCostHistoryResponse,
             path={"from_date": _time(from_date), "to_date": _time(to_date)},
+            query=query.to_wire() if query else None,
         )
 
 
@@ -191,12 +201,16 @@ class AsyncIndicativeCostsOperations:
         )
 
     async def history(
-        self, from_date: datetime | str, to_date: datetime | str
+        self,
+        from_date: datetime | str,
+        to_date: datetime | str,
+        query: IndicativeCostHistoryQuery | None = None,
     ) -> IndicativeCostHistoryResponse:
         return await self._executor.execute(
             "indicative_costs.history",
             IndicativeCostHistoryResponse,
             path={"from_date": _time(from_date), "to_date": _time(to_date)},
+            query=query.to_wire() if query else None,
         )
 
 

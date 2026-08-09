@@ -3,6 +3,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 import httpx
+import pytest
 
 from ig_trading_lib import IG, Environment, IGConfig, SessionCredentials
 from ig_trading_lib.operations.accounts import Account, AccountBalance
@@ -13,6 +14,7 @@ from ig_trading_lib.operations.costs import (
     EditIndicativeCostResponse,
     IndicativeCostHistoryEntry,
     IndicativeCostHistoryPagination,
+    IndicativeCostHistoryQuery,
     IndicativeCostHistoryResponse,
     OpenIndicativeCostResponse,
 )
@@ -314,3 +316,36 @@ def test_application_mutations_and_durable_medium_match_the_provider_wire_contra
     assert durable.content == b"%PDF-1.7\n"
     assert durable.content_type == "application/pdf"
     assert requests[2].content == b""
+
+
+def test_history_and_sentiment_expose_every_provider_query_control() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.url.path == "/gateway/deal/session":
+            return httpx.Response(
+                200,
+                headers={"CST": "cst", "X-SECURITY-TOKEN": "security"},
+            )
+        if "/indicativecostsandcharges/history/" in request.url.path:
+            return httpx.Response(200, json={"costsAndChargesHistory": []})
+        return httpx.Response(200, json={"clientSentiments": []})
+
+    with IG(_config(), http_client=httpx.Client(transport=httpx.MockTransport(handler))) as ig:
+        ig.operations.indicative_costs.history(
+            "2026-08-01",
+            "2026-08-08",
+            IndicativeCostHistoryQuery(page_size=25, page_number=2, type="OPEN"),
+        )
+        ig.operations.client_sentiment.list(("EURUSD", "GBPUSD"))
+
+        with pytest.raises(ValueError, match="between 1 and 500"):
+            ig.operations.client_sentiment.list(tuple("MARKET" for _ in range(501)))
+
+    assert dict(requests[1].url.params) == {
+        "pageSize": "25",
+        "pageNumber": "2",
+        "type": "OPEN",
+    }
+    assert dict(requests[2].url.params) == {"marketIds": "EURUSD,GBPUSD"}
