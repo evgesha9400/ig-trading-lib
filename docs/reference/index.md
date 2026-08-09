@@ -8,6 +8,7 @@ The reference hierarchy mirrors the library interface. Choose the layer that mat
 | --- | --- | ---: | ---: |
 | [Operations](operations/index.md) | One faithful typed IG call. | 16 | 51 |
 | [Workflows](workflows/index.md) | A multi-operation journey composed from operations. | 4 | 8 |
+| [Types and exceptions](types-and-exceptions/index.md) | Objects constructed, returned, streamed, or raised by those two layers. | 4 categories | - |
 
 Every method documents its parameters, sync and async examples, recursive response shape, response example, limitations, and exceptions.
 

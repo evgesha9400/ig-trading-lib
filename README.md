@@ -97,7 +97,7 @@ async with AsyncIG(config) as ig:
 - [PyPI](https://pypi.org/project/ig-trading-lib/)
 - [Getting started](https://evgesha9400.github.io/ig-trading-lib/latest/getting-started/)
 - [Operation reference](https://evgesha9400.github.io/ig-trading-lib/latest/rest-api-reference/markets/)
-- [Public Python API](https://evgesha9400.github.io/ig-trading-lib/latest/reference/public-api/)
+- [Types and exceptions](https://evgesha9400.github.io/ig-trading-lib/latest/reference/types-and-exceptions/)
 - [Library reference](https://evgesha9400.github.io/ig-trading-lib/latest/reference/)
 - [Machine-readable API index](https://evgesha9400.github.io/ig-trading-lib/latest/reference/public-api-index.json)
 - [Source](https://github.com/evgesha9400/ig-trading-lib)

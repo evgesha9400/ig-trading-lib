@@ -137,6 +137,34 @@ def test_library_reference_hierarchy_matches_the_public_mental_model() -> None:
     assert "reference/workflows/index.md" in navigation
 
 
+def test_types_and_exceptions_replace_the_flat_public_api_page() -> None:
+    reference = PROJECT_ROOT / "docs" / "reference"
+    types_and_exceptions = reference / "types-and-exceptions"
+
+    assert not (reference / "public-api.md").exists()
+    assert {path.stem for path in types_and_exceptions.glob("*.md")} == {
+        "client-and-configuration",
+        "exceptions",
+        "index",
+        "requests-and-responses",
+        "streaming",
+    }
+
+    navigation = (PROJECT_ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+    assert "- Types and exceptions:" in navigation
+    assert "reference/types-and-exceptions/index.md" in navigation
+    assert "reference/types-and-exceptions/client-and-configuration.md" in navigation
+    assert "reference/types-and-exceptions/requests-and-responses.md" in navigation
+    assert "reference/types-and-exceptions/streaming.md" in navigation
+    assert "reference/types-and-exceptions/exceptions.md" in navigation
+    assert "reference/public-api.md" not in navigation
+
+    contract = PROJECT_ROOT / "docs" / "contracts" / "public-api.yml"
+    machine_index = reference / "public-api-index.json"
+    assert contract.exists()
+    assert machine_index.exists()
+
+
 def test_every_operation_and_workflow_has_complete_generated_documentation() -> None:
     public_contract = yaml.safe_load(
         (PROJECT_ROOT / "docs" / "contracts" / "public-api.yml").read_text(encoding="utf-8")
