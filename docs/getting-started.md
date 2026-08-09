@@ -6,7 +6,7 @@ amend or close.
 ## 1. Install library v4
 
 ```bash
-pip install ig-trading-lib==4.0.2
+pip install ig-trading-lib==4.0.3
 ```
 
 ## 2. Configure the demo environment
