@@ -31,7 +31,7 @@ IG(config)
 ## Install
 
 ```bash
-pip install ig-trading-lib==4.0.1
+pip install ig-trading-lib==4.0.2
 ```
 
 Python 3.11–3.13 is supported.
