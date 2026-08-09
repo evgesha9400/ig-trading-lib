@@ -8,6 +8,17 @@ pip install ig-trading-lib
 
 Use a demo account while building and testing an integration.
 
+## Market operations and discovery
+
+`IG` exposes one-operation calls under `operations` and composed behavior under `workflows`.
+
+Call `ig.operations.markets.search(search_term="EURUSD")` for typed search results, or
+`ig.workflows.discovery.find_market(search_term="EURUSD", epic="CS.D.EURUSD.TODAY.IP")` to
+search, select the exact epic, and retrieve typed details.
+
+Use `AsyncIG` with the same arguments and result types, adding `await` to each operation or
+workflow call.
+
 ## Synchronous client
 
 ```python

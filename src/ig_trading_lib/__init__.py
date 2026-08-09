@@ -1,5 +1,6 @@
 """Production-ready Python client for IG's REST and streaming APIs."""
 
+from ig_trading_lib.api import IG, AsyncIG
 from ig_trading_lib.client import AsyncIGClient, IGClient
 from ig_trading_lib.core import (
     Environment,
@@ -22,6 +23,7 @@ from ig_trading_lib.errors import (
     TransportError,
 )
 from ig_trading_lib.models import IGModel, Page
+from ig_trading_lib.operations.markets import MarketGetResponse, MarketSearchResponse
 from ig_trading_lib.streaming import (
     AsyncStreamingClient,
     StreamingClient,
@@ -31,16 +33,20 @@ from ig_trading_lib.streaming import (
 
 __all__ = [
     "AmbiguousExecutionError",
+    "AsyncIG",
     "AsyncIGClient",
     "AsyncStreamingClient",
     "AuthenticationError",
     "AuthorizationError",
     "Environment",
+    "IG",
     "IGClient",
     "IGConfig",
     "IGError",
     "IGModel",
     "LiveTradingPermissionError",
+    "MarketGetResponse",
+    "MarketSearchResponse",
     "OAuthCredentials",
     "Page",
     "ProviderRejectionError",

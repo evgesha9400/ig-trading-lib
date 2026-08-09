@@ -31,16 +31,20 @@
 ## Supported root exports
 
 - `AmbiguousExecutionError`
+- `AsyncIG`
 - `AsyncIGClient`
 - `AsyncStreamingClient`
 - `AuthenticationError`
 - `AuthorizationError`
 - `Environment`
+- `IG`
 - `IGClient`
 - `IGConfig`
 - `IGError`
 - `IGModel`
 - `LiveTradingPermissionError`
+- `MarketGetResponse`
+- `MarketSearchResponse`
 - `OAuthCredentials`
 - `Page`
 - `ProviderRejectionError`

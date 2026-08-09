@@ -9,16 +9,20 @@ public_modules:
 - ig_trading_lib.streaming
 root_exports:
 - AmbiguousExecutionError
+- AsyncIG
 - AsyncIGClient
 - AsyncStreamingClient
 - AuthenticationError
 - AuthorizationError
 - Environment
+- IG
 - IGClient
 - IGConfig
 - IGError
 - IGModel
 - LiveTradingPermissionError
+- MarketGetResponse
+- MarketSearchResponse
 - OAuthCredentials
 - Page
 - ProviderRejectionError

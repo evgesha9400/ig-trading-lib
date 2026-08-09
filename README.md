@@ -14,6 +14,35 @@ pip install ig-trading-lib
 
 Python 3.11–3.13 is supported.
 
+## Market operations and discovery
+
+The new composition roots expose two behavioral namespaces: `operations` for one provider
+operation and `workflows` for safe multi-operation composition.
+
+```python
+from ig_trading_lib import Environment, IG, IGConfig, SessionCredentials
+
+config = IGConfig(
+    environment=Environment.DEMO,
+    credentials=SessionCredentials(
+        api_key="…",
+        identifier="…",
+        password="…",
+    ),
+)
+
+with IG(config) as ig:
+    matches = ig.operations.markets.search(search_term="EURUSD")
+    details = ig.operations.markets.get(epic=matches.markets[0].epic)
+    selected = ig.workflows.discovery.find_market(
+        search_term="EURUSD",
+        epic="CS.D.EURUSD.TODAY.IP",
+    )
+```
+
+`AsyncIG` has the same names, arguments, and result models; only the three calls are awaited.
+Search and detail responses type known market fields while retaining additional provider fields.
+
 ## Start safely
 
 Use a demo account while building an agent. Credentials are explicit, immutable objects and are redacted from representations and error diagnostics.
