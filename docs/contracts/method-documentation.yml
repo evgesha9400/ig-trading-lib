@@ -1,0 +1,49 @@
+schema_version: 1
+
+parameter_descriptions:
+  search_term: Text matched against IG market names and identifiers.
+
+exceptions:
+  AuthenticationError:
+    trigger: IG rejected the credentials or session refresh failed.
+    recovery: Re-authenticate with valid credentials before retrying.
+  AuthorizationError:
+    trigger: The active account cannot access this resource.
+    recovery: Switch to an entitled account or request the required IG permission.
+  RateLimitError:
+    trigger: IG rejected the request because an allowance was exhausted.
+    recovery: Wait for `retry_after_seconds` when present, then retry with backoff.
+  ProviderRejectionError:
+    trigger: IG rejected an otherwise valid request.
+    recovery: Inspect `error_code` and correct the provider-specific input or account state.
+  TransportError:
+    trigger: A network or timeout failure prevented a completed read request.
+    recovery: Retry the idempotent read with bounded backoff.
+  ValueError:
+    trigger: A local argument violates a method-specific rule.
+    recovery: Correct the argument before calling IG again.
+
+methods:
+  operations.markets.search:
+    summary: Search for markets by name or identifier.
+    official_reference: https://labs.ig.com/reference/markets-searchterm.html
+    arguments:
+      search_term: '"EUR/USD"'
+    response_example:
+      markets:
+        - epic: CS.D.EURUSD.CFD.IP
+          instrumentName: EUR/USD
+          marketStatus: TRADEABLE
+          bid: '1.08120'
+          offer: '1.08135'
+    limitations:
+      - "`search_term` must contain at least one non-whitespace character."
+      - "Results depend on the active account's permissions and market catalogue."
+    exceptions:
+      - ValueError:
+          trigger: '`search_term` is empty or contains only whitespace.'
+      - AuthenticationError
+      - AuthorizationError
+      - RateLimitError
+      - ProviderRejectionError
+      - TransportError

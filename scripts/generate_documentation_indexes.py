@@ -6,10 +6,12 @@ import argparse
 import inspect
 import json
 import sys
+import types
 from pathlib import Path
-from typing import Any, get_type_hints
+from typing import Any, Literal, Union, get_args, get_origin, get_type_hints
 
 import yaml
+from pydantic import BaseModel
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -23,10 +25,15 @@ from ig_trading_lib.api import (  # noqa: E402
 )
 
 CONTRACT_PATH = ROOT / "docs/contracts/public-api.yml"
+METHOD_DOCUMENTATION_PATH = ROOT / "docs/contracts/method-documentation.yml"
 
 
 def _contract() -> dict[str, Any]:
     return yaml.safe_load(CONTRACT_PATH.read_text(encoding="utf-8"))
+
+
+def _method_documentation() -> dict[str, Any]:
+    return yaml.safe_load(METHOD_DOCUMENTATION_PATH.read_text(encoding="utf-8"))
 
 
 def _index(contract: dict[str, Any]) -> dict[str, Any]:
@@ -117,6 +124,191 @@ def _type_name(annotation: object) -> str:
     if inspect.isclass(annotation):
         return f"{annotation.__module__}.{annotation.__qualname__}"
     return str(annotation).replace("typing.", "")
+
+
+def _short_type_name(annotation: object) -> str:
+    origin = get_origin(annotation)
+    if origin in (Union, types.UnionType):
+        return " | ".join(_short_type_name(item) for item in get_args(annotation))
+    if origin is Literal:
+        return "Literal[" + ", ".join(repr(item) for item in get_args(annotation)) + "]"
+    if origin is not None:
+        arguments = get_args(annotation)
+        name = getattr(origin, "__name__", str(origin).replace("typing.", ""))
+        return f"{name}[{', '.join(_short_type_name(item) for item in arguments)}]"
+    return getattr(annotation, "__name__", str(annotation).replace("typing.", ""))
+
+
+def _parameter_rows(
+    method: object, descriptions: dict[str, str]
+) -> list[tuple[str, str, str, str]]:
+    signature = inspect.signature(method)
+    hints = get_type_hints(method)
+    rows = []
+    for parameter in tuple(signature.parameters.values())[1:]:
+        required = (
+            "required" if parameter.default is inspect.Parameter.empty else repr(parameter.default)
+        )
+        rows.append(
+            (
+                parameter.name,
+                _short_type_name(hints[parameter.name]),
+                required,
+                descriptions[parameter.name],
+            )
+        )
+    return rows
+
+
+def _field_required(field: Any) -> str:
+    if field.is_required():
+        return "required"
+    return f"default: `{field.default!r}`"
+
+
+def _response_rows(
+    model: type[BaseModel],
+    *,
+    prefix: str = "",
+    seen: frozenset[type[BaseModel]] = frozenset(),
+) -> list[tuple[str, str, str]]:
+    if model in seen:
+        return []
+    rows = []
+    for name, field in model.model_fields.items():
+        annotation = field.annotation
+        origin = get_origin(annotation)
+        arguments = get_args(annotation)
+        nested_annotation = annotation
+        suffix = ""
+        if origin in (Union, types.UnionType):
+            nested_annotation = next(
+                (item for item in arguments if item is not type(None)), annotation
+            )
+            origin = get_origin(nested_annotation)
+            arguments = get_args(nested_annotation)
+        if origin in (tuple, list) and arguments:
+            nested_annotation = arguments[0]
+            suffix = "[]"
+        path = f"{prefix}.{name}{suffix}" if prefix else f"{name}{suffix}"
+        rows.append((path, _short_type_name(annotation), _field_required(field)))
+        if inspect.isclass(nested_annotation) and issubclass(nested_annotation, BaseModel):
+            rows.extend(
+                _response_rows(
+                    nested_annotation,
+                    prefix=path,
+                    seen=seen | {model},
+                )
+            )
+    return rows
+
+
+def _method_reference(
+    namespace: str,
+    method_name: str,
+    method: object,
+    documentation: dict[str, Any],
+) -> str:
+    method_id = f"operations.{namespace}.{method_name}"
+    contract = documentation["methods"][method_id]
+    hints = get_type_hints(method)
+    response_type = hints["return"]
+    call_arguments = ", ".join(f"{name}={value}" for name, value in contract["arguments"].items())
+    call = f"ig.operations.{namespace}.{method_name}({call_arguments})"
+    lines = [
+        f"## `ig.operations.{namespace}.{method_name}()`",
+        "",
+        contract["summary"],
+        "",
+        "Official IG reference: "
+        f"[{contract['official_reference']}]({contract['official_reference']})",
+        "",
+        "### Signatures",
+        "",
+        f"- Sync: `{_public_signature(method)}`",
+        "- Async: use the same parameters and `await` the result.",
+        "",
+        "### Parameters",
+        "",
+        "| Name | Type | Required/default | Description |",
+        "| --- | --- | --- | --- |",
+    ]
+    for name, type_name, required, description in _parameter_rows(
+        method, documentation["parameter_descriptions"]
+    ):
+        lines.append(f"| `{name}` | `{type_name}` | {required} | {description} |")
+    lines.extend(
+        [
+            "",
+            "### Sync example",
+            "",
+            "```python",
+            f"result = {call}",
+            "```",
+            "",
+            "### Async example",
+            "",
+            "```python",
+            f"result = await {call}",
+            "```",
+            "",
+            f"### Response shape: `{response_type.__name__}`",
+            "",
+            "| Field | Type | Required/default |",
+            "| --- | --- | --- |",
+        ]
+    )
+    for path, type_name, required in _response_rows(response_type):
+        lines.append(f"| `{path}` | `{type_name}` | {required} |")
+    lines.extend(
+        [
+            "",
+            "### Response example",
+            "",
+            "```json",
+            json.dumps(contract["response_example"], indent=2),
+            "```",
+            "",
+            "### Limitations",
+            "",
+            *(f"- {limitation}" for limitation in contract["limitations"]),
+            "",
+            "### Exceptions",
+            "",
+            "| Exception | Trigger | Recovery |",
+            "| --- | --- | --- |",
+        ]
+    )
+    exception_definitions = documentation["exceptions"]
+    for configured_exception in contract["exceptions"]:
+        if isinstance(configured_exception, str):
+            name = configured_exception
+            override = {}
+        else:
+            name, override = next(iter(configured_exception.items()))
+        definition = {**exception_definitions[name], **override}
+        lines.append(f"| `{name}` | {definition['trigger']} | {definition['recovery']} |")
+    return "\n".join(lines) + "\n"
+
+
+def _method_reference_artifacts(
+    contract: dict[str, Any], documentation: dict[str, Any]
+) -> dict[Path, str]:
+    artifacts = {}
+    for method_id in documentation["methods"]:
+        layer, namespace, method_name = method_id.split(".")
+        if layer != "operations":
+            raise ValueError(f"Unsupported method documentation layer: {layer}")
+        sync_type = get_type_hints(Operations)[namespace]
+        content = "# Markets operations\n\n" if namespace == "markets" else ""
+        content += _method_reference(
+            namespace,
+            method_name,
+            getattr(sync_type, method_name),
+            documentation,
+        )
+        artifacts[ROOT / f"docs/reference/methods/{namespace}.md"] = content
+    return artifacts
 
 
 def _entry_points(index: dict[str, Any]) -> str:
@@ -214,6 +406,7 @@ def _reference_fragment(index: dict[str, Any], group: str) -> str:
 
 def _artifacts() -> dict[Path, str]:
     contract = _contract()
+    method_documentation = _method_documentation()
     index = _index(contract)
     index_text = json.dumps(index, indent=2, sort_keys=True) + "\n"
     llms = _llms(index)
@@ -227,6 +420,7 @@ def _artifacts() -> dict[Path, str]:
         artifacts[ROOT / f"docs/rest-api-reference/.{group}-endpoints.md"] = _reference_fragment(
             index, group
         )
+    artifacts.update(_method_reference_artifacts(contract, method_documentation))
     return artifacts
 
 

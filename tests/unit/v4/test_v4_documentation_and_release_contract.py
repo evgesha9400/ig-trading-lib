@@ -64,3 +64,26 @@ def test_documentation_does_not_create_an_async_compatibility_promise() -> None:
 
     assert "same names, inputs, and results" not in prose
     assert "same operation and workflow names, parameters, and result models" not in prose
+
+
+def test_generated_market_search_reference_is_a_complete_method_contract() -> None:
+    reference = (PROJECT_ROOT / "docs" / "reference" / "methods" / "markets.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "## `ig.operations.markets.search()`" in reference
+    assert "### Parameters" in reference
+    assert "| `search_term` | `str` | required |" in reference
+    assert "### Sync example" in reference
+    assert 'ig.operations.markets.search(search_term="EUR/USD")' in reference
+    assert "### Async example" in reference
+    assert 'await ig.operations.markets.search(search_term="EUR/USD")' in reference
+    assert "### Response shape: `MarketSearchResponse`" in reference
+    assert "| `markets[].epic` | `str` | required |" in reference
+    assert "### Response example" in reference
+    assert '"epic": "CS.D.EURUSD.CFD.IP"' in reference
+    assert "### Limitations" in reference
+    assert "### Exceptions" in reference
+    assert "| `AuthenticationError` |" in reference
+    assert "| `ValueError` | `search_term` is empty" in reference
+    assert "https://labs.ig.com/reference/markets-searchterm.html" in reference
