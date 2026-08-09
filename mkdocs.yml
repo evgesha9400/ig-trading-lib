@@ -59,6 +59,26 @@ nav:
       - Streaming API: streaming-api.md
       - Recipes: recipes/index.md
   - Library reference:
+      - Complete method reference:
+          - Overview: reference/methods/index.md
+          - Accounts: reference/methods/accounts.md
+          - Activity: reference/methods/activity.md
+          - Applications: reference/methods/applications.md
+          - Categories: reference/methods/categories.md
+          - Client sentiment: reference/methods/client_sentiment.md
+          - Confirmations: reference/methods/confirmations.md
+          - Discovery workflow: reference/methods/discovery.md
+          - Indicative costs: reference/methods/indicative_costs.md
+          - Markets: reference/methods/markets.md
+          - Portfolio workflow: reference/methods/portfolio.md
+          - Positions: reference/methods/positions.md
+          - Prices: reference/methods/prices.md
+          - Repeat dealing window: reference/methods/repeat_dealing_window.md
+          - Session: reference/methods/session.md
+          - Streaming: reference/methods/streaming.md
+          - Transactions: reference/methods/transactions.md
+          - Watchlists: reference/methods/watchlists.md
+          - Working orders: reference/methods/working_orders.md
       - Agent API index: reference/agent-api-index.md
       - Public API: reference/public-api.md
 
