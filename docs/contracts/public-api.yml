@@ -110,7 +110,7 @@ operations:
     list: watchlists.list
     create: watchlists.create
     get: watchlists.get
-    update: watchlists.update
+    add_market: watchlists.add_market
     delete: watchlists.delete
     remove_market: watchlists.remove_market
   working_orders:

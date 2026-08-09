@@ -219,11 +219,24 @@ def test_core_dealing_and_history_models_type_every_documented_field() -> None:
         "update_time_utc",
     }
     assert set(Activity.model_fields) == {
+        "action_status",
+        "activity",
+        "activity_history_id",
         "channel",
+        "currency",
         "date",
         "deal_id",
         "description",
         "details",
+        "epic",
+        "level",
+        "limit",
+        "market_name",
+        "result",
+        "size",
+        "stop",
+        "stop_type",
+        "time",
     }
     assert set(ActivityDetails.model_fields) == {
         "actions",

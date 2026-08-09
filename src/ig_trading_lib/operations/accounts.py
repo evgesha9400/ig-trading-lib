@@ -79,11 +79,24 @@ class ActivityDetails(IGModel):
 
 
 class Activity(IGModel):
+    action_status: str | None = None
+    activity: str | None = None
+    activity_history_id: str | None = None
     channel: str | None = None
+    currency: str | None = None
     date: str | None = None
     deal_id: str | None = None
     description: str | None = None
     details: ActivityDetails | None = None
+    epic: str | None = None
+    level: Decimal | None = None
+    limit: Decimal | None = None
+    market_name: str | None = None
+    result: str | None = None
+    size: Decimal | None = None
+    stop: Decimal | None = None
+    stop_type: str | None = None
+    time: str | None = None
 
 
 class CursorPaging(IGModel):

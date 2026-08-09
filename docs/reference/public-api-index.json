@@ -449,7 +449,7 @@
       "namespace": "session",
       "operations": [
         {
-          "async_signature": "() -> 'SessionResponse'",
+          "async_signature": "(*, fetch_session_tokens: 'bool' = False) -> 'SessionResponse'",
           "http_method": "GET",
           "method": "get",
           "mutation": false,
@@ -457,7 +457,7 @@
           "path": "/session",
           "protocol_version": 1,
           "return_type": "ig_trading_lib.operations.session.SessionResponse",
-          "sync_signature": "() -> 'SessionResponse'"
+          "sync_signature": "(*, fetch_session_tokens: 'bool' = False) -> 'SessionResponse'"
         },
         {
           "async_signature": "(request: 'SwitchAccountRequest') -> 'SwitchAccountResponse'",
@@ -591,15 +591,15 @@
           "sync_signature": "(watchlist_id: 'str') -> 'WatchlistResponse'"
         },
         {
-          "async_signature": "(watchlist_id: 'str', request: 'UpdateWatchlistRequest') -> 'WatchlistMutationResponse'",
+          "async_signature": "(watchlist_id: 'str', request: 'AddWatchlistMarketRequest') -> 'WatchlistMutationResponse'",
           "http_method": "PUT",
-          "method": "update",
+          "method": "add_market",
           "mutation": true,
-          "operation_id": "watchlists.update",
+          "operation_id": "watchlists.add_market",
           "path": "/watchlists/{watchlist_id}",
           "protocol_version": 1,
           "return_type": "ig_trading_lib.operations.watchlists.WatchlistMutationResponse",
-          "sync_signature": "(watchlist_id: 'str', request: 'UpdateWatchlistRequest') -> 'WatchlistMutationResponse'"
+          "sync_signature": "(watchlist_id: 'str', request: 'AddWatchlistMarketRequest') -> 'WatchlistMutationResponse'"
         },
         {
           "async_signature": "(watchlist_id: 'str') -> 'WatchlistMutationResponse'",

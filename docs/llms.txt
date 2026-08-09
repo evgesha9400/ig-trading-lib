@@ -27,7 +27,7 @@
 - `ig.operations.session`: get, switch_account, delete, get_encryption_key
 - `ig.operations.streaming`: subscribe, close
 - `ig.operations.transactions`: list, list_by_date_range, list_by_period
-- `ig.operations.watchlists`: list, create, get, update, delete, remove_market
+- `ig.operations.watchlists`: list, create, get, add_market, delete, remove_market
 - `ig.operations.working_orders`: list, create, amend, delete
 
 ## Workflow paths

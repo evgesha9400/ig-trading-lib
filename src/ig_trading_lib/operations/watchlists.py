@@ -43,9 +43,8 @@ class CreateWatchlistResponse(IGModel):
     watchlist_id: str | None = None
 
 
-class UpdateWatchlistRequest(IGRequest):
-    name: str | None = None
-    epics: tuple[str, ...] | None = None
+class AddWatchlistMarketRequest(IGRequest):
+    epic: str = Field(min_length=1)
 
 
 class WatchlistMutationResponse(IGModel):
@@ -69,11 +68,11 @@ class WatchlistsOperations:
             "watchlists.get", WatchlistResponse, path={"watchlist_id": watchlist_id}
         )
 
-    def update(
-        self, watchlist_id: str, request: UpdateWatchlistRequest
+    def add_market(
+        self, watchlist_id: str, request: AddWatchlistMarketRequest
     ) -> WatchlistMutationResponse:
         return self._executor.execute(
-            "watchlists.update",
+            "watchlists.add_market",
             WatchlistMutationResponse,
             path={"watchlist_id": watchlist_id},
             body=request.to_wire(),
@@ -111,11 +110,11 @@ class AsyncWatchlistsOperations:
             "watchlists.get", WatchlistResponse, path={"watchlist_id": watchlist_id}
         )
 
-    async def update(
-        self, watchlist_id: str, request: UpdateWatchlistRequest
+    async def add_market(
+        self, watchlist_id: str, request: AddWatchlistMarketRequest
     ) -> WatchlistMutationResponse:
         return await self._executor.execute(
-            "watchlists.update",
+            "watchlists.add_market",
             WatchlistMutationResponse,
             path={"watchlist_id": watchlist_id},
             body=request.to_wire(),

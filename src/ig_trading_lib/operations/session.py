@@ -15,6 +15,8 @@ class SessionResponse(IGModel):
     lightstreamer_endpoint: str | None = None
     locale: str | None = None
     timezone_offset: int | None = None
+    cst: str | None = None
+    security_token: str | None = None
 
 
 class SwitchAccountRequest(IGRequest):
@@ -42,8 +44,12 @@ class SessionOperations:
     def __init__(self, executor: SyncExecutor) -> None:
         self._executor = executor
 
-    def get(self) -> SessionResponse:
-        return self._executor.execute("session.get", SessionResponse)
+    def get(self, *, fetch_session_tokens: bool = False) -> SessionResponse:
+        return self._executor.execute(
+            "session.get",
+            SessionResponse,
+            query={"fetchSessionTokens": "true"} if fetch_session_tokens else None,
+        )
 
     def switch_account(self, request: SwitchAccountRequest) -> SwitchAccountResponse:
         return self._executor.execute(
@@ -61,8 +67,12 @@ class AsyncSessionOperations:
     def __init__(self, executor: AsyncExecutor) -> None:
         self._executor = executor
 
-    async def get(self) -> SessionResponse:
-        return await self._executor.execute("session.get", SessionResponse)
+    async def get(self, *, fetch_session_tokens: bool = False) -> SessionResponse:
+        return await self._executor.execute(
+            "session.get",
+            SessionResponse,
+            query={"fetchSessionTokens": "true"} if fetch_session_tokens else None,
+        )
 
     async def switch_account(self, request: SwitchAccountRequest) -> SwitchAccountResponse:
         return await self._executor.execute(

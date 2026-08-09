@@ -11,6 +11,7 @@ from typing import Literal
 
 HttpMethod = Literal["DELETE", "GET", "POST", "PUT"]
 ResponseFormat = Literal["binary", "json"]
+ResponseHeader = tuple[str, str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,6 +37,7 @@ class OperationSpec:
     schema_provenance: str
     evidence: SourceEvidence
     response_format: ResponseFormat
+    response_headers: tuple[ResponseHeader, ...]
 
 
 OFFICIAL_REST_EVIDENCE = SourceEvidence(
@@ -63,6 +65,7 @@ def _spec(
     public: bool = True,
     invalidates_session: bool = False,
     response_format: ResponseFormat = "json",
+    response_headers: tuple[ResponseHeader, ...] = (),
     schema: str = "IG REST reference response schema with provider extras preserved",
 ) -> OperationSpec:
     return OperationSpec(
@@ -76,6 +79,7 @@ def _spec(
         schema_provenance=schema,
         evidence=OFFICIAL_REST_EVIDENCE,
         response_format=response_format,
+        response_headers=response_headers,
     )
 
 
@@ -132,7 +136,7 @@ _SPECS = (
     _spec("watchlists.list", "GET", "/watchlists", 1),
     _spec("watchlists.create", "POST", "/watchlists", 1, mutation=True),
     _spec("watchlists.get", "GET", "/watchlists/{watchlist_id}", 1),
-    _spec("watchlists.update", "PUT", "/watchlists/{watchlist_id}", 1, mutation=True),
+    _spec("watchlists.add_market", "PUT", "/watchlists/{watchlist_id}", 1, mutation=True),
     _spec("watchlists.delete", "DELETE", "/watchlists/{watchlist_id}", 1, mutation=True),
     _spec(
         "watchlists.remove_market",
@@ -144,7 +148,13 @@ _SPECS = (
     _spec("client_sentiment.list", "GET", "/client-sentiment", 1),
     _spec("client_sentiment.get", "GET", "/client-sentiment/{market_id}", 1),
     _spec("client_sentiment.related", "GET", "/client-sentiment/related/{market_id}", 1),
-    _spec("session.get", "GET", "/session", 1),
+    _spec(
+        "session.get",
+        "GET",
+        "/session",
+        1,
+        response_headers=(("cst", "CST"), ("security_token", "X-SECURITY-TOKEN")),
+    ),
     _spec("session.create", "POST", "/session", 3, mutation=True, public=False),
     _spec("session.switch_account", "PUT", "/session", 1, mutation=True),
     _spec(

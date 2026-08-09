@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import json
 from decimal import Decimal
 
 import httpx
 import pytest
 
 from ig_trading_lib import IG, Environment, IGConfig, SessionCredentials
-from ig_trading_lib.operations.accounts import Account, AccountBalance
+from ig_trading_lib.operations.accounts import Account, AccountBalance, Activity
 from ig_trading_lib.operations.applications import Application, UpdateApplicationRequest
 from ig_trading_lib.operations.costs import (
     ClosingIndicativeCost,
@@ -33,7 +34,11 @@ from ig_trading_lib.operations.markets import (
     MarketSummary,
 )
 from ig_trading_lib.operations.session import SessionResponse
-from ig_trading_lib.operations.watchlists import Watchlist, WatchlistMarket
+from ig_trading_lib.operations.watchlists import (
+    AddWatchlistMarketRequest,
+    Watchlist,
+    WatchlistMarket,
+)
 
 
 def _config() -> IGConfig:
@@ -136,9 +141,11 @@ def test_account_session_working_order_and_watchlist_models_are_complete() -> No
     assert set(SessionResponse.model_fields) == {
         "account_id",
         "client_id",
+        "cst",
         "currency",
         "lightstreamer_endpoint",
         "locale",
+        "security_token",
         "timezone_offset",
     }
     assert set(WorkingOrderData.model_fields) == {
@@ -349,3 +356,54 @@ def test_history_and_sentiment_expose_every_provider_query_control() -> None:
         "type": "OPEN",
     }
     assert dict(requests[2].url.params) == {"marketIds": "EURUSD,GBPUSD"}
+
+
+def test_watchlist_activity_and_session_match_the_complete_provider_contracts() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.url.path == "/gateway/deal/session" and request.method == "POST":
+            return httpx.Response(
+                200,
+                headers={"CST": "cst", "X-SECURITY-TOKEN": "security"},
+            )
+        if request.url.path == "/gateway/deal/session":
+            return httpx.Response(
+                200,
+                json={"accountId": "account"},
+                headers={"CST": "session-cst", "X-SECURITY-TOKEN": "session-xst"},
+            )
+        return httpx.Response(200, json={"status": "SUCCESS"})
+
+    with IG(_config(), http_client=httpx.Client(transport=httpx.MockTransport(handler))) as ig:
+        ig.operations.watchlists.add_market(
+            "watchlist-id",
+            AddWatchlistMarketRequest(epic="CS.D.EURUSD.CFD.IP"),
+        )
+        session = ig.operations.session.get(fetch_session_tokens=True)
+
+    assert json.loads(requests[1].content) == {"epic": "CS.D.EURUSD.CFD.IP"}
+    assert dict(requests[2].url.params) == {"fetchSessionTokens": "true"}
+    assert session.cst == "session-cst"
+    assert session.security_token == "session-xst"
+    assert set(Activity.model_fields) == {
+        "action_status",
+        "activity",
+        "activity_history_id",
+        "channel",
+        "currency",
+        "date",
+        "deal_id",
+        "description",
+        "details",
+        "epic",
+        "level",
+        "limit",
+        "market_name",
+        "result",
+        "size",
+        "stop",
+        "stop_type",
+        "time",
+    }

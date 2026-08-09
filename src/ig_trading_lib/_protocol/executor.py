@@ -8,7 +8,7 @@ from urllib.parse import quote
 
 import httpx
 
-from ig_trading_lib._protocol.manifest import OPERATION_MANIFEST, ResponseFormat
+from ig_trading_lib._protocol.manifest import OPERATION_MANIFEST, OperationSpec
 from ig_trading_lib.core import TradingGuard
 from ig_trading_lib.models import IGModel
 from ig_trading_lib.transport import AsyncTransport, SyncTransport
@@ -47,7 +47,7 @@ class SyncExecutor:
             params=query,
             json=body,
         )
-        result = response_type.model_validate(_response_payload(spec.response_format, response))
+        result = response_type.model_validate(_response_payload(spec, response))
         if spec.invalidates_session:
             self._transport.invalidate_session()
         return result
@@ -79,7 +79,7 @@ class AsyncExecutor:
             params=query,
             json=body,
         )
-        result = response_type.model_validate(_response_payload(spec.response_format, response))
+        result = response_type.model_validate(_response_payload(spec, response))
         if spec.invalidates_session:
             self._transport.invalidate_session()
         return result
@@ -92,10 +92,17 @@ def _payload(response: httpx.Response) -> object:
         return {}
 
 
-def _response_payload(response_format: ResponseFormat, response: httpx.Response) -> object:
-    if response_format == "binary":
+def _response_payload(spec: OperationSpec, response: httpx.Response) -> object:
+    if spec.response_format == "binary":
         return {
             "content": response.content,
             "content_type": response.headers.get("content-type"),
         }
-    return _payload(response)
+    payload = _payload(response)
+    if not spec.response_headers or not isinstance(payload, Mapping):
+        return payload
+    enriched = dict(payload)
+    for field_name, header_name in spec.response_headers:
+        if value := response.headers.get(header_name):
+            enriched[field_name] = value
+    return enriched
