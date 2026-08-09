@@ -2,8 +2,8 @@ import httpx
 import pytest
 
 from ig_trading_lib import (
+    IG,
     Environment,
-    IGClient,
     IGConfig,
     ProviderRejectionError,
     SessionCredentials,
@@ -31,13 +31,13 @@ def test_errors_redact_provider_credentials_and_every_request_has_a_correlation_
         identifier="identifier",
         password="password",
     )
-    client = IGClient(
+    client = IG(
         IGConfig(environment=Environment.DEMO, credentials=credentials),
         http_client=httpx.Client(transport=httpx.MockTransport(handler)),
     )
 
     with pytest.raises(ProviderRejectionError) as raised:
-        client.markets.search("EURUSD")
+        client.operations.markets.search("EURUSD")
 
     assert "api-key" not in repr(credentials)
     assert "password" not in repr(credentials)

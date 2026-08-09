@@ -3,7 +3,7 @@ from __future__ import annotations
 import tomllib
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 DOCUMENTATION_URL = "https://evgesha9400.github.io/ig-trading-lib/latest/"
 SOURCE_URL = "https://github.com/evgesha9400/ig-trading-lib"
 PYPI_URL = "https://pypi.org/project/ig-trading-lib/"

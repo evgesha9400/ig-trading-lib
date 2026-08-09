@@ -4,7 +4,7 @@ import json
 import httpx
 import pytest
 
-from ig_trading_lib import AsyncIGClient, Environment, IGConfig, OAuthCredentials
+from ig_trading_lib import AsyncIG, Environment, IGConfig, OAuthCredentials
 
 
 @pytest.mark.asyncio
@@ -41,7 +41,7 @@ async def test_expired_oauth_token_refreshes_once_for_concurrent_safe_reads() ->
         assert request.headers["Authorization"] == "Bearer fresh-token"
         return httpx.Response(200, json={"markets": [{"epic": "CS.D.EURUSD.TODAY.IP"}]})
 
-    client = AsyncIGClient(
+    client = AsyncIG(
         IGConfig(
             environment=Environment.DEMO,
             credentials=OAuthCredentials(
@@ -54,10 +54,10 @@ async def test_expired_oauth_token_refreshes_once_for_concurrent_safe_reads() ->
     )
 
     first, second = await asyncio.gather(
-        client.markets.search("EURUSD"),
-        client.markets.search("GBPUSD"),
+        client.operations.markets.search("EURUSD"),
+        client.operations.markets.search("GBPUSD"),
     )
 
-    assert first.items[0].epic == "CS.D.EURUSD.TODAY.IP"
-    assert second.items[0].epic == "CS.D.EURUSD.TODAY.IP"
+    assert first.markets[0].epic == "CS.D.EURUSD.TODAY.IP"
+    assert second.markets[0].epic == "CS.D.EURUSD.TODAY.IP"
     assert refresh_requests == 1

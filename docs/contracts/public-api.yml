@@ -1,877 +1,133 @@
-schema_version: 1
-public_modules:
-- ig_trading_lib.api
-- ig_trading_lib.client
-- ig_trading_lib.core
-- ig_trading_lib.errors
-- ig_trading_lib.models
-- ig_trading_lib.services
-- ig_trading_lib.async_services
-- ig_trading_lib.streaming
-- ig_trading_lib.operations.markets
-- ig_trading_lib.workflows.discovery
+schema_version: 2
+mental_model:
+  operations: Faithful typed IG calls with protocol details kept private.
+  workflows: Multi-operation journeys composed only from operations.
 root_exports:
-- AmbiguousExecutionError
-- AsyncIG
-- AsyncIGClient
-- AsyncStreamingClient
-- AuthenticationError
-- AuthorizationError
-- Environment
-- IG
-- IGClient
-- IGConfig
-- IGError
-- IGModel
-- LiveTradingPermissionError
-- MarketGetResponse
-- MarketSearchResponse
-- OAuthCredentials
-- Page
-- ProviderRejectionError
-- RateLimitError
-- ResourceNotFoundError
-- SessionCredentials
-- StreamSubscription
-- StreamUpdate
-- StreamingClient
-- StreamingDataLossError
-- StreamingSubscriptionError
-- TradingPermit
-- TransportError
-classes:
-  ig_trading_lib.client.PositionsClient:
-    fields: []
-    methods:
-      create:
-        parameters:
-        - name: request
-          type: Mapping[str, Any]
-          description: Provider request body mapping.
-        returns: IGModel
-        exceptions: []
-      list:
-        parameters: []
-        returns: IGModel
-        exceptions: []
-      get:
-        parameters:
-        - name: deal_id
-          type: str
-          description: IG deal identifier.
-        returns: IGModel
-        exceptions: []
-      update:
-        parameters:
-        - name: deal_id
-          type: str
-          description: IG deal identifier.
-        - name: request
-          type: Mapping[str, Any]
-          description: Provider request body mapping.
-        returns: IGModel
-        exceptions: []
-      close:
-        parameters:
-        - name: request
-          type: Mapping[str, Any]
-          description: Provider request body mapping.
-        returns: IGModel
-        exceptions: []
-    constructor:
-      parameters:
-      - name: guard
-        type: TradingGuard
-        description: Live-mutation guard used before protected requests.
-      - name: transport
-        type: SyncTransport
-        description: Authenticated HTTP transport used for provider requests.
-      returns: None
-      exceptions: []
-  ig_trading_lib.client.IGClient:
-    fields: []
-    methods:
-      close:
-        parameters: []
-        returns: None
-        exceptions: []
-    constructor:
-      parameters:
-      - name: config
-        type: IGConfig
-        description: Immutable environment, credentials, timeout, retry, and account configuration.
-      - name: trading_permit
-        type: TradingPermit | None
-        description: Explicit acknowledgement required for guarded live mutations.
-      - name: http_client
-        type: httpx.Client | None
-        description: Optional caller-owned HTTP client.
-      returns: None
-      exceptions: []
-  ig_trading_lib.client.AsyncPositionsClient:
-    fields: []
-    methods:
-      create:
-        parameters:
-        - name: request
-          type: Mapping[str, Any]
-          description: Provider request body mapping.
-        returns: IGModel
-        exceptions: []
-      list:
-        parameters: []
-        returns: IGModel
-        exceptions: []
-      get:
-        parameters:
-        - name: deal_id
-          type: str
-          description: IG deal identifier.
-        returns: IGModel
-        exceptions: []
-      update:
-        parameters:
-        - name: deal_id
-          type: str
-          description: IG deal identifier.
-        - name: request
-          type: Mapping[str, Any]
-          description: Provider request body mapping.
-        returns: IGModel
-        exceptions: []
-      close:
-        parameters:
-        - name: request
-          type: Mapping[str, Any]
-          description: Provider request body mapping.
-        returns: IGModel
-        exceptions: []
-    constructor:
-      parameters:
-      - name: guard
-        type: TradingGuard
-        description: Live-mutation guard used before protected requests.
-      - name: transport
-        type: AsyncTransport
-        description: Authenticated HTTP transport used for provider requests.
-      returns: None
-      exceptions: []
-  ig_trading_lib.client.AsyncIGClient:
-    fields: []
-    methods:
-      close:
-        parameters: []
-        returns: None
-        exceptions: []
-    constructor:
-      parameters:
-      - name: config
-        type: IGConfig
-        description: Immutable environment, credentials, timeout, retry, and account configuration.
-      - name: trading_permit
-        type: TradingPermit | None
-        description: Explicit acknowledgement required for guarded live mutations.
-      - name: http_client
-        type: httpx.AsyncClient | None
-        description: Optional caller-owned HTTP client.
-      returns: None
-      exceptions: []
-  ig_trading_lib.core.Environment:
-    fields: []
-    methods: {}
-  ig_trading_lib.core.SessionCredentials:
-    fields:
-    - api_key
-    - identifier
-    - password
-    - version
-    methods: {}
-  ig_trading_lib.core.OAuthCredentials:
-    fields:
-    - api_key
-    - identifier
-    - password
-    - version
-    methods: {}
-  ig_trading_lib.core.TradingPermit:
-    fields:
-    - acknowledged
-    methods: {}
-  ig_trading_lib.core.IGConfig:
-    fields:
-    - environment
-    - credentials
-    - timeout_seconds
-    - max_retries
-    - account_id
-    methods:
-      base_url:
-        parameters: []
-        returns: str
-        exceptions: []
-  ig_trading_lib.core.StreamingSession:
-    fields:
-    - endpoint
-    - account_id
-    - cst
-    - security_token
-    methods: {}
-  ig_trading_lib.core.LiveTradingPermissionError:
-    fields: []
-    methods: {}
-  ig_trading_lib.core.TradingGuard:
-    fields: []
-    methods:
-      require_mutation_permission:
-        parameters: []
-        returns: None
-        exceptions: []
-    constructor:
-      parameters:
-      - name: config
-        type: IGConfig
-        description: Immutable environment, credentials, timeout, retry, and account configuration.
-      - name: permit
-        type: TradingPermit | None
-        description: Optional acknowledgement for live mutations.
-      returns: None
-      exceptions: []
-  ig_trading_lib.errors.IGError:
-    fields: []
-    methods: {}
-    constructor:
-      parameters:
-      - name: message
-        type: str
-        description: Human-readable error message.
-      - name: status_code
-        type: int | None
-        description: Optional HTTP response status code.
-      - name: error_code
-        type: str | None
-        description: Optional IG provider error code.
-      - name: request_id
-        type: str | None
-        description: Optional IG provider request identifier.
-      - name: operation_id
-        type: str | None
-        description: Optional client operation correlation identifier.
-      - name: retry_after_seconds
-        type: float | None
-        description: Optional server-provided retry delay in seconds.
-      - name: details
-        type: dict[str, Any] | None
-        description: Optional provider diagnostics retained after redaction.
-      returns: None
-      exceptions: []
-  ig_trading_lib.errors.AuthenticationError:
-    fields: []
-    methods: {}
-  ig_trading_lib.errors.AuthorizationError:
-    fields: []
-    methods: {}
-  ig_trading_lib.errors.RateLimitError:
-    fields: []
-    methods: {}
-  ig_trading_lib.errors.ProviderRejectionError:
-    fields: []
-    methods: {}
-  ig_trading_lib.errors.ResourceNotFoundError:
-    fields: []
-    methods: {}
-  ig_trading_lib.errors.TransportError:
-    fields: []
-    methods: {}
-  ig_trading_lib.errors.AmbiguousExecutionError:
-    fields: []
-    methods: {}
-  ig_trading_lib.errors.StreamingSubscriptionError:
-    fields: []
-    methods: {}
-  ig_trading_lib.errors.StreamingDataLossError:
-    fields: []
-    methods: {}
-  ig_trading_lib.models.IGModel:
-    fields: []
-    methods:
-      normalize_wire_keys:
-        parameters:
-        - name: value
-          type: Any
-          description: Provider value to normalize.
-        returns: Any
-        exceptions: []
-  ig_trading_lib.models.Page:
-    fields:
-    - items
-    - next_path
-    methods: {}
-  ig_trading_lib.services.ResourceClient:
-    fields: []
-    methods:
-      get:
-        parameters:
-        - name: suffix
-          type: str
-          description: Path suffix appended to the resource route.
-        - name: params
-          type: Mapping[str, Any] | None
-          description: Optional query parameters sent to IG.
-        returns: IGModel
-        exceptions: []
-      list:
-        parameters:
-        - name: params
-          type: Mapping[str, Any] | None
-          description: Optional query parameters sent to IG.
-        - name: item_key
-          type: str | None
-          description: Response field containing page items.
-        returns: Page[IGModel]
-        exceptions: []
-      iter_pages:
-        parameters:
-        - name: params
-          type: Mapping[str, Any] | None
-          description: Optional query parameters sent to IG.
-        - name: item_key
-          type: str | None
-          description: Response field containing page items.
-        returns: Iterator[IGModel]
-        exceptions: []
-      create:
-        parameters:
-        - name: body
-          type: Mapping[str, Any]
-          description: Provider request body mapping.
-        - name: suffix
-          type: str
-          description: Path suffix appended to the resource route.
-        returns: IGModel
-        exceptions: []
-      update:
-        parameters:
-        - name: body
-          type: Mapping[str, Any]
-          description: Provider request body mapping.
-        - name: suffix
-          type: str
-          description: Path suffix appended to the resource route.
-        returns: IGModel
-        exceptions: []
-      delete:
-        parameters:
-        - name: suffix
-          type: str
-          description: Path suffix appended to the resource route.
-        returns: IGModel
-        exceptions: []
-    constructor:
-      parameters:
-      - name: transport
-        type: SyncTransport
-        description: Authenticated HTTP transport used for provider requests.
-      - name: path
-        type: str
-        description: IG REST resource path.
-      - name: version
-        type: int
-        description: Explicit IG REST API version.
-      - name: guard
-        type: TradingGuard | None
-        description: Live-mutation guard used before protected requests.
-      returns: None
-      exceptions: []
-  ig_trading_lib.services.AccountsClient:
-    fields: []
-    methods:
-      list:
-        parameters: []
-        returns: Page[IGModel]
-        exceptions: []
-      preferences:
-        parameters: []
-        returns: IGModel
-        exceptions: []
-      update_preferences:
-        parameters:
-        - name: body
-          type: Mapping[str, Any]
-          description: Provider request body mapping.
-        returns: IGModel
-        exceptions: []
-    constructor:
-      parameters:
-      - name: transport
-        type: SyncTransport
-        description: Authenticated HTTP transport used for provider requests.
-      - name: guard
-        type: TradingGuard
-        description: Live-mutation guard used before protected requests.
-      returns: None
-      exceptions: []
-  ig_trading_lib.services.MarketsClient:
-    fields: []
-    methods:
-      search:
-        parameters:
-        - name: search_term
-          type: str
-          description: Human-readable market search term.
-        returns: Page[IGModel]
-        exceptions: []
-    constructor:
-      parameters:
-      - name: transport
-        type: SyncTransport
-        description: Authenticated HTTP transport used for provider requests.
-      returns: None
-      exceptions: []
-  ig_trading_lib.async_services.AsyncResourceClient:
-    fields: []
-    methods:
-      get:
-        parameters:
-        - name: suffix
-          type: str
-          description: Path suffix appended to the resource route.
-        - name: params
-          type: Mapping[str, Any] | None
-          description: Optional query parameters sent to IG.
-        returns: IGModel
-        exceptions: []
-      list:
-        parameters:
-        - name: params
-          type: Mapping[str, Any] | None
-          description: Optional query parameters sent to IG.
-        - name: item_key
-          type: str | None
-          description: Response field containing page items.
-        returns: Page[IGModel]
-        exceptions: []
-      iter_pages:
-        parameters:
-        - name: params
-          type: Mapping[str, Any] | None
-          description: Optional query parameters sent to IG.
-        - name: item_key
-          type: str | None
-          description: Response field containing page items.
-        returns: AsyncIterator[IGModel]
-        exceptions: []
-      create:
-        parameters:
-        - name: body
-          type: Mapping[str, Any]
-          description: Provider request body mapping.
-        - name: suffix
-          type: str
-          description: Path suffix appended to the resource route.
-        returns: IGModel
-        exceptions: []
-      update:
-        parameters:
-        - name: body
-          type: Mapping[str, Any]
-          description: Provider request body mapping.
-        - name: suffix
-          type: str
-          description: Path suffix appended to the resource route.
-        returns: IGModel
-        exceptions: []
-      delete:
-        parameters:
-        - name: suffix
-          type: str
-          description: Path suffix appended to the resource route.
-        returns: IGModel
-        exceptions: []
-    constructor:
-      parameters:
-      - name: transport
-        type: AsyncTransport
-        description: Authenticated HTTP transport used for provider requests.
-      - name: path
-        type: str
-        description: IG REST resource path.
-      - name: version
-        type: int
-        description: Explicit IG REST API version.
-      - name: guard
-        type: TradingGuard | None
-        description: Live-mutation guard used before protected requests.
-      returns: None
-      exceptions: []
-  ig_trading_lib.async_services.AsyncAccountsClient:
-    fields: []
-    methods:
-      list:
-        parameters: []
-        returns: Page[IGModel]
-        exceptions: []
-      preferences:
-        parameters: []
-        returns: IGModel
-        exceptions: []
-      update_preferences:
-        parameters:
-        - name: body
-          type: Mapping[str, Any]
-          description: Provider request body mapping.
-        returns: IGModel
-        exceptions: []
-    constructor:
-      parameters:
-      - name: transport
-        type: AsyncTransport
-        description: Authenticated HTTP transport used for provider requests.
-      - name: guard
-        type: TradingGuard
-        description: Live-mutation guard used before protected requests.
-      returns: None
-      exceptions: []
-  ig_trading_lib.async_services.AsyncMarketsClient:
-    fields: []
-    methods:
-      search:
-        parameters:
-        - name: search_term
-          type: str
-          description: Human-readable market search term.
-        returns: Page[IGModel]
-        exceptions: []
-    constructor:
-      parameters:
-      - name: transport
-        type: AsyncTransport
-        description: Authenticated HTTP transport used for provider requests.
-      returns: None
-      exceptions: []
-  ig_trading_lib.streaming.StreamSubscription:
-    fields:
-    - key
-    - mode
-    - items
-    - fields
-    - data_adapter
+  - AmbiguousExecutionError
+  - AmendPositionRequest
+  - AmendWorkingOrderRequest
+  - AsyncIG
+  - AuthenticationError
+  - AuthorizationError
+  - ClosePositionRequest
+  - CreatePositionRequest
+  - CreateWorkingOrderRequest
+  - DealConfirmationError
+  - DealConfirmationResponse
+  - Environment
+  - IG
+  - IGConfig
+  - IGError
+  - LiveTradingPermissionError
+  - MarketGetResponse
+  - MarketSearchResponse
+  - OAuthCredentials
+  - ProviderRejectionError
+  - RateLimitError
+  - ResourceNotFoundError
+  - SessionCredentials
+  - StreamSubscription
+  - StreamUpdate
+  - StreamingDataLossError
+  - StreamingSubscriptionError
+  - TradingPermit
+  - TransportError
+public_modules:
+  - ig_trading_lib.api
+  - ig_trading_lib.core
+  - ig_trading_lib.errors
+  - ig_trading_lib.models
+  - ig_trading_lib.operations.accounts
+  - ig_trading_lib.operations.applications
+  - ig_trading_lib.operations.costs
+  - ig_trading_lib.operations.dealing
+  - ig_trading_lib.operations.markets
+  - ig_trading_lib.operations.sentiment
+  - ig_trading_lib.operations.session
+  - ig_trading_lib.operations.streaming
+  - ig_trading_lib.operations.watchlists
+  - ig_trading_lib.streaming
+  - ig_trading_lib.workflows.dealing
+  - ig_trading_lib.workflows.discovery
+  - ig_trading_lib.workflows.portfolio
+operations:
+  accounts:
+    list: accounts.list
+    get_preferences: accounts.get_preferences
+    update_preferences: accounts.update_preferences
+  activity:
+    list: activity.list
+    list_by_date_range: activity.list_by_date_range
+    list_by_period: activity.list_by_period
+  applications:
+    list: applications.list
+    update: applications.update
+    disable: applications.disable
+  categories:
+    list: categories.list
+    list_instruments: categories.list_instruments
+  client_sentiment:
+    list: client_sentiment.list
+    get: client_sentiment.get
+    related: client_sentiment.related
+  confirmations:
+    get: confirmations.get
+  indicative_costs:
+    quote_open: indicative_costs.quote_open
+    quote_close: indicative_costs.quote_close
+    quote_edit: indicative_costs.quote_edit
+    get_durable_medium: indicative_costs.get_durable_medium
+    history: indicative_costs.history
+  markets:
+    list: markets.list
+    search: markets.search
+    get: markets.get
+  positions:
+    list: positions.list
+    get: positions.get
+    create: positions.create
+    amend: positions.amend
+    close: positions.close
+  prices:
+    list: prices.list
+    list_points: prices.list_points
+    list_date_range: prices.list_date_range
+  repeat_dealing_window:
+    get: repeat_dealing_window.get
+  session:
+    get: session.get
+    switch_account: session.switch_account
+    delete: session.delete
+    get_encryption_key: session.get_encryption_key
+  streaming:
+    subscribe: streaming.subscribe
+    close: streaming.close
+  transactions:
+    list: transactions.list
+    list_by_date_range: transactions.list_by_date_range
+    list_by_period: transactions.list_by_period
+  watchlists:
+    list: watchlists.list
+    create: watchlists.create
+    get: watchlists.get
+    update: watchlists.update
+    delete: watchlists.delete
+    remove_market: watchlists.remove_market
+  working_orders:
+    list: working_orders.list
+    create: working_orders.create
+    amend: working_orders.amend
+    delete: working_orders.delete
+workflows:
+  discovery:
+    - find_market
+  portfolio:
     - snapshot
-    - max_frequency
-    methods: {}
-  ig_trading_lib.streaming.StreamUpdate:
-    fields:
-    - subscription_key
-    - item_name
-    - item_position
-    - fields
-    - changed_fields
-    - is_snapshot
-    methods: {}
-  ig_trading_lib.streaming.StreamingClient:
-    fields: []
-    methods:
-      iter_updates:
-        parameters:
-        - name: subscription
-          type: StreamSubscription
-          description: Streaming subscription specification.
-        returns: Iterator[StreamUpdate]
-        exceptions: []
-      aiter_updates:
-        parameters:
-        - name: subscription
-          type: StreamSubscription
-          description: Streaming subscription specification.
-        returns: AsyncIterator[StreamUpdate]
-        exceptions: []
-      close:
-        parameters: []
-        returns: None
-        exceptions: []
-    constructor:
-      parameters:
-      - name: session_provider
-        type: Callable[[], StreamingSession]
-        description: Callable that provides the active streaming session.
-      - name: refresh_session_provider
-        type: Callable[[], StreamingSession] | None
-        description: Callable that provides a refreshed streaming session.
-      - name: client_factory
-        type: Callable[[str, str | None], Any] | None
-        description: Optional factory for the Lightstreamer client.
-      - name: subscription_factory
-        type: Callable[[str, list[str], list[str]], Any] | None
-        description: Optional factory for the Lightstreamer subscription.
-      - name: queue_size
-        type: int
-        description: Maximum number of buffered stream events.
-      returns: None
-      exceptions: []
-  ig_trading_lib.streaming.AsyncStreamingClient:
-    fields: []
-    methods:
-      aiter_updates:
-        parameters:
-        - name: subscription
-          type: StreamSubscription
-          description: Streaming subscription specification.
-        returns: AsyncIterator[StreamUpdate]
-        exceptions: []
-      close:
-        parameters: []
-        returns: None
-        exceptions: []
-    constructor:
-      parameters:
-      - name: session_provider
-        type: Callable[[], Awaitable[StreamingSession]]
-        description: Callable that provides the active streaming session.
-      - name: refresh_session_provider
-        type: Callable[[], Awaitable[StreamingSession]]
-        description: Callable that provides a refreshed streaming session.
-      - name: client_factory
-        type: Callable[[str, str | None], Any] | None
-        description: Optional factory for the Lightstreamer client.
-      - name: subscription_factory
-        type: Callable[[str, list[str], list[str]], Any] | None
-        description: Optional factory for the Lightstreamer subscription.
-      returns: None
-      exceptions: []
-  ig_trading_lib.api.Operations:
-    fields:
-    - markets
-    methods: {}
-  ig_trading_lib.api.Workflows:
-    fields:
-    - discovery
-    methods: {}
-  ig_trading_lib.api.AsyncOperations:
-    fields:
-    - markets
-    methods: {}
-  ig_trading_lib.api.AsyncWorkflows:
-    fields:
-    - discovery
-    methods: {}
-  ig_trading_lib.api.IG:
-    fields: []
-    methods:
-      close:
-        parameters: []
-        returns: None
-        exceptions: []
-    constructor:
-      parameters:
-      - name: config
-        type: IGConfig
-        description: Immutable IG environment, credentials, timeout, retry, and account configuration.
-      - name: trading_permit
-        type: TradingPermit | None
-        description: Explicit acknowledgement required before live mutations.
-      - name: http_client
-        type: httpx.Client | None
-        description: Optional caller-owned synchronous HTTP client.
-      returns: None
-      exceptions: []
-  ig_trading_lib.api.AsyncIG:
-    fields: []
-    methods:
-      close:
-        parameters: []
-        returns: None
-        exceptions: []
-    constructor:
-      parameters:
-      - name: config
-        type: IGConfig
-        description: Immutable IG environment, credentials, timeout, retry, and account configuration.
-      - name: trading_permit
-        type: TradingPermit | None
-        description: Explicit acknowledgement required before live mutations.
-      - name: http_client
-        type: httpx.AsyncClient | None
-        description: Optional caller-owned asynchronous HTTP client.
-      returns: None
-      exceptions: []
-  ig_trading_lib.operations.markets.MarketSearchRequest:
-    fields:
-    - search_term
-    methods: {}
-  ig_trading_lib.operations.markets.MarketSummary:
-    fields:
-    - epic
-    - instrument_name
-    - market_status
-    methods: {}
-  ig_trading_lib.operations.markets.MarketSearchResponse:
-    fields:
-    - markets
-    methods: {}
-  ig_trading_lib.operations.markets.MarketGetRequest:
-    fields:
-    - epic
-    methods: {}
-  ig_trading_lib.operations.markets.MarketInstrument:
-    fields:
-    - epic
-    - name
-    methods: {}
-  ig_trading_lib.operations.markets.MarketSnapshot:
-    fields:
-    - market_status
-    - bid
-    - offer
-    methods: {}
-  ig_trading_lib.operations.markets.MarketDealingRules:
-    fields:
-    - market_order_preference
-    methods: {}
-  ig_trading_lib.operations.markets.MarketGetResponse:
-    fields:
-    - instrument
-    - snapshot
-    - dealing_rules
-    methods: {}
-  ig_trading_lib.operations.markets.MarketOperations:
-    fields: []
-    methods:
-      search:
-        parameters:
-        - name: search_term
-          type: str
-          description: Human-readable market search term.
-        returns: MarketSearchResponse
-        exceptions: []
-      get:
-        parameters:
-        - name: epic
-          type: str
-          description: Exact IG market epic.
-        returns: MarketGetResponse
-        exceptions: []
-    constructor:
-      parameters:
-      - name: transport
-        type: SyncTransport
-        description: Authenticated synchronous IG transport.
-      returns: None
-      exceptions: []
-  ig_trading_lib.operations.markets.AsyncMarketOperations:
-    fields: []
-    methods:
-      search:
-        parameters:
-        - name: search_term
-          type: str
-          description: Human-readable market search term.
-        returns: MarketSearchResponse
-        exceptions: []
-      get:
-        parameters:
-        - name: epic
-          type: str
-          description: Exact IG market epic.
-        returns: MarketGetResponse
-        exceptions: []
-    constructor:
-      parameters:
-      - name: transport
-        type: AsyncTransport
-        description: Authenticated asynchronous IG transport.
-      returns: None
-      exceptions: []
-  ig_trading_lib.workflows.discovery.MarketDiscoveryWorkflow:
-    fields: []
-    methods:
-      find_market:
-        parameters:
-        - name: search_term
-          type: str
-          description: Human-readable market search term.
-        - name: epic
-          type: str
-          description: Exact epic required in the search response.
-        returns: MarketGetResponse
-        exceptions:
-        - ResourceNotFoundError
-    constructor:
-      parameters:
-      - name: markets
-        type: MarketOperations
-        description: Typed market operations used to compose discovery.
-      returns: None
-      exceptions: []
-  ig_trading_lib.workflows.discovery.AsyncMarketDiscoveryWorkflow:
-    fields: []
-    methods:
-      find_market:
-        parameters:
-        - name: search_term
-          type: str
-          description: Human-readable market search term.
-        - name: epic
-          type: str
-          description: Exact epic required in the search response.
-        returns: MarketGetResponse
-        exceptions:
-        - ResourceNotFoundError
-    constructor:
-      parameters:
-      - name: markets
-        type: AsyncMarketOperations
-        description: Typed asynchronous market operations used to compose discovery.
-      returns: None
-      exceptions: []
-functions:
-  ig_trading_lib.models.to_snake_case:
-    parameters:
-    - name: value
-      type: str
-      description: Provider value to normalize.
-    returns: str
-    exceptions: []
-  ig_trading_lib.models.normalize_wire_value:
-    parameters:
-    - name: value
-      type: Any
-      description: Provider value to normalize.
-    returns: Any
-    exceptions: []
-exceptions:
-  ig_trading_lib.core.LiveTradingPermissionError: PermissionError
-  ig_trading_lib.errors.IGError: RuntimeError
-  ig_trading_lib.errors.AuthenticationError: IGError
-  ig_trading_lib.errors.AuthorizationError: IGError
-  ig_trading_lib.errors.RateLimitError: IGError
-  ig_trading_lib.errors.ProviderRejectionError: IGError
-  ig_trading_lib.errors.ResourceNotFoundError: IGError
-  ig_trading_lib.errors.TransportError: IGError
-  ig_trading_lib.errors.AmbiguousExecutionError: IGError
-  ig_trading_lib.errors.StreamingSubscriptionError: IGError
-  ig_trading_lib.errors.StreamingDataLossError: IGError
-pydantic_fields:
-  ig_trading_lib.models.IGModel: []
-examples:
-- id: synchronous-demo-client
-  path: docs/getting-started.md
-  contains: 'with IGClient(config) as client:'
-- id: asynchronous-demo-client
-  path: docs/getting-started.md
-  contains: 'async with AsyncIGClient(config) as client:'
-- id: runnable-basic-usage
-  path: examples/basic_usage.py
-  contains: 'with IGClient(config) as client:'
-mutation_safety_rules:
-- id: permit-scope
-  path: docs/api-guide/trading-safety.md
-  text: Guarded typed mutations are positions.create, positions.update, positions.close, accounts.update_preferences,
-    and create, update, or delete on watchlists, working_orders, costs, and applications.
-- id: unguarded-resource-scope
-  path: docs/api-guide/trading-safety.md
-  text: 'Do not infer that every ResourceClient mutation is guarded: guards are installed only for the
-    typed client attributes named above.'
-- id: ambiguous-execution
-  path: docs/api-guide/trading-safety.md
-  text: After AmbiguousExecutionError, verify the outcome with a confirmation or relevant deal reference
-    before considering another mutation.
-endpoint_reference: docs/rest-api-reference
+  positions:
+    - open_and_confirm
+    - amend_and_confirm
+    - close_and_confirm
+  working_orders:
+    - place_and_confirm
+    - amend_and_confirm
+    - cancel_and_confirm

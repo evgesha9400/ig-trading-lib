@@ -12,7 +12,7 @@ from scripts.check_release_workflow import (
     validate_release_workflow,
 )
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 
 
 def test_release_documentation_workflow_preserves_the_release_boundary() -> None:
@@ -80,7 +80,10 @@ def test_release_documentation_workflow_publishes_the_validated_tag_to_pypi() ->
     workflow = (PROJECT_ROOT / WORKFLOW_PATH).read_text(encoding="utf-8")
 
     assert "  publish-python-package:\n    name: Publish Python package to PyPI\n" in workflow
-    assert "needs: [validate-release, publish-versioned-documentation]" in workflow
+    assert (
+        "needs: [validate-release, verify-release-commit, publish-versioned-documentation]"
+        in workflow
+    )
     assert "ref: ${{ needs.validate-release.outputs.tag }}" in workflow
     assert "run: poetry build" in workflow
     assert "pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247" in workflow
@@ -199,7 +202,7 @@ def _expected_portal_dispatch_header() -> str:
     return (
         "  dispatch-portal-rebuild:\n"
         "    name: Dispatch portal rebuild\n"
-        "    needs: [validate-release, publish-versioned-documentation, "
+        "    needs: [validate-release, verify-release-commit, publish-versioned-documentation, "
         "publish-python-package, create-github-release]\n"
         "    if: needs.publish-versioned-documentation.result == 'success' "
         "&& needs.publish-python-package.result == 'success' "

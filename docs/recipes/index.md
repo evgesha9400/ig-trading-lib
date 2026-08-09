@@ -1,6 +1,7 @@
 # Sync and async recipes
 
-Every recipe below is source-included from `examples/recipes/` and executed against a local `httpx.MockTransport` or fake stream in `tests/unit/v3/test_documentation_recipes.py`. They never contact IG.
+Every recipe below is source-included from `examples/recipes/` and verified with local mocked
+provider responses. They never contact IG.
 
 ## Market discovery
 
@@ -8,7 +9,7 @@ Every recipe below is source-included from `examples/recipes/` and executed agai
 --8<-- "examples/recipes/market_discovery.py"
 ```
 
-## Historical pagination
+## Activity history
 
 ```python title="examples/recipes/historical_pagination.py"
 --8<-- "examples/recipes/historical_pagination.py"
@@ -16,7 +17,8 @@ Every recipe below is source-included from `examples/recipes/` and executed agai
 
 ## Safe mutations
 
-Supply an IG provider-defined request mapping only after your own review. For live accounts, create the client with an explicit `TradingPermit()`; this recipe does not bypass the guard.
+Supply a validated `CreatePositionRequest`. For live accounts, create the root with an explicit
+`TradingPermit()`; the workflow does not bypass the guard.
 
 ```python title="examples/recipes/safe_mutations.py"
 --8<-- "examples/recipes/safe_mutations.py"

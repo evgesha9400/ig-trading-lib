@@ -3,10 +3,11 @@ from typing import Any
 
 import pytest
 
-from ig_trading_lib import AsyncStreamingClient, StreamingDataLossError, StreamSubscription
+from ig_trading_lib import StreamingDataLossError, StreamSubscription
 from ig_trading_lib.core import StreamingSession
 from ig_trading_lib.errors import StreamingSubscriptionError
 from ig_trading_lib.streaming import (
+    AsyncStreamingClient,
     StreamUpdate,
     _AsyncSink,
     _SubscriptionListener,

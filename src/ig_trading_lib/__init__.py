@@ -1,7 +1,6 @@
-"""Production-ready Python client for IG's REST and streaming APIs."""
+"""Typed IG operations and safe trading workflows."""
 
 from ig_trading_lib.api import IG, AsyncIG
-from ig_trading_lib.client import AsyncIGClient, IGClient
 from ig_trading_lib.core import (
     Environment,
     IGConfig,
@@ -14,6 +13,7 @@ from ig_trading_lib.errors import (
     AmbiguousExecutionError,
     AuthenticationError,
     AuthorizationError,
+    DealConfirmationError,
     IGError,
     ProviderRejectionError,
     RateLimitError,
@@ -22,40 +22,43 @@ from ig_trading_lib.errors import (
     StreamingSubscriptionError,
     TransportError,
 )
-from ig_trading_lib.models import IGModel, Page
-from ig_trading_lib.operations.markets import MarketGetResponse, MarketSearchResponse
-from ig_trading_lib.streaming import (
-    AsyncStreamingClient,
-    StreamingClient,
-    StreamSubscription,
-    StreamUpdate,
+from ig_trading_lib.operations.dealing import (
+    AmendPositionRequest,
+    AmendWorkingOrderRequest,
+    ClosePositionRequest,
+    CreatePositionRequest,
+    CreateWorkingOrderRequest,
+    DealConfirmationResponse,
 )
+from ig_trading_lib.operations.markets import MarketGetResponse, MarketSearchResponse
+from ig_trading_lib.streaming import StreamSubscription, StreamUpdate
 
 __all__ = [
     "AmbiguousExecutionError",
+    "AmendPositionRequest",
+    "AmendWorkingOrderRequest",
     "AsyncIG",
-    "AsyncIGClient",
-    "AsyncStreamingClient",
     "AuthenticationError",
     "AuthorizationError",
+    "ClosePositionRequest",
+    "CreatePositionRequest",
+    "CreateWorkingOrderRequest",
+    "DealConfirmationError",
+    "DealConfirmationResponse",
     "Environment",
     "IG",
-    "IGClient",
     "IGConfig",
     "IGError",
-    "IGModel",
     "LiveTradingPermissionError",
     "MarketGetResponse",
     "MarketSearchResponse",
     "OAuthCredentials",
-    "Page",
     "ProviderRejectionError",
     "RateLimitError",
     "ResourceNotFoundError",
     "SessionCredentials",
     "StreamSubscription",
     "StreamUpdate",
-    "StreamingClient",
     "StreamingDataLossError",
     "StreamingSubscriptionError",
     "TradingPermit",

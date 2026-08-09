@@ -1,4 +1,4 @@
-"""Stable, provider-aware failures exposed by the v3 API."""
+"""Stable, provider-aware failures exposed by the public API."""
 
 from __future__ import annotations
 
@@ -65,6 +65,22 @@ class TransportError(IGError):
 
 class AmbiguousExecutionError(IGError):
     """A mutation may have reached IG but its outcome cannot be known safely."""
+
+
+class DealConfirmationError(IGError):
+    """A mutation succeeded but its deal confirmation could not be retrieved."""
+
+    def __init__(self, deal_reference: str, *, cause: IGError) -> None:
+        super().__init__(
+            "IG accepted the mutation, but its deal confirmation is unavailable.",
+            status_code=cause.status_code,
+            error_code=cause.error_code,
+            request_id=cause.request_id,
+            operation_id=cause.operation_id,
+            retry_after_seconds=cause.retry_after_seconds,
+            details={"deal_reference": deal_reference},
+        )
+        self.deal_reference = deal_reference
 
 
 class StreamingSubscriptionError(IGError):

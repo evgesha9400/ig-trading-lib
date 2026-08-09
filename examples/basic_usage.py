@@ -1,12 +1,11 @@
-"""List matching demo markets with the current v3 public API."""
+"""List matching demo markets with the v4 operation layer."""
 
 import os
 
-from ig_trading_lib import Environment, IGClient, IGConfig, SessionCredentials
+from ig_trading_lib import IG, Environment, IGConfig, SessionCredentials
 
 
 def main() -> None:
-    """Create a demo client from environment variables and print matching markets."""
     config = IGConfig(
         environment=Environment.DEMO,
         credentials=SessionCredentials(
@@ -15,10 +14,8 @@ def main() -> None:
             password=os.environ.get("IG_ACCOUNT_PASSWORD", "your_account_password"),
         ),
     )
-
-    with IGClient(config) as client:
-        markets = client.markets.search("EURUSD")
-        for market in markets.items:
+    with IG(config) as ig:
+        for market in ig.operations.markets.search("EURUSD").markets:
             print(market.epic, market.market_status)
 
 

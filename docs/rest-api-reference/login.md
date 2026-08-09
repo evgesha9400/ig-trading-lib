@@ -1,11 +1,7 @@
-# Login
+# Session operations
 
-The client establishes and refreshes its session lazily from `IGConfig`. Use [Authentication and authorisation](../api-guide/authentication-and-authorisation.md) to choose the legacy session or OAuth credential flow; application code should not construct session headers or persist tokens itself.
-
-## Session and active account operations
-
-`client.session` gives typed access to provider session reads and account selection. The transport continues to own normal authentication and token refresh.
-
-Do not log session tokens or raw provider credentials.
+The transport authenticates lazily from `IGConfig` and owns token refresh. Use
+`ig.operations.session` only for explicit session reads, account switching, encryption keys, or
+refresh-token operations. Never log provider credentials or tokens.
 
 --8<-- "docs/rest-api-reference/.login-endpoints.md"

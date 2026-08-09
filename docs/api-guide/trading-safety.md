@@ -1,21 +1,17 @@
 # Trading safety
 
-`Environment.DEMO` is the default place to develop an integration. Credentials and token values are redacted from supported diagnostic representations.
+Every operation classified as a mutation in the authoritative manifest crosses the same
+`TradingGuard` before authentication or network I/O.
 
-## Live-trading permit
+```python
+from ig_trading_lib import IG, TradingPermit
 
-`TradingPermit()` is an explicit acknowledgement for a live account; it is not required for demo work.
+with IG(live_config, trading_permit=TradingPermit()) as ig:
+    confirmation = ig.workflows.positions.open_and_confirm(request)
+```
 
-Guarded typed mutations are positions.create, positions.update, positions.close, accounts.update_preferences, and create, update, or delete on watchlists, working_orders, costs, and applications.
-
-Do not infer that every ResourceClient mutation is guarded: guards are installed only for the typed client attributes named above.
-
-## Incomplete mutation outcomes
-
-Network failure during a mutation can raise `AmbiguousExecutionError`, because IG may have received the request even though the client cannot prove its outcome.
-
-After AmbiguousExecutionError, verify the outcome with a confirmation or relevant deal reference before considering another mutation.
-
-## Error hierarchy
-
-`IGError` is the base class for provider, authentication, transport, rate-limit, streaming, and ambiguous-execution errors. `LiveTradingPermissionError` is a separate `PermissionError`; it is not an `IGError` subclass.
+- Demo mutations do not require a permit.
+- Live mutations require an explicit `TradingPermit`.
+- Safe reads may retry.
+- Mutations never retry automatically after an uncertain outcome.
+- `AmbiguousExecutionError` means reconcile provider state before another mutation.

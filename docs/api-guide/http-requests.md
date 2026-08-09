@@ -1,15 +1,11 @@
-# HTTP requests
+# HTTP requests stay private
 
-`IGClient` and `AsyncIGClient` own authentication, provider headers, finite timeouts, safe-read retry, rate-limit handling, and redacted response diagnostics. Create a client with `IGConfig`; use a context manager so owned transports close predictably.
+`IG` and `AsyncIG` own authentication, headers, timeouts, safe-read retries, rate-limit handling,
+correlation IDs, and redacted diagnostics.
 
-## Read, create, update, and delete
+Application code calls `ig.operations.<resource>.<operation>()`. The private operation manifest
+binds that method to one HTTP method, path template, and provider protocol version. Arbitrary
+paths, suffixes, and version selectors are intentionally absent from the public API.
 
-High-level clients expose Pythonic read methods such as `list()`, `get()`, and `search()`. Generic resource clients expose `create()`, `update()`, and `delete()` when a provider-defined request body or route suffix is required.
-
-The library safely retries only reads. A mutation is never blindly retried: retain its deal reference and handle `AmbiguousExecutionError` by reconciling the outcome.
-
-## Typed service boundaries
-
-Use the high-level client when it offers the operation you need. Typed service methods provide the stable application interface; provider request and response details remain behind those services.
-
-Read [Authentication and authorisation](authentication-and-authorisation.md) before creating a configuration and [Errors](errors.md) before adding recovery logic.
+Safe reads may retry within `IGConfig.max_retries`. Mutations are never blindly retried after an
+indeterminate network failure; they raise `AmbiguousExecutionError`.

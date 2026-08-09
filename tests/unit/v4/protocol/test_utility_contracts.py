@@ -2,9 +2,7 @@ import time
 
 import pytest
 
-from ig_trading_lib import Environment, IGClient, IGConfig, IGError, SessionCredentials
-from ig_trading_lib.async_services import AsyncResourceClient
-from ig_trading_lib.services import ResourceClient
+from ig_trading_lib import IG, Environment, IGConfig, IGError, SessionCredentials
 from ig_trading_lib.transport import AsyncTransport, SessionTokens, SyncTransport
 
 
@@ -28,21 +26,14 @@ def test_configuration_token_and_error_helpers_preserve_safe_values() -> None:
     }
 
 
-def test_page_helpers_handle_list_and_invalid_payloads() -> None:
-    assert ResourceClient._to_page([{"value": 1}], None).items[0].value == 1
-    assert ResourceClient._to_page("invalid", None).items == ()
-    assert AsyncResourceClient._to_page([{"value": 2}], None).items[0].value == 2
-    assert AsyncResourceClient._to_page("invalid", None).items == ()
-
-
 def test_owned_transports_close_without_opening_network_connections() -> None:
     sync_transport = SyncTransport(_config())
     sync_transport.close()
 
 
 def test_sync_client_context_manager_closes_owned_resources() -> None:
-    with IGClient(_config()) as client:
-        assert client.config.environment is Environment.DEMO
+    with IG(_config()) as client:
+        assert set(vars(client)) >= {"operations", "workflows"}
 
 
 @pytest.mark.asyncio

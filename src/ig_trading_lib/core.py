@@ -1,4 +1,4 @@
-"""Configuration and safety primitives for the public v3 API."""
+"""Configuration and safety primitives for the public API."""
 
 from __future__ import annotations
 
@@ -20,7 +20,6 @@ class SessionCredentials:
     api_key: str = field(repr=False)
     identifier: str = field(repr=False)
     password: str = field(repr=False)
-    version: int = 2
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,7 +29,6 @@ class OAuthCredentials:
     api_key: str = field(repr=False)
     identifier: str = field(repr=False)
     password: str = field(repr=False)
-    version: int = 3
 
 
 Credentials = SessionCredentials | OAuthCredentials
