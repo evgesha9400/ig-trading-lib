@@ -16,13 +16,13 @@ API_INDEX_PATH = Path("docs/reference/public-api-index.json")
 CLIENT_ENTRY_POINTS_PATH = Path("docs/reference/.client-entry-points.md")
 CONTRACT_PATH = Path("docs/contracts/public-api.yml")
 ENDPOINT_CATALOG_PATH = Path("src/ig_trading_lib/endpoint_catalog.py")
-CLIENT_SOURCE_PATH = Path("src/ig_trading_lib/client.py")
+CLIENT_SOURCE_PATH = Path("src/ig_trading_lib/api.py")
 LLMS_PATH = Path("docs/llms.txt")
 REST_REFERENCE_DIRECTORY = Path("docs/rest-api-reference")
 ROOT_LLMS_PATH = Path("llms.txt")
 AGENT_INDEX_SCHEMA_VERSION = 4
-CLIENT_ENTRY_POINT_NAMES = ("IGClient", "AsyncIGClient")
-HIDDEN_CLIENT_NAMESPACE_NAMES = frozenset({"v1", "v2", "v3", "v4"})
+CLIENT_ENTRY_POINT_NAMES = ("IG", "AsyncIG")
+CLIENT_MODULE_NAME = "ig_trading_lib.api"
 
 
 class DocumentationIndexError(RuntimeError):
@@ -153,7 +153,7 @@ def _build_client_entry_point(
     """Build one constructible client and its source-owned service access paths."""
     client_class = _find_class(client_module, entry_point_name)
     constructor = _find_constructor(client_class)
-    qualified_name = f"ig_trading_lib.client.{entry_point_name}"
+    qualified_name = f"{CLIENT_MODULE_NAME}.{entry_point_name}"
     contract_entry = class_contracts.get(qualified_name)
     if not isinstance(contract_entry, Mapping):
         raise DocumentationIndexError(f"Client contract is missing: {qualified_name}")
@@ -165,7 +165,12 @@ def _build_client_entry_point(
         "reference": qualified_name,
         "signature": _format_constructor_signature(entry_point_name, constructor),
         "constructor": contract_constructor,
-        "namespaces": _client_namespaces(constructor, class_contracts, class_references),
+        "namespaces": _client_namespaces(
+            client_module,
+            constructor,
+            class_contracts,
+            class_references,
+        ),
     }
 
 
@@ -220,27 +225,26 @@ def _format_parameter(argument: ast.arg, default: ast.expr | None) -> str:
 
 
 def _client_namespaces(
+    client_module: ast.Module,
     constructor: ast.FunctionDef,
     class_contracts: Mapping[str, Any],
     class_references: Mapping[str, str],
 ) -> list[dict[str, Any]]:
     """Return every public client attribute assigned a checked service object."""
     namespaces = [
-        _namespace_from_assignment(statement, class_contracts, class_references)
+        _namespace_from_assignment(
+            client_module,
+            statement,
+            class_contracts,
+            class_references,
+        )
         for statement in constructor.body
-        if _is_client_namespace_assignment(statement) and _is_documented_client_namespace(statement)
+        if _is_client_namespace_assignment(statement)
     ]
     names = [namespace["name"] for namespace in namespaces]
     if len(names) != len(set(names)):
         raise DocumentationIndexError("Client namespaces must have unique names.")
     return namespaces
-
-
-def _is_documented_client_namespace(statement: ast.stmt) -> bool:
-    """Keep generated guides focused on typed service namespaces."""
-    target = statement.targets[0]
-    assert isinstance(target, ast.Attribute)
-    return target.attr not in HIDDEN_CLIENT_NAMESPACE_NAMES
 
 
 def _is_client_namespace_assignment(statement: ast.stmt) -> bool:
@@ -258,6 +262,7 @@ def _is_client_namespace_assignment(statement: ast.stmt) -> bool:
 
 
 def _namespace_from_assignment(
+    client_module: ast.Module,
     assignment: ast.Assign,
     class_contracts: Mapping[str, Any],
     class_references: Mapping[str, str],
@@ -274,14 +279,43 @@ def _namespace_from_assignment(
         raise DocumentationIndexError(
             f"Client namespace has no checked class contract: {call.func.id}"
         )
-    declaration = class_contracts[reference]
-    if not isinstance(declaration, Mapping) or not isinstance(declaration.get("methods"), Mapping):
-        raise DocumentationIndexError(f"Service contract is incomplete: {reference}")
+    namespace_class = _find_class(client_module, call.func.id)
     return {
         "name": target.attr,
         "reference": reference,
-        "operations": declaration["methods"],
+        "groups": _namespace_groups(namespace_class, class_contracts, class_references),
     }
+
+
+def _namespace_groups(
+    namespace_class: ast.ClassDef,
+    class_contracts: Mapping[str, Any],
+    class_references: Mapping[str, str],
+) -> list[dict[str, Any]]:
+    """Project one two-layer namespace into its typed operation or workflow groups."""
+    groups: list[dict[str, Any]] = []
+    for statement in namespace_class.body:
+        if not isinstance(statement, ast.AnnAssign) or not isinstance(statement.target, ast.Name):
+            continue
+        group_type = ast.unparse(statement.annotation).split("[", maxsplit=1)[0]
+        reference = class_references.get(group_type)
+        if reference is None:
+            raise DocumentationIndexError(
+                f"Namespace group has no checked class contract: {group_type}"
+            )
+        declaration = class_contracts[reference]
+        if not isinstance(declaration, Mapping) or not isinstance(
+            declaration.get("methods"), Mapping
+        ):
+            raise DocumentationIndexError(f"Namespace group contract is incomplete: {reference}")
+        groups.append(
+            {
+                "name": statement.target.id,
+                "reference": reference,
+                "operations": declaration["methods"],
+            }
+        )
+    return groups
 
 
 def build_llms_document(api_index: Mapping[str, Any], *, site_root: bool) -> str:
@@ -317,11 +351,9 @@ def build_llms_document(api_index: Mapping[str, Any], *, site_root: bool) -> str
   not an independent authority.
 - The endpoint catalog records the library's maintained compatibility matrix;
   it is not a live verification of IG availability.
-- Construct service clients only through the generated entry points below. Obtain
-  typed service namespaces from that client; do not construct service implementation
-  classes.
-- A `TradingPermit` protects live mutations on guarded typed resources. It does
-  not guard every possible `ResourceClient` instance.
+- Construct `IG` or `AsyncIG` only through the package root.
+- Use `ig.operations` for one provider operation and `ig.workflows` for composition.
+- A `TradingPermit` protects live mutations before any provider request is sent.
 - A mutation that raises `AmbiguousExecutionError` needs confirmation or
   deal-reference verification before another mutation.
 
@@ -342,13 +374,13 @@ def build_llms_document(api_index: Mapping[str, Any], *, site_root: bool) -> str
 def build_client_entry_points_document(api_index: Mapping[str, Any]) -> str:
     """Render compact human construction guidance from the generated agent index."""
     entry_points = api_index["entry_points"]
-    synchronous = entry_points["IGClient"]
-    asynchronous = entry_points["AsyncIGClient"]
+    synchronous = entry_points["IG"]
+    asynchronous = entry_points["AsyncIG"]
     sections = [
-        "<!-- Generated from docs/contracts/public-api.yml and src/ig_trading_lib/client.py. -->",
+        "<!-- Generated from docs/contracts/public-api.yml and src/ig_trading_lib/api.py. -->",
         (
-            "Construct application clients from the package root. Obtain service namespaces from a "
-            "client; do not construct them directly."
+            "Construct one composition root from the package. Use `operations` for faithful IG "
+            "calls and `workflows` for composed journeys."
         ),
         _render_entry_point(synchronous),
         _render_entry_point(asynchronous),
@@ -362,23 +394,34 @@ def _render_client_namespaces(
 ) -> str:
     """Render the matching sync and async client-owned service namespaces as one table."""
     rows = [
-        "### Client-owned service namespaces",
+        "### Two-layer public paths",
         "",
-        "| Attribute | `IGClient` type | `AsyncIGClient` type |",
+        "| Path | `IG` type | `AsyncIG` type |",
         "| --- | --- | --- |",
     ]
     asynchronous_namespaces = {
         namespace["name"]: namespace for namespace in asynchronous["namespaces"]
     }
     for namespace in synchronous["namespaces"]:
-        name = namespace["name"]
-        asynchronous_namespace = asynchronous_namespaces.get(name)
+        namespace_name = namespace["name"]
+        asynchronous_namespace = asynchronous_namespaces.get(namespace_name)
         if asynchronous_namespace is None:
-            raise DocumentationIndexError(f"Async client is missing service namespace: {name}")
-        rows.append(
-            f"| `client.{name}` | `{_short_reference(namespace['reference'])}` | "
-            f"`{_short_reference(asynchronous_namespace['reference'])}` |"
-        )
+            raise DocumentationIndexError(
+                f"Async client is missing public namespace: {namespace_name}"
+            )
+        asynchronous_groups = {group["name"]: group for group in asynchronous_namespace["groups"]}
+        for group in namespace["groups"]:
+            group_name = group["name"]
+            asynchronous_group = asynchronous_groups.get(group_name)
+            if asynchronous_group is None:
+                raise DocumentationIndexError(
+                    f"Async namespace is missing group: {namespace_name}.{group_name}"
+                )
+            rows.append(
+                f"| `ig.{namespace_name}.{group_name}` | "
+                f"`{_short_reference(group['reference'])}` | "
+                f"`{_short_reference(asynchronous_group['reference'])}` |"
+            )
     return "\n".join(rows)
 
 

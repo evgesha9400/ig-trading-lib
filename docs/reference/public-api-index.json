@@ -1,6 +1,92 @@
 {
   "complete_reference": {
     "classes": {
+      "ig_trading_lib.api.AsyncIG": {
+        "constructor": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Immutable IG environment, credentials, timeout, retry, and account configuration.",
+              "name": "config",
+              "type": "IGConfig"
+            },
+            {
+              "description": "Explicit acknowledgement required before live mutations.",
+              "name": "trading_permit",
+              "type": "TradingPermit | None"
+            },
+            {
+              "description": "Optional caller-owned asynchronous HTTP client.",
+              "name": "http_client",
+              "type": "httpx.AsyncClient | None"
+            }
+          ],
+          "returns": "None"
+        },
+        "fields": [],
+        "methods": {
+          "close": {
+            "exceptions": [],
+            "parameters": [],
+            "returns": "None"
+          }
+        }
+      },
+      "ig_trading_lib.api.AsyncOperations": {
+        "fields": [
+          "markets"
+        ],
+        "methods": {}
+      },
+      "ig_trading_lib.api.AsyncWorkflows": {
+        "fields": [
+          "discovery"
+        ],
+        "methods": {}
+      },
+      "ig_trading_lib.api.IG": {
+        "constructor": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Immutable IG environment, credentials, timeout, retry, and account configuration.",
+              "name": "config",
+              "type": "IGConfig"
+            },
+            {
+              "description": "Explicit acknowledgement required before live mutations.",
+              "name": "trading_permit",
+              "type": "TradingPermit | None"
+            },
+            {
+              "description": "Optional caller-owned synchronous HTTP client.",
+              "name": "http_client",
+              "type": "httpx.Client | None"
+            }
+          ],
+          "returns": "None"
+        },
+        "fields": [],
+        "methods": {
+          "close": {
+            "exceptions": [],
+            "parameters": [],
+            "returns": "None"
+          }
+        }
+      },
+      "ig_trading_lib.api.Operations": {
+        "fields": [
+          "markets"
+        ],
+        "methods": {}
+      },
+      "ig_trading_lib.api.Workflows": {
+        "fields": [
+          "discovery"
+        ],
+        "methods": {}
+      },
       "ig_trading_lib.async_services.AsyncAccountsClient": {
         "constructor": {
           "exceptions": [],
@@ -591,6 +677,137 @@
         ],
         "methods": {}
       },
+      "ig_trading_lib.operations.markets.AsyncMarketOperations": {
+        "constructor": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Authenticated asynchronous IG transport.",
+              "name": "transport",
+              "type": "AsyncTransport"
+            }
+          ],
+          "returns": "None"
+        },
+        "fields": [],
+        "methods": {
+          "get": {
+            "exceptions": [],
+            "parameters": [
+              {
+                "description": "Exact IG market epic.",
+                "name": "epic",
+                "type": "str"
+              }
+            ],
+            "returns": "MarketGetResponse"
+          },
+          "search": {
+            "exceptions": [],
+            "parameters": [
+              {
+                "description": "Human-readable market search term.",
+                "name": "search_term",
+                "type": "str"
+              }
+            ],
+            "returns": "MarketSearchResponse"
+          }
+        }
+      },
+      "ig_trading_lib.operations.markets.MarketDealingRules": {
+        "fields": [
+          "market_order_preference"
+        ],
+        "methods": {}
+      },
+      "ig_trading_lib.operations.markets.MarketGetRequest": {
+        "fields": [
+          "epic"
+        ],
+        "methods": {}
+      },
+      "ig_trading_lib.operations.markets.MarketGetResponse": {
+        "fields": [
+          "instrument",
+          "snapshot",
+          "dealing_rules"
+        ],
+        "methods": {}
+      },
+      "ig_trading_lib.operations.markets.MarketInstrument": {
+        "fields": [
+          "epic",
+          "name"
+        ],
+        "methods": {}
+      },
+      "ig_trading_lib.operations.markets.MarketOperations": {
+        "constructor": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Authenticated synchronous IG transport.",
+              "name": "transport",
+              "type": "SyncTransport"
+            }
+          ],
+          "returns": "None"
+        },
+        "fields": [],
+        "methods": {
+          "get": {
+            "exceptions": [],
+            "parameters": [
+              {
+                "description": "Exact IG market epic.",
+                "name": "epic",
+                "type": "str"
+              }
+            ],
+            "returns": "MarketGetResponse"
+          },
+          "search": {
+            "exceptions": [],
+            "parameters": [
+              {
+                "description": "Human-readable market search term.",
+                "name": "search_term",
+                "type": "str"
+              }
+            ],
+            "returns": "MarketSearchResponse"
+          }
+        }
+      },
+      "ig_trading_lib.operations.markets.MarketSearchRequest": {
+        "fields": [
+          "search_term"
+        ],
+        "methods": {}
+      },
+      "ig_trading_lib.operations.markets.MarketSearchResponse": {
+        "fields": [
+          "markets"
+        ],
+        "methods": {}
+      },
+      "ig_trading_lib.operations.markets.MarketSnapshot": {
+        "fields": [
+          "market_status",
+          "bid",
+          "offer"
+        ],
+        "methods": {}
+      },
+      "ig_trading_lib.operations.markets.MarketSummary": {
+        "fields": [
+          "epic",
+          "instrument_name",
+          "market_status"
+        ],
+        "methods": {}
+      },
       "ig_trading_lib.services.AccountsClient": {
         "constructor": {
           "exceptions": [],
@@ -912,6 +1129,74 @@
               }
             ],
             "returns": "Iterator[StreamUpdate]"
+          }
+        }
+      },
+      "ig_trading_lib.workflows.discovery.AsyncMarketDiscoveryWorkflow": {
+        "constructor": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Typed asynchronous market operations used to compose discovery.",
+              "name": "markets",
+              "type": "AsyncMarketOperations"
+            }
+          ],
+          "returns": "None"
+        },
+        "fields": [],
+        "methods": {
+          "find_market": {
+            "exceptions": [
+              "ResourceNotFoundError"
+            ],
+            "parameters": [
+              {
+                "description": "Human-readable market search term.",
+                "name": "search_term",
+                "type": "str"
+              },
+              {
+                "description": "Exact epic required in the search response.",
+                "name": "epic",
+                "type": "str"
+              }
+            ],
+            "returns": "MarketGetResponse"
+          }
+        }
+      },
+      "ig_trading_lib.workflows.discovery.MarketDiscoveryWorkflow": {
+        "constructor": {
+          "exceptions": [],
+          "parameters": [
+            {
+              "description": "Typed market operations used to compose discovery.",
+              "name": "markets",
+              "type": "MarketOperations"
+            }
+          ],
+          "returns": "None"
+        },
+        "fields": [],
+        "methods": {
+          "find_market": {
+            "exceptions": [
+              "ResourceNotFoundError"
+            ],
+            "parameters": [
+              {
+                "description": "Human-readable market search term.",
+                "name": "search_term",
+                "type": "str"
+              },
+              {
+                "description": "Exact epic required in the search response.",
+                "name": "epic",
+                "type": "str"
+              }
+            ],
+            "returns": "MarketGetResponse"
           }
         }
       }
@@ -1267,2652 +1552,189 @@
     }
   ],
   "entry_points": {
-    "AsyncIGClient": {
+    "AsyncIG": {
       "constructor": {
         "exceptions": [],
         "parameters": [
           {
-            "description": "Immutable environment, credentials, timeout, retry, and account configuration.",
+            "description": "Immutable IG environment, credentials, timeout, retry, and account configuration.",
             "name": "config",
             "type": "IGConfig"
           },
           {
-            "description": "Explicit acknowledgement required for guarded live mutations.",
+            "description": "Explicit acknowledgement required before live mutations.",
             "name": "trading_permit",
             "type": "TradingPermit | None"
           },
           {
-            "description": "Optional caller-owned HTTP client.",
+            "description": "Optional caller-owned asynchronous HTTP client.",
             "name": "http_client",
             "type": "httpx.AsyncClient | None"
           }
         ],
         "returns": "None"
       },
-      "import": "from ig_trading_lib import AsyncIGClient",
+      "import": "from ig_trading_lib import AsyncIG",
       "namespaces": [
         {
-          "name": "positions",
-          "operations": {
-            "close": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "request",
-                  "type": "Mapping[str, Any]"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "request",
-                  "type": "Mapping[str, Any]"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "IG deal identifier.",
-                  "name": "deal_id",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [],
-              "returns": "IGModel"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "IG deal identifier.",
-                  "name": "deal_id",
-                  "type": "str"
+          "groups": [
+            {
+              "name": "markets",
+              "operations": {
+                "get": {
+                  "exceptions": [],
+                  "parameters": [
+                    {
+                      "description": "Exact IG market epic.",
+                      "name": "epic",
+                      "type": "str"
+                    }
+                  ],
+                  "returns": "MarketGetResponse"
                 },
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "request",
-                  "type": "Mapping[str, Any]"
+                "search": {
+                  "exceptions": [],
+                  "parameters": [
+                    {
+                      "description": "Human-readable market search term.",
+                      "name": "search_term",
+                      "type": "str"
+                    }
+                  ],
+                  "returns": "MarketSearchResponse"
                 }
-              ],
-              "returns": "IGModel"
+              },
+              "reference": "ig_trading_lib.operations.markets.AsyncMarketOperations"
             }
-          },
-          "reference": "ig_trading_lib.client.AsyncPositionsClient"
+          ],
+          "name": "operations",
+          "reference": "ig_trading_lib.api.AsyncOperations"
         },
         {
-          "name": "markets",
-          "operations": {
-            "search": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Human-readable market search term.",
-                  "name": "search_term",
-                  "type": "str"
+          "groups": [
+            {
+              "name": "discovery",
+              "operations": {
+                "find_market": {
+                  "exceptions": [
+                    "ResourceNotFoundError"
+                  ],
+                  "parameters": [
+                    {
+                      "description": "Human-readable market search term.",
+                      "name": "search_term",
+                      "type": "str"
+                    },
+                    {
+                      "description": "Exact epic required in the search response.",
+                      "name": "epic",
+                      "type": "str"
+                    }
+                  ],
+                  "returns": "MarketGetResponse"
                 }
-              ],
-              "returns": "Page[IGModel]"
+              },
+              "reference": "ig_trading_lib.workflows.discovery.AsyncMarketDiscoveryWorkflow"
             }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncMarketsClient"
-        },
-        {
-          "name": "accounts",
-          "operations": {
-            "list": {
-              "exceptions": [],
-              "parameters": [],
-              "returns": "Page[IGModel]"
-            },
-            "preferences": {
-              "exceptions": [],
-              "parameters": [],
-              "returns": "IGModel"
-            },
-            "update_preferences": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncAccountsClient"
-        },
-        {
-          "name": "activity",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "AsyncIterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncResourceClient"
-        },
-        {
-          "name": "transactions",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "AsyncIterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncResourceClient"
-        },
-        {
-          "name": "watchlists",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "AsyncIterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncResourceClient"
-        },
-        {
-          "name": "confirms",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "AsyncIterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncResourceClient"
-        },
-        {
-          "name": "working_orders",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "AsyncIterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncResourceClient"
-        },
-        {
-          "name": "repeat_dealing_window",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "AsyncIterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncResourceClient"
-        },
-        {
-          "name": "categories",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "AsyncIterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncResourceClient"
-        },
-        {
-          "name": "sentiment",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "AsyncIterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncResourceClient"
-        },
-        {
-          "name": "costs",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "AsyncIterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncResourceClient"
-        },
-        {
-          "name": "applications",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "AsyncIterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncResourceClient"
-        },
-        {
-          "name": "prices",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "AsyncIterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncResourceClient"
-        },
-        {
-          "name": "session",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "AsyncIterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.async_services.AsyncResourceClient"
-        },
-        {
-          "name": "streaming",
-          "operations": {
-            "aiter_updates": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Streaming subscription specification.",
-                  "name": "subscription",
-                  "type": "StreamSubscription"
-                }
-              ],
-              "returns": "AsyncIterator[StreamUpdate]"
-            },
-            "close": {
-              "exceptions": [],
-              "parameters": [],
-              "returns": "None"
-            }
-          },
-          "reference": "ig_trading_lib.streaming.AsyncStreamingClient"
+          ],
+          "name": "workflows",
+          "reference": "ig_trading_lib.api.AsyncWorkflows"
         }
       ],
-      "reference": "ig_trading_lib.client.AsyncIGClient",
-      "signature": "AsyncIGClient(config: IGConfig, *, trading_permit: TradingPermit | None = None, http_client: httpx.AsyncClient | None = None)"
+      "reference": "ig_trading_lib.api.AsyncIG",
+      "signature": "AsyncIG(config: IGConfig, *, trading_permit: TradingPermit | None = None, http_client: httpx.AsyncClient | None = None)"
     },
-    "IGClient": {
+    "IG": {
       "constructor": {
         "exceptions": [],
         "parameters": [
           {
-            "description": "Immutable environment, credentials, timeout, retry, and account configuration.",
+            "description": "Immutable IG environment, credentials, timeout, retry, and account configuration.",
             "name": "config",
             "type": "IGConfig"
           },
           {
-            "description": "Explicit acknowledgement required for guarded live mutations.",
+            "description": "Explicit acknowledgement required before live mutations.",
             "name": "trading_permit",
             "type": "TradingPermit | None"
           },
           {
-            "description": "Optional caller-owned HTTP client.",
+            "description": "Optional caller-owned synchronous HTTP client.",
             "name": "http_client",
             "type": "httpx.Client | None"
           }
         ],
         "returns": "None"
       },
-      "import": "from ig_trading_lib import IGClient",
+      "import": "from ig_trading_lib import IG",
       "namespaces": [
         {
-          "name": "positions",
-          "operations": {
-            "close": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "request",
-                  "type": "Mapping[str, Any]"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "request",
-                  "type": "Mapping[str, Any]"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "IG deal identifier.",
-                  "name": "deal_id",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [],
-              "returns": "IGModel"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "IG deal identifier.",
-                  "name": "deal_id",
-                  "type": "str"
+          "groups": [
+            {
+              "name": "markets",
+              "operations": {
+                "get": {
+                  "exceptions": [],
+                  "parameters": [
+                    {
+                      "description": "Exact IG market epic.",
+                      "name": "epic",
+                      "type": "str"
+                    }
+                  ],
+                  "returns": "MarketGetResponse"
                 },
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "request",
-                  "type": "Mapping[str, Any]"
+                "search": {
+                  "exceptions": [],
+                  "parameters": [
+                    {
+                      "description": "Human-readable market search term.",
+                      "name": "search_term",
+                      "type": "str"
+                    }
+                  ],
+                  "returns": "MarketSearchResponse"
                 }
-              ],
-              "returns": "IGModel"
+              },
+              "reference": "ig_trading_lib.operations.markets.MarketOperations"
             }
-          },
-          "reference": "ig_trading_lib.client.PositionsClient"
+          ],
+          "name": "operations",
+          "reference": "ig_trading_lib.api.Operations"
         },
         {
-          "name": "markets",
-          "operations": {
-            "search": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Human-readable market search term.",
-                  "name": "search_term",
-                  "type": "str"
+          "groups": [
+            {
+              "name": "discovery",
+              "operations": {
+                "find_market": {
+                  "exceptions": [
+                    "ResourceNotFoundError"
+                  ],
+                  "parameters": [
+                    {
+                      "description": "Human-readable market search term.",
+                      "name": "search_term",
+                      "type": "str"
+                    },
+                    {
+                      "description": "Exact epic required in the search response.",
+                      "name": "epic",
+                      "type": "str"
+                    }
+                  ],
+                  "returns": "MarketGetResponse"
                 }
-              ],
-              "returns": "Page[IGModel]"
+              },
+              "reference": "ig_trading_lib.workflows.discovery.MarketDiscoveryWorkflow"
             }
-          },
-          "reference": "ig_trading_lib.services.MarketsClient"
-        },
-        {
-          "name": "accounts",
-          "operations": {
-            "list": {
-              "exceptions": [],
-              "parameters": [],
-              "returns": "Page[IGModel]"
-            },
-            "preferences": {
-              "exceptions": [],
-              "parameters": [],
-              "returns": "IGModel"
-            },
-            "update_preferences": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.AccountsClient"
-        },
-        {
-          "name": "activity",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Iterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.ResourceClient"
-        },
-        {
-          "name": "transactions",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Iterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.ResourceClient"
-        },
-        {
-          "name": "watchlists",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Iterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.ResourceClient"
-        },
-        {
-          "name": "confirms",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Iterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.ResourceClient"
-        },
-        {
-          "name": "working_orders",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Iterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.ResourceClient"
-        },
-        {
-          "name": "repeat_dealing_window",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Iterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.ResourceClient"
-        },
-        {
-          "name": "categories",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Iterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.ResourceClient"
-        },
-        {
-          "name": "sentiment",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Iterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.ResourceClient"
-        },
-        {
-          "name": "costs",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Iterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.ResourceClient"
-        },
-        {
-          "name": "applications",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Iterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.ResourceClient"
-        },
-        {
-          "name": "prices",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Iterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.ResourceClient"
-        },
-        {
-          "name": "session",
-          "operations": {
-            "create": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "delete": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "get": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                },
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                }
-              ],
-              "returns": "IGModel"
-            },
-            "iter_pages": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Iterator[IGModel]"
-            },
-            "list": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Optional query parameters sent to IG.",
-                  "name": "params",
-                  "type": "Mapping[str, Any] | None"
-                },
-                {
-                  "description": "Response field containing page items.",
-                  "name": "item_key",
-                  "type": "str | None"
-                }
-              ],
-              "returns": "Page[IGModel]"
-            },
-            "update": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Provider request body mapping.",
-                  "name": "body",
-                  "type": "Mapping[str, Any]"
-                },
-                {
-                  "description": "Path suffix appended to the resource route.",
-                  "name": "suffix",
-                  "type": "str"
-                }
-              ],
-              "returns": "IGModel"
-            }
-          },
-          "reference": "ig_trading_lib.services.ResourceClient"
-        },
-        {
-          "name": "streaming",
-          "operations": {
-            "aiter_updates": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Streaming subscription specification.",
-                  "name": "subscription",
-                  "type": "StreamSubscription"
-                }
-              ],
-              "returns": "AsyncIterator[StreamUpdate]"
-            },
-            "close": {
-              "exceptions": [],
-              "parameters": [],
-              "returns": "None"
-            },
-            "iter_updates": {
-              "exceptions": [],
-              "parameters": [
-                {
-                  "description": "Streaming subscription specification.",
-                  "name": "subscription",
-                  "type": "StreamSubscription"
-                }
-              ],
-              "returns": "Iterator[StreamUpdate]"
-            }
-          },
-          "reference": "ig_trading_lib.streaming.StreamingClient"
+          ],
+          "name": "workflows",
+          "reference": "ig_trading_lib.api.Workflows"
         }
       ],
-      "reference": "ig_trading_lib.client.IGClient",
-      "signature": "IGClient(config: IGConfig, *, trading_permit: TradingPermit | None = None, http_client: httpx.Client | None = None)"
+      "reference": "ig_trading_lib.api.IG",
+      "signature": "IG(config: IGConfig, *, trading_permit: TradingPermit | None = None, http_client: httpx.Client | None = None)"
     }
   },
   "examples": [
@@ -3933,7 +1755,7 @@
     }
   ],
   "generated_from": {
-    "client_source": "src/ig_trading_lib/client.py",
+    "client_source": "src/ig_trading_lib/api.py",
     "contract": "docs/contracts/public-api.yml",
     "endpoint_catalog": "src/ig_trading_lib/endpoint_catalog.py"
   },

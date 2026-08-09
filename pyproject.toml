@@ -57,7 +57,7 @@ log_cli = true
 log_cli_level = "INFO"
 log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
-testpaths = ["tests/unit/v3"]
+testpaths = ["tests/unit"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

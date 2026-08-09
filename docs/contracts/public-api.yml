@@ -1,5 +1,6 @@
 schema_version: 1
 public_modules:
+- ig_trading_lib.api
 - ig_trading_lib.client
 - ig_trading_lib.core
 - ig_trading_lib.errors
@@ -7,6 +8,8 @@ public_modules:
 - ig_trading_lib.services
 - ig_trading_lib.async_services
 - ig_trading_lib.streaming
+- ig_trading_lib.operations.markets
+- ig_trading_lib.workflows.discovery
 root_exports:
 - AmbiguousExecutionError
 - AsyncIG
@@ -632,6 +635,191 @@ classes:
       - name: subscription_factory
         type: Callable[[str, list[str], list[str]], Any] | None
         description: Optional factory for the Lightstreamer subscription.
+      returns: None
+      exceptions: []
+  ig_trading_lib.api.Operations:
+    fields:
+    - markets
+    methods: {}
+  ig_trading_lib.api.Workflows:
+    fields:
+    - discovery
+    methods: {}
+  ig_trading_lib.api.AsyncOperations:
+    fields:
+    - markets
+    methods: {}
+  ig_trading_lib.api.AsyncWorkflows:
+    fields:
+    - discovery
+    methods: {}
+  ig_trading_lib.api.IG:
+    fields: []
+    methods:
+      close:
+        parameters: []
+        returns: None
+        exceptions: []
+    constructor:
+      parameters:
+      - name: config
+        type: IGConfig
+        description: Immutable IG environment, credentials, timeout, retry, and account configuration.
+      - name: trading_permit
+        type: TradingPermit | None
+        description: Explicit acknowledgement required before live mutations.
+      - name: http_client
+        type: httpx.Client | None
+        description: Optional caller-owned synchronous HTTP client.
+      returns: None
+      exceptions: []
+  ig_trading_lib.api.AsyncIG:
+    fields: []
+    methods:
+      close:
+        parameters: []
+        returns: None
+        exceptions: []
+    constructor:
+      parameters:
+      - name: config
+        type: IGConfig
+        description: Immutable IG environment, credentials, timeout, retry, and account configuration.
+      - name: trading_permit
+        type: TradingPermit | None
+        description: Explicit acknowledgement required before live mutations.
+      - name: http_client
+        type: httpx.AsyncClient | None
+        description: Optional caller-owned asynchronous HTTP client.
+      returns: None
+      exceptions: []
+  ig_trading_lib.operations.markets.MarketSearchRequest:
+    fields:
+    - search_term
+    methods: {}
+  ig_trading_lib.operations.markets.MarketSummary:
+    fields:
+    - epic
+    - instrument_name
+    - market_status
+    methods: {}
+  ig_trading_lib.operations.markets.MarketSearchResponse:
+    fields:
+    - markets
+    methods: {}
+  ig_trading_lib.operations.markets.MarketGetRequest:
+    fields:
+    - epic
+    methods: {}
+  ig_trading_lib.operations.markets.MarketInstrument:
+    fields:
+    - epic
+    - name
+    methods: {}
+  ig_trading_lib.operations.markets.MarketSnapshot:
+    fields:
+    - market_status
+    - bid
+    - offer
+    methods: {}
+  ig_trading_lib.operations.markets.MarketDealingRules:
+    fields:
+    - market_order_preference
+    methods: {}
+  ig_trading_lib.operations.markets.MarketGetResponse:
+    fields:
+    - instrument
+    - snapshot
+    - dealing_rules
+    methods: {}
+  ig_trading_lib.operations.markets.MarketOperations:
+    fields: []
+    methods:
+      search:
+        parameters:
+        - name: search_term
+          type: str
+          description: Human-readable market search term.
+        returns: MarketSearchResponse
+        exceptions: []
+      get:
+        parameters:
+        - name: epic
+          type: str
+          description: Exact IG market epic.
+        returns: MarketGetResponse
+        exceptions: []
+    constructor:
+      parameters:
+      - name: transport
+        type: SyncTransport
+        description: Authenticated synchronous IG transport.
+      returns: None
+      exceptions: []
+  ig_trading_lib.operations.markets.AsyncMarketOperations:
+    fields: []
+    methods:
+      search:
+        parameters:
+        - name: search_term
+          type: str
+          description: Human-readable market search term.
+        returns: MarketSearchResponse
+        exceptions: []
+      get:
+        parameters:
+        - name: epic
+          type: str
+          description: Exact IG market epic.
+        returns: MarketGetResponse
+        exceptions: []
+    constructor:
+      parameters:
+      - name: transport
+        type: AsyncTransport
+        description: Authenticated asynchronous IG transport.
+      returns: None
+      exceptions: []
+  ig_trading_lib.workflows.discovery.MarketDiscoveryWorkflow:
+    fields: []
+    methods:
+      find_market:
+        parameters:
+        - name: search_term
+          type: str
+          description: Human-readable market search term.
+        - name: epic
+          type: str
+          description: Exact epic required in the search response.
+        returns: MarketGetResponse
+        exceptions:
+        - ResourceNotFoundError
+    constructor:
+      parameters:
+      - name: markets
+        type: MarketOperations
+        description: Typed market operations used to compose discovery.
+      returns: None
+      exceptions: []
+  ig_trading_lib.workflows.discovery.AsyncMarketDiscoveryWorkflow:
+    fields: []
+    methods:
+      find_market:
+        parameters:
+        - name: search_term
+          type: str
+          description: Human-readable market search term.
+        - name: epic
+          type: str
+          description: Exact epic required in the search response.
+        returns: MarketGetResponse
+        exceptions:
+        - ResourceNotFoundError
+    constructor:
+      parameters:
+      - name: markets
+        type: AsyncMarketOperations
+        description: Typed asynchronous market operations used to compose discovery.
       returns: None
       exceptions: []
 functions:

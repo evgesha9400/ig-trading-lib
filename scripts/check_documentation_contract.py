@@ -36,6 +36,7 @@ MANIFEST_VALUES = {
     "categories": ["brokerage", "trading"],
 }
 SOURCE_MODULES = (
+    "ig_trading_lib.api",
     "ig_trading_lib.client",
     "ig_trading_lib.core",
     "ig_trading_lib.errors",
@@ -43,6 +44,8 @@ SOURCE_MODULES = (
     "ig_trading_lib.services",
     "ig_trading_lib.async_services",
     "ig_trading_lib.streaming",
+    "ig_trading_lib.operations.markets",
+    "ig_trading_lib.workflows.discovery",
 )
 PUBLIC_API_REFERENCE_PATH = Path("docs/reference/public-api.md")
 KNOWN_EXCEPTIONS = frozenset(

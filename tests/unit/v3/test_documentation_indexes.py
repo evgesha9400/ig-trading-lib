@@ -177,47 +177,36 @@ def test_generated_index_declares_its_canonical_sources() -> None:
     assert index["generated_from"] == {
         "contract": "docs/contracts/public-api.yml",
         "endpoint_catalog": "src/ig_trading_lib/endpoint_catalog.py",
-        "client_source": "src/ig_trading_lib/client.py",
+        "client_source": "src/ig_trading_lib/api.py",
     }
-    assert set(index["entry_points"]) == {"IGClient", "AsyncIGClient"}
-    assert index["entry_points"]["IGClient"]["import"] == "from ig_trading_lib import IGClient"
-    assert index["entry_points"]["IGClient"]["constructor"]["parameters"] == [
+    assert set(index["entry_points"]) == {"IG", "AsyncIG"}
+    assert index["entry_points"]["IG"]["import"] == "from ig_trading_lib import IG"
+    assert index["entry_points"]["IG"]["constructor"]["parameters"] == [
         {
             "name": "config",
             "type": "IGConfig",
             "description": (
-                "Immutable environment, credentials, timeout, retry, and account configuration."
+                "Immutable IG environment, credentials, timeout, retry, and account configuration."
             ),
         },
         {
             "name": "trading_permit",
             "type": "TradingPermit | None",
-            "description": "Explicit acknowledgement required for guarded live mutations.",
+            "description": "Explicit acknowledgement required before live mutations.",
         },
         {
             "name": "http_client",
             "type": "httpx.Client | None",
-            "description": "Optional caller-owned HTTP client.",
+            "description": "Optional caller-owned synchronous HTTP client.",
         },
     ]
-    assert {namespace["name"] for namespace in index["entry_points"]["IGClient"]["namespaces"]} == {
-        "positions",
-        "markets",
-        "accounts",
-        "activity",
-        "transactions",
-        "watchlists",
-        "confirms",
-        "working_orders",
-        "repeat_dealing_window",
-        "categories",
-        "sentiment",
-        "costs",
-        "applications",
-        "prices",
-        "session",
-        "streaming",
-    }
+    namespaces = index["entry_points"]["IG"]["namespaces"]
+    assert {namespace["name"] for namespace in namespaces} == {"operations", "workflows"}
+    assert {
+        f"{namespace['name']}.{group['name']}"
+        for namespace in namespaces
+        for group in namespace["groups"]
+    } == {"operations.markets", "workflows.discovery"}
     assert all("versions" not in endpoint for endpoint in index["endpoints"])
     assert "ig_trading_lib.async_services.AsyncResourceClient" not in index["entry_points"]
     assert (
@@ -751,9 +740,12 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
                 heading.strip() for heading in reference.locator("main h2").all_text_contents()
             ]
 
-            assert reference_headings[:8] == [
+            assert reference_headings[:11] == [
                 "Client construction",
-                "Client façades",
+                "Composition roots",
+                "Operations",
+                "Workflows",
+                "Existing implementation modules",
                 "Configuration and safety primitives",
                 "Canonical models",
                 "Public failures",
@@ -764,19 +756,18 @@ def test_ig_login_reference_theme_is_present_in_the_rendered_documentation(tmp_p
             assert not any(heading.startswith("ig_trading_lib.") for heading in reference_headings)
             reference_text = reference.locator("main").inner_text()
             assert (
-                "Immutable environment, credentials, timeout, retry, and account configuration."
+                "Immutable IG environment, credentials, timeout, retry, and account configuration."
                 in (reference_text)
             )
-            assert "Explicit acknowledgement required for guarded live mutations." in reference_text
-            assert "Obtain service namespaces from a client; do not construct them directly." in (
+            assert "Explicit acknowledgement required before live mutations." in reference_text
+            assert "Use operations for faithful IG calls and workflows for composed journeys." in (
                 reference_text
             )
             constructor_tables = reference.locator("table").filter(
-                has_text=(
-                    "Immutable environment, credentials, timeout, retry, and account configuration."
-                )
+                has_text="Immutable IG environment, credentials, timeout, retry, "
+                "and account configuration."
             )
-            namespace_table = reference.locator("table").filter(has_text="client.positions")
+            namespace_table = reference.locator("table").filter(has_text="ig.operations.markets")
 
             expect(constructor_tables).to_have_count(2)
             expect(namespace_table).to_be_visible()

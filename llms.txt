@@ -20,11 +20,9 @@
   not an independent authority.
 - The endpoint catalog records the library's maintained compatibility matrix;
   it is not a live verification of IG availability.
-- Construct service clients only through the generated entry points below. Obtain
-  typed service namespaces from that client; do not construct service implementation
-  classes.
-- A `TradingPermit` protects live mutations on guarded typed resources. It does
-  not guard every possible `ResourceClient` instance.
+- Construct `IG` or `AsyncIG` only through the package root.
+- Use `ig.operations` for one provider operation and `ig.workflows` for composition.
+- A `TradingPermit` protects live mutations before any provider request is sent.
 - A mutation that raises `AmbiguousExecutionError` needs confirmation or
   deal-reference verification before another mutation.
 
@@ -61,8 +59,8 @@
 
 ## Service entry points
 
-- `from ig_trading_lib import IGClient` — `IGClient(config: IGConfig, *, trading_permit: TradingPermit | None = None, http_client: httpx.Client | None = None)`
-- `from ig_trading_lib import AsyncIGClient` — `AsyncIGClient(config: IGConfig, *, trading_permit: TradingPermit | None = None, http_client: httpx.AsyncClient | None = None)`
+- `from ig_trading_lib import IG` — `IG(config: IGConfig, *, trading_permit: TradingPermit | None = None, http_client: httpx.Client | None = None)`
+- `from ig_trading_lib import AsyncIG` — `AsyncIG(config: IGConfig, *, trading_permit: TradingPermit | None = None, http_client: httpx.AsyncClient | None = None)`
 
 ## Safety rules
 

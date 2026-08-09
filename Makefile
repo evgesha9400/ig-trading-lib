@@ -1,5 +1,5 @@
 PYTEST := poetry run pytest
-UNIT_DIR := tests/unit/v3
+UNIT_DIR := tests/unit
 
 .PHONY: install test lint format type docs-check docs-serve workflow-check audit build verify
 
