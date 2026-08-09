@@ -89,12 +89,13 @@ class Activity(IGModel):
     description: str | None = None
     details: ActivityDetails | None = None
     epic: str | None = None
-    level: Decimal | None = None
-    limit: Decimal | None = None
+    level: Decimal | str | None = None
+    limit: Decimal | str | None = None
     market_name: str | None = None
+    period: str | None = None
     result: str | None = None
-    size: Decimal | None = None
-    stop: Decimal | None = None
+    size: Decimal | str | None = None
+    stop: Decimal | str | None = None
     stop_type: str | None = None
     time: str | None = None
 

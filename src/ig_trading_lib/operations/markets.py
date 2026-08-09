@@ -260,6 +260,7 @@ class PricesResponse(IGModel):
     prices: tuple[PricePoint, ...] = ()
     instrument_type: str | None = None
     metadata: PriceMetadata | None = None
+    allowance: PriceAllowance | None = None
 
 
 PriceResolution = Literal[

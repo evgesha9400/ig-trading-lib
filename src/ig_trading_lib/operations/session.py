@@ -15,8 +15,8 @@ class SessionResponse(IGModel):
     lightstreamer_endpoint: str | None = None
     locale: str | None = None
     timezone_offset: int | None = None
-    cst: str | None = None
-    security_token: str | None = None
+    cst: str | None = Field(default=None, repr=False)
+    security_token: str | None = Field(default=None, repr=False)
 
 
 class SwitchAccountRequest(IGRequest):

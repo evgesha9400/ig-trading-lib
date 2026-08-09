@@ -32,6 +32,7 @@ from ig_trading_lib.operations.markets import (
     DetailedMarketSnapshot,
     MarketsResponse,
     MarketSummary,
+    PricesResponse,
 )
 from ig_trading_lib.operations.session import SessionResponse
 from ig_trading_lib.operations.watchlists import (
@@ -175,6 +176,42 @@ def test_account_session_working_order_and_watchlist_models_are_complete() -> No
         "name",
     }
     assert set(WatchlistMarket.model_fields) == set(MarketSummary.model_fields) | {"lot_size"}
+
+
+def test_activity_accepts_documented_v1_placeholder_values() -> None:
+    activity = Activity(
+        level="123.4",
+        limit="-",
+        period="DFB",
+        size="2",
+        stop="-",
+    )
+
+    assert activity.limit == "-"
+    assert activity.period == "DFB"
+    assert activity.stop == "-"
+
+
+def test_v2_prices_response_types_top_level_allowance() -> None:
+    response = PricesResponse.model_validate(
+        {
+            "allowance": {
+                "allowanceExpiry": 60,
+                "remainingAllowance": 99,
+                "totalAllowance": 100,
+            }
+        }
+    )
+
+    assert response.allowance is not None
+    assert response.allowance.remaining_allowance == 99
+
+
+def test_session_response_repr_redacts_provider_tokens() -> None:
+    response = SessionResponse(cst="cst-secret", security_token="xst-secret")
+
+    assert "cst-secret" not in repr(response)
+    assert "xst-secret" not in repr(response)
 
 
 def test_repeat_dealing_window_exposes_the_complete_typed_shape_and_filter() -> None:
@@ -401,6 +438,7 @@ def test_watchlist_activity_and_session_match_the_complete_provider_contracts() 
         "level",
         "limit",
         "market_name",
+        "period",
         "result",
         "size",
         "stop",

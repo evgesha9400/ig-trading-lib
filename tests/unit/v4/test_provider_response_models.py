@@ -232,6 +232,7 @@ def test_core_dealing_and_history_models_type_every_documented_field() -> None:
         "level",
         "limit",
         "market_name",
+        "period",
         "result",
         "size",
         "stop",
