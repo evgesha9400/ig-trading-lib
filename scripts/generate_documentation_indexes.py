@@ -598,6 +598,8 @@ def _library_reference_index(pages: dict[str, dict[str, list[str]]]) -> str:
                 f"{len(pages['operations'])} | {_method_count(pages['operations'])} |",
                 f"| [Workflows](workflows/index.md) | A multi-operation journey composed from "
                 f"operations. | {len(pages['workflows'])} | {_method_count(pages['workflows'])} |",
+                "| [Types and exceptions](types-and-exceptions/index.md) | Objects constructed, "
+                "returned, streamed, or raised by those two layers. | 4 categories | - |",
                 "",
                 "Every method documents its parameters, sync and async examples, recursive "
                 "response "

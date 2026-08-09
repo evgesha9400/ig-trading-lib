@@ -84,8 +84,13 @@ nav:
           - Portfolio: reference/workflows/portfolio.md
           - Positions: reference/workflows/positions.md
           - Working orders: reference/workflows/working_orders.md
+      - Types and exceptions:
+          - Overview: reference/types-and-exceptions/index.md
+          - Client and configuration: reference/types-and-exceptions/client-and-configuration.md
+          - Requests and responses: reference/types-and-exceptions/requests-and-responses.md
+          - Streaming: reference/types-and-exceptions/streaming.md
+          - Exceptions: reference/types-and-exceptions/exceptions.md
       - Agent API index: reference/agent-api-index.md
-      - Public API: reference/public-api.md
 
 plugins:
   - search
