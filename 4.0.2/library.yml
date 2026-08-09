@@ -1,0 +1,12 @@
+schema_version: 1
+library_id: ig-trading-lib
+title: IG Trading Library
+pitch: Safe, typed synchronous and asynchronous IG REST and streaming clients.
+repository: evgesha9400/ig-trading-lib
+repository_url: https://github.com/evgesha9400/ig-trading-lib
+package:
+  name: ig-trading-lib
+status: published
+categories:
+  - brokerage
+  - trading

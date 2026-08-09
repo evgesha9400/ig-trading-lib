@@ -1,0 +1,42 @@
+# IG Trading Library v4
+
+> Typed IG operations and safe trading workflows for Python.
+
+## Mental model
+
+- Construct `IG(config)` or `AsyncIG(config)`.
+- Use `.operations` for faithful typed IG calls.
+- Use `.workflows` for composed journeys.
+- Never select HTTP paths or provider protocol versions.
+- Pass `TradingPermit()` before live mutations.
+- Treat `AmbiguousExecutionError` as an unknown mutation outcome; reconcile before retrying.
+
+## Operation paths
+
+- `ig.operations.accounts`: list, get_preferences, update_preferences
+- `ig.operations.activity`: list, list_by_date_range, list_by_period
+- `ig.operations.applications`: list, update, disable
+- `ig.operations.categories`: list, list_instruments
+- `ig.operations.client_sentiment`: list, get, related
+- `ig.operations.confirmations`: get
+- `ig.operations.indicative_costs`: quote_open, quote_close, quote_edit, get_durable_medium, history
+- `ig.operations.markets`: list, search, get
+- `ig.operations.positions`: list, get, create, amend, close
+- `ig.operations.prices`: list, list_points, list_date_range
+- `ig.operations.repeat_dealing_window`: get
+- `ig.operations.session`: get, switch_account, delete, get_encryption_key
+- `ig.operations.streaming`: subscribe, close
+- `ig.operations.transactions`: list, list_by_date_range, list_by_period
+- `ig.operations.watchlists`: list, create, get, add_market, delete, remove_market
+- `ig.operations.working_orders`: list, create, amend, delete
+
+## Workflow paths
+
+- `ig.workflows.discovery`: find_market
+- `ig.workflows.portfolio`: snapshot
+- `ig.workflows.positions`: open_and_confirm, amend_and_confirm, close_and_confirm
+- `ig.workflows.working_orders`: place_and_confirm, amend_and_confirm, cancel_and_confirm
+
+## Canonical machine index
+
+- `docs/reference/public-api-index.json`
