@@ -157,6 +157,33 @@ class AmendPositionRequest(IGRequest):
     trailing_stop_distance: Decimal | None = None
     trailing_stop_increment: Decimal | None = None
 
+    @model_validator(mode="after")
+    def validate_provider_constraints(self) -> AmendPositionRequest:
+        if self.guaranteed_stop is True:
+            if self.stop_level is None:
+                raise ValueError("A guaranteed stop amendment requires stop_level")
+            if self.trailing_stop is not False:
+                raise ValueError("A guaranteed stop amendment requires trailing_stop=false")
+        if self.trailing_stop is False and (
+            self.trailing_stop_distance is not None or self.trailing_stop_increment is not None
+        ):
+            raise ValueError("Trailing stop values require trailing_stop=true")
+        if self.trailing_stop is True:
+            if self.guaranteed_stop is not False:
+                raise ValueError("A trailing stop amendment requires guaranteed_stop=false")
+            if any(
+                value is None
+                for value in (
+                    self.stop_level,
+                    self.trailing_stop_distance,
+                    self.trailing_stop_increment,
+                )
+            ):
+                raise ValueError(
+                    "A trailing stop amendment requires stop_level, distance, and increment"
+                )
+        return self
+
 
 class ClosePositionRequest(IGRequest):
     direction: Direction
@@ -170,9 +197,14 @@ class ClosePositionRequest(IGRequest):
     time_in_force: TimeInForce | None = None
 
     @model_validator(mode="after")
-    def identify_position(self) -> ClosePositionRequest:
-        if self.deal_id is None and self.epic is None:
-            raise ValueError("Either deal_id or epic is required")
+    def validate_provider_constraints(self) -> ClosePositionRequest:
+        has_deal_id = self.deal_id is not None
+        has_epic = self.epic is not None
+        if has_deal_id == has_epic:
+            raise ValueError("Set exactly one of deal_id and epic")
+        if has_epic and self.expiry is None:
+            raise ValueError("expiry is required when epic identifies the position")
+        _validate_order_level(self.order_type, self.level, self.quote_id)
         return self
 
 
@@ -199,8 +231,9 @@ class CreateWorkingOrderRequest(IGRequest):
     direction: Direction
     size: Decimal = Field(gt=0)
     level: Decimal
-    order_type: Literal["LIMIT", "STOP"]
+    order_type: Literal["LIMIT", "STOP"] = Field(alias="type")
     currency_code: str = Field(min_length=3, max_length=3)
+    deal_reference: str | None = Field(default=None, min_length=1, max_length=30)
     expiry: str = "-"
     force_open: bool = True
     guaranteed_stop: bool = False
@@ -211,16 +244,40 @@ class CreateWorkingOrderRequest(IGRequest):
     stop_level: Decimal | None = None
     time_in_force: Literal["GOOD_TILL_CANCELLED", "GOOD_TILL_DATE"] = "GOOD_TILL_CANCELLED"
 
+    @model_validator(mode="after")
+    def validate_provider_constraints(self) -> CreateWorkingOrderRequest:
+        _validate_good_till_date(self.time_in_force, self.good_till_date)
+        _require_one_of(self.limit_level, self.limit_distance, "limit_level", "limit_distance")
+        _require_one_of(self.stop_level, self.stop_distance, "stop_level", "stop_distance")
+        if self.guaranteed_stop and (self.stop_distance is None or self.stop_level is not None):
+            raise ValueError("A guaranteed working order requires stop_distance only")
+        return self
+
 
 class AmendWorkingOrderRequest(IGRequest):
     level: Decimal
-    order_type: Literal["LIMIT", "STOP"]
+    order_type: Literal["LIMIT", "STOP"] = Field(alias="type")
     time_in_force: Literal["GOOD_TILL_CANCELLED", "GOOD_TILL_DATE"]
     good_till_date: str | None = None
+    guaranteed_stop: bool | None = None
     limit_distance: Decimal | None = None
     limit_level: Decimal | None = None
     stop_distance: Decimal | None = None
     stop_level: Decimal | None = None
+
+    @model_validator(mode="after")
+    def validate_provider_constraints(self) -> AmendWorkingOrderRequest:
+        _validate_good_till_date(self.time_in_force, self.good_till_date)
+        _require_one_of(self.limit_level, self.limit_distance, "limit_level", "limit_distance")
+        _require_one_of(self.stop_level, self.stop_distance, "stop_level", "stop_distance")
+        if self.guaranteed_stop is True and self.stop_level is None:
+            raise ValueError("A guaranteed working-order amendment requires stop_level")
+        return self
+
+
+def _validate_good_till_date(time_in_force: str, good_till_date: str | None) -> None:
+    if time_in_force == "GOOD_TILL_DATE" and good_till_date is None:
+        raise ValueError("GOOD_TILL_DATE requires good_till_date")
 
 
 class RepeatDealingWindowResponse(IGModel):

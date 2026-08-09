@@ -8,7 +8,13 @@ from ig_trading_lib.operations.costs import (
     EditIndicativeCostRequest,
     OpenIndicativeCostRequest,
 )
-from ig_trading_lib.operations.dealing import CreatePositionRequest
+from ig_trading_lib.operations.dealing import (
+    AmendPositionRequest,
+    AmendWorkingOrderRequest,
+    ClosePositionRequest,
+    CreatePositionRequest,
+    CreateWorkingOrderRequest,
+)
 
 
 def test_indicative_cost_requests_use_the_official_operation_specific_fields() -> None:
@@ -89,3 +95,168 @@ def test_create_position_rejects_official_cross_field_violations(
 
     with pytest.raises(ValidationError):
         CreatePositionRequest.model_validate(values)
+
+
+def test_close_position_accepts_each_official_identifier_mode() -> None:
+    by_deal = ClosePositionRequest(
+        deal_id="deal-id",
+        direction="SELL",
+        size=1,
+        order_type="MARKET",
+    )
+    by_epic = ClosePositionRequest(
+        epic="CS.D.EURUSD.CFD.IP",
+        expiry="DFB",
+        direction="SELL",
+        size=1,
+        order_type="QUOTE",
+        level=Decimal("1.08"),
+        quote_id="quote-id",
+        time_in_force="FILL_OR_KILL",
+    )
+
+    assert by_deal.to_wire()["dealId"] == "deal-id"
+    assert by_epic.to_wire()["epic"] == "CS.D.EURUSD.CFD.IP"
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {},
+        {"deal_id": "deal-id", "epic": "CS.D.EURUSD.CFD.IP", "expiry": "DFB"},
+        {"epic": "CS.D.EURUSD.CFD.IP"},
+        {"deal_id": "deal-id", "order_type": "LIMIT"},
+        {
+            "deal_id": "deal-id",
+            "order_type": "LIMIT",
+            "level": 1,
+            "quote_id": "not-allowed",
+        },
+        {"deal_id": "deal-id", "order_type": "MARKET", "level": 1},
+        {"deal_id": "deal-id", "order_type": "QUOTE", "level": 1},
+    ],
+)
+def test_close_position_rejects_official_cross_field_violations(
+    overrides: dict[str, object],
+) -> None:
+    values: dict[str, object] = {
+        "direction": "SELL",
+        "size": 1,
+        "order_type": "MARKET",
+    }
+    values.update(overrides)
+
+    with pytest.raises(ValidationError):
+        ClosePositionRequest.model_validate(values)
+
+
+def test_working_order_requests_use_the_official_type_field() -> None:
+    created = CreateWorkingOrderRequest(
+        epic="CS.D.EURUSD.CFD.IP",
+        direction="BUY",
+        size=1,
+        level=Decimal("1.08"),
+        order_type="LIMIT",
+        currency_code="GBP",
+        deal_reference="client-reference",
+    )
+    amended = AmendWorkingOrderRequest(
+        level=Decimal("1.08"),
+        order_type="LIMIT",
+        time_in_force="GOOD_TILL_CANCELLED",
+        guaranteed_stop=False,
+    )
+
+    assert created.to_wire()["type"] == "LIMIT"
+    assert created.to_wire()["dealReference"] == "client-reference"
+    assert "orderType" not in created.to_wire()
+    assert amended.to_wire()["type"] == "LIMIT"
+    assert amended.to_wire()["guaranteedStop"] is False
+
+
+@pytest.mark.parametrize(
+    "request_type, values",
+    [
+        (
+            CreateWorkingOrderRequest,
+            {
+                "epic": "CS.D.EURUSD.CFD.IP",
+                "direction": "BUY",
+                "size": 1,
+                "level": 1,
+                "order_type": "LIMIT",
+                "currency_code": "GBP",
+                "time_in_force": "GOOD_TILL_DATE",
+            },
+        ),
+        (
+            CreateWorkingOrderRequest,
+            {
+                "epic": "CS.D.EURUSD.CFD.IP",
+                "direction": "BUY",
+                "size": 1,
+                "level": 1,
+                "order_type": "LIMIT",
+                "currency_code": "GBP",
+                "limit_level": 2,
+                "limit_distance": 1,
+            },
+        ),
+        (
+            AmendWorkingOrderRequest,
+            {
+                "level": 1,
+                "order_type": "LIMIT",
+                "time_in_force": "GOOD_TILL_DATE",
+            },
+        ),
+        (
+            AmendWorkingOrderRequest,
+            {
+                "level": 1,
+                "order_type": "LIMIT",
+                "time_in_force": "GOOD_TILL_CANCELLED",
+                "guaranteed_stop": True,
+            },
+        ),
+    ],
+)
+def test_working_order_requests_reject_official_cross_field_violations(
+    request_type: type[CreateWorkingOrderRequest] | type[AmendWorkingOrderRequest],
+    values: dict[str, object],
+) -> None:
+    with pytest.raises(ValidationError):
+        request_type.model_validate(values)
+
+
+def test_amend_position_accepts_a_complete_trailing_stop() -> None:
+    request = AmendPositionRequest(
+        stop_level=Decimal("1.07"),
+        guaranteed_stop=False,
+        trailing_stop=True,
+        trailing_stop_distance=Decimal("10"),
+        trailing_stop_increment=Decimal("1"),
+    )
+
+    assert request.to_wire()["trailingStopDistance"] == 10.0
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        {"guaranteed_stop": True, "trailing_stop": False},
+        {"guaranteed_stop": True, "stop_level": 1, "trailing_stop": True},
+        {"trailing_stop": False, "trailing_stop_distance": 1},
+        {
+            "guaranteed_stop": False,
+            "trailing_stop": True,
+            "stop_level": 1,
+            "trailing_stop_distance": 1,
+        },
+    ],
+)
+def test_amend_position_rejects_official_cross_field_violations(
+    values: dict[str, object],
+) -> None:
+    with pytest.raises(ValidationError):
+        AmendPositionRequest.model_validate(values)
