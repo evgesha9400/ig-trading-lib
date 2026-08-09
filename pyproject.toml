@@ -1,6 +1,6 @@
 [project]
 name = "ig-trading-lib"
-version = "4.0.0"
+version = "4.0.1"
 description = "Typed IG operations and safe trading workflows for Python"
 authors = [{ name = "Evgeny Aleshin" }]
 license = "MIT"
