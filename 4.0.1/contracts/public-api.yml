@@ -1,0 +1,133 @@
+schema_version: 2
+mental_model:
+  operations: Faithful typed IG calls with protocol details kept private.
+  workflows: Multi-operation journeys composed only from operations.
+root_exports:
+  - AmbiguousExecutionError
+  - AmendPositionRequest
+  - AmendWorkingOrderRequest
+  - AsyncIG
+  - AuthenticationError
+  - AuthorizationError
+  - ClosePositionRequest
+  - CreatePositionRequest
+  - CreateWorkingOrderRequest
+  - DealConfirmationError
+  - DealConfirmationResponse
+  - Environment
+  - IG
+  - IGConfig
+  - IGError
+  - LiveTradingPermissionError
+  - MarketGetResponse
+  - MarketSearchResponse
+  - OAuthCredentials
+  - ProviderRejectionError
+  - RateLimitError
+  - ResourceNotFoundError
+  - SessionCredentials
+  - StreamSubscription
+  - StreamUpdate
+  - StreamingDataLossError
+  - StreamingSubscriptionError
+  - TradingPermit
+  - TransportError
+public_modules:
+  - ig_trading_lib.api
+  - ig_trading_lib.core
+  - ig_trading_lib.errors
+  - ig_trading_lib.models
+  - ig_trading_lib.operations.accounts
+  - ig_trading_lib.operations.applications
+  - ig_trading_lib.operations.costs
+  - ig_trading_lib.operations.dealing
+  - ig_trading_lib.operations.markets
+  - ig_trading_lib.operations.sentiment
+  - ig_trading_lib.operations.session
+  - ig_trading_lib.operations.streaming
+  - ig_trading_lib.operations.watchlists
+  - ig_trading_lib.streaming
+  - ig_trading_lib.workflows.dealing
+  - ig_trading_lib.workflows.discovery
+  - ig_trading_lib.workflows.portfolio
+operations:
+  accounts:
+    list: accounts.list
+    get_preferences: accounts.get_preferences
+    update_preferences: accounts.update_preferences
+  activity:
+    list: activity.list
+    list_by_date_range: activity.list_by_date_range
+    list_by_period: activity.list_by_period
+  applications:
+    list: applications.list
+    update: applications.update
+    disable: applications.disable
+  categories:
+    list: categories.list
+    list_instruments: categories.list_instruments
+  client_sentiment:
+    list: client_sentiment.list
+    get: client_sentiment.get
+    related: client_sentiment.related
+  confirmations:
+    get: confirmations.get
+  indicative_costs:
+    quote_open: indicative_costs.quote_open
+    quote_close: indicative_costs.quote_close
+    quote_edit: indicative_costs.quote_edit
+    get_durable_medium: indicative_costs.get_durable_medium
+    history: indicative_costs.history
+  markets:
+    list: markets.list
+    search: markets.search
+    get: markets.get
+  positions:
+    list: positions.list
+    get: positions.get
+    create: positions.create
+    amend: positions.amend
+    close: positions.close
+  prices:
+    list: prices.list
+    list_points: prices.list_points
+    list_date_range: prices.list_date_range
+  repeat_dealing_window:
+    get: repeat_dealing_window.get
+  session:
+    get: session.get
+    switch_account: session.switch_account
+    delete: session.delete
+    get_encryption_key: session.get_encryption_key
+  streaming:
+    subscribe: streaming.subscribe
+    close: streaming.close
+  transactions:
+    list: transactions.list
+    list_by_date_range: transactions.list_by_date_range
+    list_by_period: transactions.list_by_period
+  watchlists:
+    list: watchlists.list
+    create: watchlists.create
+    get: watchlists.get
+    add_market: watchlists.add_market
+    delete: watchlists.delete
+    remove_market: watchlists.remove_market
+  working_orders:
+    list: working_orders.list
+    create: working_orders.create
+    amend: working_orders.amend
+    delete: working_orders.delete
+workflows:
+  discovery:
+    - find_market
+  portfolio:
+    - snapshot
+  positions:
+    - open_and_confirm
+    - amend_and_confirm
+    - close_and_confirm
+  working_orders:
+    - place_and_confirm
+    - amend_and_confirm
+    - cancel_and_confirm
