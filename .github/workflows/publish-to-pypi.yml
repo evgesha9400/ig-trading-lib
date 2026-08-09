@@ -52,7 +52,7 @@ jobs:
           make workflow-check
 
       - name: Test with coverage
-        run: poetry run pytest tests/unit/v3
+        run: poetry run pytest tests/unit/v4
 
       - name: Build package
         run: poetry build

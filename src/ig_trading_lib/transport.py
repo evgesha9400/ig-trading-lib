@@ -71,6 +71,10 @@ class SyncTransport:
         if self._owns_http_client:
             self._http.close()
 
+    def invalidate_session(self) -> None:
+        """Discard local authentication after a successful remote logout."""
+        self._tokens = None
+
     def request(
         self,
         method: str,
@@ -180,7 +184,7 @@ class SyncTransport:
             response = self._http.post(
                 self._url("/session"),
                 json={"identifier": credentials.identifier, "password": credentials.password},
-                headers=self._anonymous_headers(credentials.version),
+                headers=self._anonymous_headers(_authentication_version(credentials)),
             )
         except httpx.RequestError as error:
             raise TransportError(
@@ -370,6 +374,10 @@ class AsyncTransport:
         if self._owns_http_client:
             await self._http.aclose()
 
+    def invalidate_session(self) -> None:
+        """Discard local authentication after a successful remote logout."""
+        self._tokens = None
+
     async def request(
         self,
         method: str,
@@ -479,7 +487,7 @@ class AsyncTransport:
             response = await self._http.post(
                 self._url("/session"),
                 json={"identifier": credentials.identifier, "password": credentials.password},
-                headers=self._anonymous_headers(credentials.version),
+                headers=self._anonymous_headers(_authentication_version(credentials)),
             )
         except httpx.RequestError as error:
             raise TransportError(
@@ -630,6 +638,10 @@ def _anonymous_headers(config: IGConfig, version: int) -> dict[str, str]:
         "X-IG-API-KEY": config.credentials.api_key,
         "X-CORRELATION-ID": str(uuid4()),
     }
+
+
+def _authentication_version(credentials: SessionCredentials | OAuthCredentials) -> int:
+    return 3 if isinstance(credentials, OAuthCredentials) else 2
 
 
 def _url(config: IGConfig, path: str) -> str:

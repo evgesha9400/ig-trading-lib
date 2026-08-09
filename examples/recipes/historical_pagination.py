@@ -1,18 +1,22 @@
-"""Walk historical activity pages without manually parsing continuation paths."""
+"""Advance typed account-activity pages without handling provider URLs."""
 
-from __future__ import annotations
-
-from collections.abc import AsyncIterator, Iterator
-
-from ig_trading_lib import AsyncIGClient, IGClient, IGModel
+from ig_trading_lib import IG, AsyncIG
+from ig_trading_lib.operations.accounts import Activity, ActivityQuery
 
 
-def list_activity(client: IGClient) -> Iterator[IGModel]:
-    """Yield all linked activity entries from the typed history facade."""
-    yield from client.activity.iter_pages(item_key="activities")
+def list_activity(ig: IG, *, page_size: int = 100) -> tuple[Activity, ...]:
+    page = ig.operations.activity.list(ActivityQuery(page_size=page_size))
+    activities = page.activities
+    while (next_query := page.next_query()) is not None:
+        page = ig.operations.activity.list(next_query)
+        activities += page.activities
+    return activities
 
 
-async def list_activity_async(client: AsyncIGClient) -> AsyncIterator[IGModel]:
-    """Yield all linked activity entries from the asynchronous history facade."""
-    async for activity in client.activity.iter_pages(item_key="activities"):
-        yield activity
+async def list_activity_async(ig: AsyncIG, *, page_size: int = 100) -> tuple[Activity, ...]:
+    page = await ig.operations.activity.list(ActivityQuery(page_size=page_size))
+    activities = page.activities
+    while (next_query := page.next_query()) is not None:
+        page = await ig.operations.activity.list(next_query)
+        activities += page.activities
+    return activities

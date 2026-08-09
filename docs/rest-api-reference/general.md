@@ -1,7 +1,6 @@
-# General
+# Application operations
 
-`client.applications` is the typed resource for client-owned application operations. It lists or changes application metadata and can disable the current application key through the provider's documented route.
-
-Application mutations are guarded on live accounts. Treat a request that fails ambiguously as a state that must be verified before another mutation.
+`ig.operations.applications` lists, updates, or disables client-owned IG applications. Updates use
+typed request models and cross the shared mutation guard.
 
 --8<-- "docs/rest-api-reference/.general-endpoints.md"

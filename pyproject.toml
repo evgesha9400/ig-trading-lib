@@ -1,13 +1,13 @@
 [project]
 name = "ig-trading-lib"
-version = "3.0.1"
-description = "Safe, typed synchronous and asynchronous clients for IG Trading APIs"
+version = "4.0.0"
+description = "Typed IG operations and safe trading workflows for Python"
 authors = [{ name = "Evgeny Aleshin" }]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 dependencies = [
-    "cryptography>=48.0.1,<49.0.0",
+    "cryptography>=50.0.0,<51.0.0",
     "httpx>=0.28.1,<1.0.0",
     "idna>=3.15,<4.0.0",
     "lightstreamer-client-lib>=2.2.2,<3.0.0",
@@ -57,7 +57,7 @@ log_cli = true
 log_cli_level = "INFO"
 log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
-testpaths = ["tests/unit/v3"]
+testpaths = ["tests/unit/v4"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

@@ -1,16 +1,12 @@
-"""Discover provider markets through the typed synchronous and asynchronous facades."""
+"""Discover markets through the faithful operation layer."""
 
-from __future__ import annotations
-
-from ig_trading_lib import AsyncIGClient, IGClient
+from ig_trading_lib import IG, AsyncIG
 
 
-def discover_markets(client: IGClient, search_term: str) -> tuple[str, ...]:
-    """Return matching market epics from the typed market-search facade."""
-    return tuple(market.epic for market in client.markets.search(search_term).items)
+def discover_markets(ig: IG, search_term: str) -> tuple[str, ...]:
+    return tuple(market.epic for market in ig.operations.markets.search(search_term).markets)
 
 
-async def discover_markets_async(client: AsyncIGClient, search_term: str) -> tuple[str, ...]:
-    """Return matching market epics through the asynchronous market-search facade."""
-    markets = await client.markets.search(search_term)
-    return tuple(market.epic for market in markets.items)
+async def discover_markets_async(ig: AsyncIG, search_term: str) -> tuple[str, ...]:
+    response = await ig.operations.markets.search(search_term)
+    return tuple(market.epic for market in response.markets)

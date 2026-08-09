@@ -90,6 +90,7 @@ def _validate_jobs(workflow: dict[str, Any]) -> None:
     required_jobs = {
         "validate-documentation",
         "validate-release",
+        "verify-release-commit",
         "publish-versioned-documentation",
         "publish-python-package",
         "create-github-release",
@@ -102,6 +103,7 @@ def _validate_jobs(workflow: dict[str, Any]) -> None:
 
     _validate_documentation_job(jobs["validate-documentation"])
     _validate_tag_job(jobs["validate-release"])
+    _validate_release_commit_job(jobs["verify-release-commit"])
     _validate_publish_job(jobs["publish-versioned-documentation"])
     _validate_pypi_publish_job(jobs["publish-python-package"])
     _validate_github_release_job(jobs["create-github-release"])
@@ -188,9 +190,56 @@ def _validate_tag_job(job: object) -> None:
         )
 
 
+def _validate_release_commit_job(job: object) -> None:
+    if not isinstance(job, dict) or job.get("permissions") != {"contents": "read"}:
+        raise ReleaseWorkflowError("Release-commit verification must remain read-only.")
+    if job.get("needs") != "validate-release":
+        raise ReleaseWorkflowError("Release-commit verification must follow tag validation.")
+    if job.get("if") != "needs.validate-release.result == 'success'":
+        raise ReleaseWorkflowError("Release-commit verification requires a validated tag.")
+    strategy = job.get("strategy")
+    if not isinstance(strategy, dict) or strategy.get("fail-fast") != "false":
+        raise ReleaseWorkflowError("Release verification must run the complete Python matrix.")
+    matrix = strategy.get("matrix")
+    if not isinstance(matrix, dict) or matrix.get("python-version") != [
+        "3.11",
+        "3.12",
+        "3.13",
+    ]:
+        raise ReleaseWorkflowError("Release verification must cover Python 3.11 through 3.13.")
+    if _checkout_refs(job) != [
+        "${{ needs.validate-release.outputs.tag }}"
+    ] or _checkout_fetch_depths(job) != ["0"]:
+        raise ReleaseWorkflowError("Release verification must check out the validated tag.")
+    commands = _job_commands(job)
+    _require(
+        commands,
+        "git fetch --no-tags origin main develop",
+        "Release verification must fetch both protected branches.",
+    )
+    _require(
+        commands,
+        '"$RELEASE_COMMIT" != "$(git rev-parse origin/main)"',
+        "The release commit must equal origin/main.",
+    )
+    _require(
+        commands,
+        '"$(git rev-parse origin/main)" != "$(git rev-parse origin/develop)"',
+        "origin/main and origin/develop must be identical.",
+    )
+    _require(commands, "make verify", "The exact release commit must pass the full local gate.")
+
+
 def _validate_publish_job(job: object) -> None:
     if not isinstance(job, dict) or job.get("permissions") != {"contents": "write"}:
         raise ReleaseWorkflowError("Versioned docs require only contents: write permission.")
+    if job.get("needs") != ["validate-release", "verify-release-commit"]:
+        raise ReleaseWorkflowError("Versioned docs must wait for exact release verification.")
+    if job.get("if") != (
+        "needs.validate-release.result == 'success' "
+        "&& needs.verify-release-commit.result == 'success'"
+    ):
+        raise ReleaseWorkflowError("Versioned docs require successful release verification.")
     commands = _job_commands(job)
     if _checkout_refs(job) != [
         "${{ needs.validate-release.outputs.tag }}"
@@ -290,6 +339,7 @@ def _validate_github_release_job(job: object) -> None:
         )
     expected_dependencies = [
         "validate-release",
+        "verify-release-commit",
         "publish-versioned-documentation",
         "publish-python-package",
     ]
@@ -324,7 +374,11 @@ def _validate_github_release_job(job: object) -> None:
 def _validate_pypi_publish_job(job: object) -> None:
     if not isinstance(job, dict) or job.get("permissions") != {"contents": "read"}:
         raise ReleaseWorkflowError("PyPI publication must retain read-only repository access.")
-    expected_dependencies = ["validate-release", "publish-versioned-documentation"]
+    expected_dependencies = [
+        "validate-release",
+        "verify-release-commit",
+        "publish-versioned-documentation",
+    ]
     if job.get("needs") != expected_dependencies:
         raise ReleaseWorkflowError("PyPI publication must wait for immutable documentation.")
     if job.get("if") != "needs.publish-versioned-documentation.result == 'success'":
@@ -360,6 +414,7 @@ def _validate_portal_dispatch_job(job: object) -> None:
         raise ReleaseWorkflowError("Portal dispatch must not receive a repository token.")
     expected_dependencies = [
         "validate-release",
+        "verify-release-commit",
         "publish-versioned-documentation",
         "publish-python-package",
         "create-github-release",

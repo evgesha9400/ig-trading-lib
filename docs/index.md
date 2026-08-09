@@ -1,37 +1,27 @@
-<section class="ig-docs-hero" aria-labelledby="ig-docs-title">
-  <p class="ig-docs-eyebrow">IG API · Python SDK</p>
-  <h1 id="ig-docs-title">IG Trading Library</h1>
-  <p class="ig-docs-lede">Safe, typed synchronous and asynchronous IG REST and streaming clients.</p>
-  <div class="ig-docs-actions">
-    <a class="ig-docs-primary-action" href="getting-started/">Start with a demo</a>
-    <a class="ig-docs-secondary-action" href="reference/public-api/">Explore the API</a>
-  </div>
-  <p class="ig-docs-disclaimer">Independent open-source documentation. This project is not affiliated with IG.</p>
-</section>
+# Trading code should speak IG, not HTTP
 
-The library supports demo and live IG environments, canonical snake-case response models, typed provider failures, and Lightstreamer subscriptions. It does not store credentials or tokens on disk.
+IG Trading Library gives Python applications typed operations and safe workflows for IG's REST
+and streaming APIs.
 
-## Use it safely
+## Why use it?
 
-- Start with a demo account.
-- Keep credentials outside source control.
-- Pass `TradingPermit()` only when a live mutation is intentional.
-- Treat `AmbiguousExecutionError` as an outcome that needs verification, not a signal to retry blindly.
+- One method name maps to one maintained IG operation.
+- Typed request models reject invalid shapes before network I/O.
+- Typed responses expose documented fields and preserve provider additions.
+- Authentication, provider protocol versions, retries, redaction, and streaming recovery are shared.
+- Live mutations require an explicit `TradingPermit`.
+- Uncertain mutation outcomes raise `AmbiguousExecutionError` instead of being retried blindly.
 
-## REST API reference
+## Two layers, no competing API
 
-- [Account](rest-api-reference/account.md)
-- [Dealing](rest-api-reference/dealing.md)
-- [Markets](rest-api-reference/markets.md)
-- [Watchlists](rest-api-reference/watchlists.md)
-- [Client sentiment](rest-api-reference/client-sentiment.md)
-- [Login](rest-api-reference/login.md)
-- [Indicative costs and charges](rest-api-reference/indicative-costs-and-charges.md)
-- [General](rest-api-reference/general.md)
+```text
+IG or AsyncIG
+├── operations   faithful IG calls
+└── workflows    safe journeys composed from operations
+```
 
-## Build an integration
+Start with [Getting started](getting-started.md), then use the REST reference to translate an IG
+concept directly into `ig.operations.<resource>.<operation>()`.
 
-- [API guide](api-guide/authentication-and-authorisation.md)
-- [Streaming API](streaming-api.md)
-- [Sync and async recipes](recipes/index.md)
-- [Library reference](reference/public-api.md)
+Library v4 is the Python package version. Provider protocol versions are private manifest details,
+not user-selectable interfaces.

@@ -1,555 +1,171 @@
-"""Fail documentation builds when the declared public contract drifts from source."""
+"""Validate that implementation, public contract, manifest, and prose describe one v4 API."""
 
 from __future__ import annotations
 
-import ast
+import importlib
+import inspect
 import sys
-from collections.abc import Mapping
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, get_type_hints
 
 import yaml
 
-MANIFEST_FIELDS = frozenset(
-    {
-        "schema_version",
-        "library_id",
-        "title",
-        "pitch",
-        "repository",
-        "repository_url",
-        "package",
-        "status",
-        "categories",
-    }
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+import ig_trading_lib  # noqa: E402
+from ig_trading_lib._protocol.manifest import (  # noqa: E402
+    OPERATION_MANIFEST,
+    PUBLIC_OPERATION_MANIFEST,
+    SOURCE_EXCLUSIONS,
 )
-MANIFEST_VALUES = {
-    "schema_version": 1,
-    "library_id": "ig-trading-lib",
-    "title": "IG Trading Library",
-    "pitch": "Safe, typed synchronous and asynchronous IG REST and streaming clients.",
-    "repository": "evgesha9400/ig-trading-lib",
-    "repository_url": "https://github.com/evgesha9400/ig-trading-lib",
-    "package": {"name": "ig-trading-lib"},
-    "status": "published",
-    "categories": ["brokerage", "trading"],
-}
-SOURCE_MODULES = (
-    "ig_trading_lib.client",
-    "ig_trading_lib.core",
-    "ig_trading_lib.errors",
-    "ig_trading_lib.models",
-    "ig_trading_lib.services",
-    "ig_trading_lib.async_services",
-    "ig_trading_lib.streaming",
+from ig_trading_lib.api import (  # noqa: E402
+    IG,
+    AsyncIG,
+    AsyncOperations,
+    AsyncWorkflows,
+    Operations,
+    Workflows,
 )
-PUBLIC_API_REFERENCE_PATH = Path("docs/reference/public-api.md")
-KNOWN_EXCEPTIONS = frozenset(
-    {
-        "AmbiguousExecutionError",
-        "AuthenticationError",
-        "AuthorizationError",
-        "IGError",
-        "LiveTradingPermissionError",
-        "ProviderRejectionError",
-        "RateLimitError",
-        "ResourceNotFoundError",
-        "StreamingDataLossError",
-        "StreamingSubscriptionError",
-        "TransportError",
-    }
+from ig_trading_lib.core import OAuthCredentials, SessionCredentials  # noqa: E402
+from ig_trading_lib.models import IGModel  # noqa: E402
+
+CONTRACT = ROOT / "docs/contracts/public-api.yml"
+LEGACY_MODULES = (
+    "client.py",
+    "services.py",
+    "async_services.py",
+    "versions.py",
+    "endpoint_catalog.py",
+)
+REQUIRED_VALUE_LANGUAGE = (
+    "typed operations",
+    "safe workflows",
+    "operations",
+    "workflows",
+    "AmbiguousExecutionError",
 )
 
 
-class DocumentationContractError(ValueError):
-    """Raised when release documentation does not cover the supported API."""
+def _contract() -> dict[str, Any]:
+    return yaml.safe_load(CONTRACT.read_text(encoding="utf-8"))
 
 
-@dataclass(frozen=True)
-class DocumentationPaths:
-    """The documentation files validated as one release contract."""
-
-    project_root: Path
-    manifest: Path
-    contract: Path
-    rest_reference_directory: Path
-
-    @classmethod
-    def from_project_root(cls, project_root: Path) -> DocumentationPaths:
-        docs_root = project_root / "docs"
-        return cls(
-            project_root=project_root,
-            manifest=docs_root / "library.yml",
-            contract=docs_root / "contracts" / "public-api.yml",
-            rest_reference_directory=docs_root / "rest-api-reference",
-        )
-
-
-def validate_documentation_contract(project_root: Path) -> None:
-    """Validate durable metadata, declared API details, examples, and endpoint coverage."""
-    paths = DocumentationPaths.from_project_root(project_root)
-    manifest = _load_yaml_mapping(paths.manifest)
-    contract = _load_yaml_mapping(paths.contract)
-    _validate_manifest(manifest)
-    _validate_contract_shape(contract)
-    source_modules = _load_source_modules(paths.project_root, contract)
-    _validate_public_reference(paths.project_root, contract)
-    _validate_root_exports(paths.project_root, contract)
-    _validate_declared_classes(source_modules, contract)
-    _validate_declared_functions(source_modules, contract)
-    _validate_exception_hierarchy(source_modules, contract)
-    _validate_pydantic_fields(source_modules, contract)
-    _validate_documented_examples(paths.project_root, contract)
-    _validate_mutation_safety_rules(paths.project_root, contract)
-    _validate_rest_reference(paths, contract)
-
-
-def _load_yaml_mapping(path: Path) -> dict[str, Any]:
-    if not path.is_file():
-        raise DocumentationContractError(f"Missing required documentation file: {path}")
-    try:
-        loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except yaml.YAMLError as error:
-        raise DocumentationContractError(f"Invalid YAML in {path}: {error}") from error
-    if not isinstance(loaded, dict):
-        raise DocumentationContractError(f"Documentation mapping expected in {path}")
-    return loaded
-
-
-def _validate_manifest(manifest: Mapping[str, Any]) -> None:
-    if set(manifest) != MANIFEST_FIELDS:
-        raise DocumentationContractError(
-            "docs/library.yml must contain exactly the portal's durable manifest fields."
-        )
-    if manifest != MANIFEST_VALUES:
-        raise DocumentationContractError(
-            "docs/library.yml must match the portal allowlisted identity and durable metadata."
-        )
-
-
-def _validate_contract_shape(contract: Mapping[str, Any]) -> None:
-    required_fields = {
-        "schema_version",
-        "public_modules",
-        "root_exports",
-        "classes",
-        "functions",
-        "exceptions",
-        "pydantic_fields",
-        "examples",
-        "mutation_safety_rules",
-        "endpoint_reference",
-    }
-    if set(contract) != required_fields or contract["schema_version"] != 1:
-        raise DocumentationContractError(
-            "Public API contract must use the complete schema version 1 shape."
-        )
-    documented_modules = contract["public_modules"]
-    if not isinstance(documented_modules, list) or set(documented_modules) != set(SOURCE_MODULES):
-        raise DocumentationContractError(
-            "Public API contract must enumerate every documented source module."
-        )
-
-
-def _load_source_modules(project_root: Path, contract: Mapping[str, Any]) -> dict[str, ast.Module]:
-    source_modules: dict[str, ast.Module] = {}
-    for module_name in contract["public_modules"]:
-        module_path = project_root / "src" / Path(*module_name.split(".")).with_suffix(".py")
-        if not module_path.is_file():
-            raise DocumentationContractError(f"Public module source is missing: {module_name}")
-        source_modules[module_name] = ast.parse(module_path.read_text(encoding="utf-8"))
-    return source_modules
-
-
-def _validate_public_reference(project_root: Path, contract: Mapping[str, Any]) -> None:
-    reference_path = project_root / PUBLIC_API_REFERENCE_PATH
-    if not reference_path.is_file():
-        raise DocumentationContractError(f"Missing public API reference: {reference_path}")
-    reference_content = reference_path.read_text(encoding="utf-8")
-    missing_modules = [
-        module_name
-        for module_name in contract["public_modules"]
-        if f"::: {module_name}" not in reference_content
-    ]
-    if missing_modules:
-        raise DocumentationContractError(
-            f"Public API reference is missing module documentation: {', '.join(missing_modules)}"
-        )
-
-
-def _validate_root_exports(project_root: Path, contract: Mapping[str, Any]) -> None:
-    root_module = ast.parse(
-        (project_root / "src" / "ig_trading_lib" / "__init__.py").read_text(encoding="utf-8")
-    )
-    source_exports = _extract_all_exports(root_module)
-    documented_exports = contract["root_exports"]
-    if source_exports != documented_exports:
-        raise DocumentationContractError(
-            "Root exports must be exactly enumerated in public-api.yml."
-        )
-
-
-def _extract_all_exports(module: ast.Module) -> list[str]:
-    for node in module.body:
-        if not isinstance(node, ast.Assign):
-            continue
-        if not any(
-            isinstance(target, ast.Name) and target.id == "__all__" for target in node.targets
-        ):
-            continue
-        if not isinstance(node.value, ast.List | ast.Tuple):
-            break
-        values = [element.value for element in node.value.elts if isinstance(element, ast.Constant)]
-        if all(isinstance(value, str) for value in values):
-            return values
-    raise DocumentationContractError("ig_trading_lib.__all__ must be a literal string sequence.")
-
-
-def _validate_declared_classes(
-    source_modules: Mapping[str, ast.Module], contract: Mapping[str, Any]
-) -> None:
-    source_classes = _public_classes(source_modules)
-    documented_classes = contract["classes"]
-    if not isinstance(documented_classes, dict) or set(documented_classes) != set(source_classes):
-        raise DocumentationContractError(
-            "Public API contract must enumerate every public class exactly once."
-        )
-    for qualified_name, class_node in source_classes.items():
-        declaration = documented_classes[qualified_name]
-        if not isinstance(declaration, dict):
-            raise DocumentationContractError(
-                f"Class declaration must be a mapping: {qualified_name}"
-            )
-        _validate_class_fields(qualified_name, class_node, declaration)
-        _validate_constructor(qualified_name, class_node, declaration)
-        _validate_methods(qualified_name, class_node, declaration)
-
-
-def _public_classes(source_modules: Mapping[str, ast.Module]) -> dict[str, ast.ClassDef]:
+def _public_method_names(instance_type: type[object]) -> set[str]:
     return {
-        f"{module_name}.{node.name}": node
-        for module_name, module in source_modules.items()
-        for node in module.body
-        if isinstance(node, ast.ClassDef) and not node.name.startswith("_")
+        name
+        for name, value in inspect.getmembers(instance_type, inspect.isfunction)
+        if not name.startswith("_")
     }
 
 
-def _validate_class_fields(
-    qualified_name: str, class_node: ast.ClassDef, declaration: Mapping[str, Any]
-) -> None:
-    documented_fields = declaration.get("fields")
-    source_fields = _source_class_fields(class_node)
-    if documented_fields != source_fields:
-        raise DocumentationContractError(
-            f"Class fields must be exactly documented for {qualified_name}."
-        )
-
-
-def _source_class_fields(class_node: ast.ClassDef) -> list[str]:
-    fields: list[str] = []
-    for node in class_node.body:
-        if not isinstance(node, ast.AnnAssign) or not isinstance(node.target, ast.Name):
-            continue
-        fields.append(node.target.id)
-    return fields
-
-
-def _validate_constructor(
-    qualified_name: str, class_node: ast.ClassDef, declaration: Mapping[str, Any]
-) -> None:
-    constructor = _method_named(class_node, "__init__")
-    documented_constructor = declaration.get("constructor")
-    if constructor is None:
-        if documented_constructor is not None:
-            raise DocumentationContractError(
-                f"Generated constructor must not be declared for {qualified_name}."
-            )
-        return
-    _validate_callable(qualified_name, "constructor", constructor, documented_constructor)
-
-
-def _validate_methods(
-    qualified_name: str, class_node: ast.ClassDef, declaration: Mapping[str, Any]
-) -> None:
-    source_methods = {
-        node.name: node
-        for node in class_node.body
-        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef)
-        and not node.name.startswith("_")
-    }
-    documented_methods = declaration.get("methods")
-    if not isinstance(documented_methods, dict) or set(documented_methods) != set(source_methods):
-        raise DocumentationContractError(
-            f"Public methods must be exactly documented for {qualified_name}."
-        )
-    for method_name, method_node in source_methods.items():
-        _validate_callable(
-            qualified_name, method_name, method_node, documented_methods[method_name]
-        )
-
-
-def _method_named(
-    class_node: ast.ClassDef, name: str
-) -> ast.FunctionDef | ast.AsyncFunctionDef | None:
-    for node in class_node.body:
-        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef) and node.name == name:
-            return node
-    return None
-
-
-def _validate_callable(
-    qualified_class: str,
-    callable_name: str,
-    source_callable: ast.FunctionDef | ast.AsyncFunctionDef,
-    declaration: object,
-) -> None:
-    if not isinstance(declaration, dict):
-        raise DocumentationContractError(
-            f"Callable declaration is missing for {qualified_class}.{callable_name}."
-        )
-    required_fields = {"parameters", "returns", "exceptions"}
-    if set(declaration) != required_fields:
-        raise DocumentationContractError(
-            f"Callable contract must enumerate parameters, returns, and exceptions: "
-            f"{qualified_class}.{callable_name}."
-        )
-    _validate_parameter_contract(
-        qualified_class,
-        callable_name,
-        _source_parameters(source_callable),
-        declaration["parameters"],
+def _validate_roots(contract: dict[str, Any]) -> None:
+    assert set(ig_trading_lib.__all__) == set(contract["root_exports"]), (
+        "Root exports must be exactly enumerated in public-api.yml"
     )
-    source_return = ast.unparse(source_callable.returns) if source_callable.returns else "None"
-    if declaration["returns"] != source_return:
-        raise DocumentationContractError(
-            f"Return value must be exactly documented for {qualified_class}.{callable_name}."
-        )
-    exceptions = declaration["exceptions"]
-    if not isinstance(exceptions, list) or not set(exceptions).issubset(KNOWN_EXCEPTIONS):
-        raise DocumentationContractError(
-            f"Exceptions must use known public exception names: {qualified_class}.{callable_name}."
+    assert set(Operations.__dataclass_fields__) == set(contract["operations"])
+    assert set(AsyncOperations.__dataclass_fields__) == set(contract["operations"])
+    assert set(Workflows.__dataclass_fields__) == set(contract["workflows"])
+    assert set(AsyncWorkflows.__dataclass_fields__) == set(contract["workflows"])
+    assert tuple(inspect.signature(IG).parameters) == tuple(inspect.signature(AsyncIG).parameters)
+    assert "version" not in inspect.signature(SessionCredentials).parameters
+    assert "version" not in inspect.signature(OAuthCredentials).parameters
+
+
+def _validate_modules(contract: dict[str, Any]) -> None:
+    for module_name in contract["public_modules"]:
+        importlib.import_module(module_name)
+    source = ROOT / "src/ig_trading_lib"
+    for module_name in LEGACY_MODULES:
+        assert not (source / module_name).exists(), (
+            f"Competing legacy module remains: {module_name}"
         )
 
 
-def _validate_parameter_contract(
-    qualified_class: str,
-    callable_name: str,
-    source_parameters: list[dict[str, str]],
-    documented_parameters: object,
-) -> None:
-    if not isinstance(documented_parameters, list):
-        raise DocumentationContractError(
-            f"Parameters must be a list for {qualified_class}.{callable_name}."
-        )
-    expected_parameters = [
-        {"name": parameter["name"], "type": parameter["type"]}
-        for parameter in documented_parameters
-        if isinstance(parameter, dict)
-    ]
-    if expected_parameters != source_parameters:
-        raise DocumentationContractError(
-            f"Parameter names and types must be exactly documented for "
-            f"{qualified_class}.{callable_name}."
-        )
-    if any(
-        set(parameter) != {"name", "type", "description"}
-        or not isinstance(parameter["description"], str)
-        or not parameter["description"].strip()
-        for parameter in documented_parameters
-        if isinstance(parameter, dict)
+def _validate_operation_surface(contract: dict[str, Any]) -> None:
+    manifest_ids: set[str] = set()
+    for namespace, methods in contract["operations"].items():
+        sync_type = get_type_hints(Operations)[namespace]
+        async_type = get_type_hints(AsyncOperations)[namespace]
+        expected = set(methods)
+        assert _public_method_names(sync_type) == expected
+        assert _public_method_names(async_type) == expected
+        for method_name, operation_id in methods.items():
+            sync_method = getattr(sync_type, method_name)
+            async_method = getattr(async_type, method_name)
+            assert (
+                inspect.signature(sync_method).parameters
+                == inspect.signature(async_method).parameters
+            )
+            if operation_id.startswith("streaming."):
+                continue
+            assert operation_id in PUBLIC_OPERATION_MANIFEST
+            manifest_ids.add(operation_id)
+            return_type = get_type_hints(sync_method).get("return")
+            assert inspect.isclass(return_type) and issubclass(return_type, IGModel), (
+                f"{namespace}.{method_name} must return an operation-specific IGModel"
+            )
+            signature_text = str(inspect.signature(sync_method))
+            assert "Mapping" not in signature_text
+            assert "Any" not in signature_text
+            assert "version" not in inspect.signature(sync_method).parameters
+    assert manifest_ids == set(PUBLIC_OPERATION_MANIFEST)
+
+
+def _validate_workflows(contract: dict[str, Any]) -> None:
+    for namespace, methods in contract["workflows"].items():
+        sync_type = get_type_hints(Workflows)[namespace]
+        async_type = get_type_hints(AsyncWorkflows)[namespace]
+        assert _public_method_names(sync_type) == set(methods)
+        assert _public_method_names(async_type) == set(methods)
+        for method_name in methods:
+            assert inspect.signature(getattr(sync_type, method_name)).parameters == (
+                inspect.signature(getattr(async_type, method_name)).parameters
+            )
+
+
+def _validate_evidence() -> None:
+    assert SOURCE_EXCLUSIONS
+    for operation_id, spec in OPERATION_MANIFEST.items():
+        assert spec.operation_id == operation_id
+        assert spec.evidence.url.startswith("https://labs.ig.com/")
+        assert spec.evidence.retrieved_on
+        assert len(spec.evidence.sha256) == 64
+        assert spec.schema_provenance
+
+
+def _validate_prose() -> None:
+    prose_paths = [ROOT / "README.md", ROOT / "docs/index.md", ROOT / "docs/getting-started.md"]
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in prose_paths)
+    lowered = combined.lower()
+    for phrase in REQUIRED_VALUE_LANGUAGE:
+        assert phrase.lower() in lowered, f"Documentation must explain {phrase}"
+    for legacy_name in ("IGClient", "AsyncIGClient", "ResourceClient", ".v1", ".v2", ".v3"):
+        assert legacy_name not in combined, f"Legacy guidance remains: {legacy_name}"
+    for compatibility_promise in (
+        "same names, inputs, and results",
+        "same operation and workflow names, parameters, and result models",
     ):
-        raise DocumentationContractError(
-            f"Parameter descriptions must be non-empty for {qualified_class}.{callable_name}."
+        assert compatibility_promise not in combined, (
+            f"New compatibility promise remains: {compatibility_promise}"
         )
+    assert "library v4" in lowered
+    assert "ig api version 4" not in lowered
 
 
-def _source_parameters(
-    source_callable: ast.FunctionDef | ast.AsyncFunctionDef,
-) -> list[dict[str, str]]:
-    arguments = [
-        *source_callable.args.posonlyargs,
-        *source_callable.args.args,
-        *source_callable.args.kwonlyargs,
-    ]
-    return [
-        {
-            "name": argument.arg,
-            "type": ast.unparse(argument.annotation) if argument.annotation else "Any",
-        }
-        for argument in arguments
-        if argument.arg not in {"self", "cls"}
-    ]
-
-
-def _validate_declared_functions(
-    source_modules: Mapping[str, ast.Module], contract: Mapping[str, Any]
-) -> None:
-    source_functions = {
-        f"{module_name}.{node.name}": node
-        for module_name, module in source_modules.items()
-        for node in module.body
-        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef)
-        and not node.name.startswith("_")
-    }
-    documented_functions = contract["functions"]
-    if not isinstance(documented_functions, dict) or set(documented_functions) != set(
-        source_functions
-    ):
-        raise DocumentationContractError(
-            "Public API contract must enumerate every public function exactly once."
-        )
-    for qualified_name, function_node in source_functions.items():
-        class_name, function_name = qualified_name.rsplit(".", maxsplit=1)
-        _validate_callable(
-            class_name, function_name, function_node, documented_functions[qualified_name]
-        )
-
-
-def _validate_exception_hierarchy(
-    source_modules: Mapping[str, ast.Module], contract: Mapping[str, Any]
-) -> None:
-    source_classes = _public_classes(source_modules)
-    expected_exceptions = _public_exception_bases(source_classes)
-    documented_exceptions = contract["exceptions"]
-    if documented_exceptions != expected_exceptions:
-        raise DocumentationContractError("Public exception hierarchy must be exactly documented.")
-
-
-def _public_exception_bases(source_classes: Mapping[str, ast.ClassDef]) -> dict[str, str]:
-    classes_by_name = {
-        qualified_name.rsplit(".", maxsplit=1)[-1]: (qualified_name, class_node)
-        for qualified_name, class_node in source_classes.items()
-    }
-    exception_names = {"RuntimeError", "PermissionError"}
-    exception_bases: dict[str, str] = {}
-    while True:
-        additions = {
-            qualified_name: base_name
-            for class_name, (qualified_name, class_node) in classes_by_name.items()
-            if qualified_name not in exception_bases
-            for base_name in (ast.unparse(base).split(".")[-1] for base in class_node.bases)
-            if base_name in exception_names
-        }
-        if not additions:
-            return exception_bases
-        exception_bases.update(additions)
-        exception_names.update(
-            qualified_name.rsplit(".", maxsplit=1)[-1] for qualified_name in additions
-        )
-
-
-def _validate_pydantic_fields(
-    source_modules: Mapping[str, ast.Module], contract: Mapping[str, Any]
-) -> None:
-    source_models = {
-        qualified_name: _source_class_fields(class_node)
-        for qualified_name, class_node in _public_classes(source_modules).items()
-        if any(ast.unparse(base).split(".")[-1] == "BaseModel" for base in class_node.bases)
-    }
-    documented_models = contract["pydantic_fields"]
-    if documented_models != source_models:
-        raise DocumentationContractError("Pydantic fields must be exactly documented.")
-
-
-def _validate_documented_examples(project_root: Path, contract: Mapping[str, Any]) -> None:
-    examples = contract["examples"]
-    if not isinstance(examples, list) or not examples:
-        raise DocumentationContractError("Public API contract must include executable examples.")
-    for example in examples:
-        if not isinstance(example, dict) or set(example) != {"id", "path", "contains"}:
-            raise DocumentationContractError(
-                "Each example contract needs id, path, and contains fields."
-            )
-        path = project_root / example["path"]
-        if not path.is_file():
-            raise DocumentationContractError(f"Documented example is missing: {example['path']}")
-        content = path.read_text(encoding="utf-8")
-        if example["contains"] not in content:
-            raise DocumentationContractError(f"Documented example is incomplete: {example['id']}")
-        if path.suffix == ".py":
-            compile(content, str(path), "exec")
-
-
-def _validate_mutation_safety_rules(project_root: Path, contract: Mapping[str, Any]) -> None:
-    rules = contract["mutation_safety_rules"]
-    if not isinstance(rules, list) or not rules:
-        raise DocumentationContractError(
-            "Public API contract must enumerate mutation-safety rules."
-        )
-    for rule in rules:
-        if not isinstance(rule, dict) or set(rule) != {"id", "path", "text"}:
-            raise DocumentationContractError(
-                "Each mutation-safety rule needs id, path, and text fields."
-            )
-        document_path = project_root / rule["path"]
-        if not document_path.is_file() or rule["text"] not in document_path.read_text(
-            encoding="utf-8"
-        ):
-            raise DocumentationContractError(f"Mutation-safety rule is undocumented: {rule['id']}")
-
-
-def _validate_rest_reference(paths: DocumentationPaths, contract: Mapping[str, Any]) -> None:
-    """Require generated category tables to match the official endpoint catalog exactly."""
-    if contract["endpoint_reference"] != "docs/rest-api-reference":
-        raise DocumentationContractError(
-            "REST reference directory must be part of the public API contract."
-        )
-    sections, expected_rows = _source_endpoint_reference(paths.project_root)
-    for section in sections:
-        page_path = paths.rest_reference_directory / f"{section}.md"
-        table_path = paths.rest_reference_directory / f".{section}-endpoints.md"
-        include = f'--8<-- "docs/rest-api-reference/.{section}-endpoints.md"'
-        if not page_path.is_file() or include not in page_path.read_text(encoding="utf-8"):
-            raise DocumentationContractError(f"REST reference page is incomplete: {section}")
-        actual_rows = _documented_endpoint_rows(table_path)
-        if actual_rows != expected_rows[section]:
-            raise DocumentationContractError(
-                f"REST reference section must exactly match DOCUMENTED_ENDPOINTS: {section}"
-            )
-
-
-def _source_endpoint_reference(
-    project_root: Path,
-) -> tuple[tuple[str, ...], dict[str, list[tuple[str, str, str]]]]:
-    """Load official section order and endpoint rows directly from source metadata."""
-    source_path = str(project_root / "src")
-    sys.path.insert(0, source_path)
-    try:
-        from ig_trading_lib.endpoint_catalog import DOCUMENTED_ENDPOINTS, REST_REFERENCE_SECTIONS
-
-        sections = tuple(section.slug for section in REST_REFERENCE_SECTIONS)
-        rows = {section: [] for section in sections}
-        for endpoint in DOCUMENTED_ENDPOINTS:
-            rows[endpoint.category].append(
-                (
-                    endpoint.name,
-                    endpoint.method,
-                    endpoint.path_template,
-                )
-            )
-        return sections, rows
-    finally:
-        sys.path.remove(source_path)
-
-
-def _documented_endpoint_rows(path: Path) -> list[tuple[str, str, str]]:
-    if not path.is_file():
-        raise DocumentationContractError(f"Missing generated REST reference table: {path}")
-    rows: list[tuple[str, str, str]] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        cells = [cell.strip().strip("`") for cell in line.strip().strip("|").split("|")]
-        if len(cells) != 3 or cells[0] in {"Operation", "---"}:
-            continue
-        if all(cell and set(cell) <= {"-", ":"} for cell in cells):
-            continue
-        rows.append(tuple(cells))
-    return rows
+def main() -> int:
+    contract = _contract()
+    assert contract["schema_version"] == 2
+    assert set(contract["mental_model"]) == {"operations", "workflows"}
+    _validate_roots(contract)
+    _validate_modules(contract)
+    _validate_operation_surface(contract)
+    _validate_workflows(contract)
+    _validate_evidence()
+    _validate_prose()
+    print("Documentation contract passed.")
+    return 0
 
 
 if __name__ == "__main__":
-    try:
-        validate_documentation_contract(Path(__file__).resolve().parents[1])
-    except DocumentationContractError as error:
-        raise SystemExit(f"Documentation contract failed: {error}") from error
-    print("Documentation contract passed.")
+    raise SystemExit(main())
