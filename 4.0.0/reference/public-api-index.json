@@ -1,0 +1,813 @@
+{
+  "canonical_sources": {
+    "composition_root": "src/ig_trading_lib/api.py",
+    "operation_manifest": "src/ig_trading_lib/_protocol/manifest.py",
+    "public_contract": "docs/contracts/public-api.yml"
+  },
+  "entry_points": [
+    {
+      "execution": "sync",
+      "layers": [
+        "operations",
+        "workflows"
+      ],
+      "name": "IG"
+    },
+    {
+      "execution": "async",
+      "layers": [
+        "operations",
+        "workflows"
+      ],
+      "name": "AsyncIG"
+    }
+  ],
+  "mental_model": {
+    "operations": "Faithful typed IG calls with protocol details kept private.",
+    "workflows": "Multi-operation journeys composed only from operations."
+  },
+  "operations": [
+    {
+      "namespace": "accounts",
+      "operations": [
+        {
+          "async_signature": "() -> 'AccountsResponse'",
+          "http_method": "GET",
+          "method": "list",
+          "mutation": false,
+          "operation_id": "accounts.list",
+          "path": "/accounts",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.accounts.AccountsResponse",
+          "sync_signature": "() -> 'AccountsResponse'"
+        },
+        {
+          "async_signature": "() -> 'AccountPreferencesResponse'",
+          "http_method": "GET",
+          "method": "get_preferences",
+          "mutation": false,
+          "operation_id": "accounts.get_preferences",
+          "path": "/accounts/preferences",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.accounts.AccountPreferencesResponse",
+          "sync_signature": "() -> 'AccountPreferencesResponse'"
+        },
+        {
+          "async_signature": "(request: 'UpdateAccountPreferencesRequest') -> 'UpdateAccountPreferencesResponse'",
+          "http_method": "PUT",
+          "method": "update_preferences",
+          "mutation": true,
+          "operation_id": "accounts.update_preferences",
+          "path": "/accounts/preferences",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.accounts.UpdateAccountPreferencesResponse",
+          "sync_signature": "(request: 'UpdateAccountPreferencesRequest') -> 'UpdateAccountPreferencesResponse'"
+        }
+      ],
+      "path": "ig.operations.accounts"
+    },
+    {
+      "namespace": "activity",
+      "operations": [
+        {
+          "async_signature": "(query: 'ActivityQuery | None' = None) -> 'ActivityResponse'",
+          "http_method": "GET",
+          "method": "list",
+          "mutation": false,
+          "operation_id": "activity.list",
+          "path": "/history/activity",
+          "protocol_version": 3,
+          "return_type": "ig_trading_lib.operations.accounts.ActivityResponse",
+          "sync_signature": "(query: 'ActivityQuery | None' = None) -> 'ActivityResponse'"
+        },
+        {
+          "async_signature": "(from_date: 'date | datetime | str', to_date: 'date | datetime | str') -> 'ActivityResponse'",
+          "http_method": "GET",
+          "method": "list_by_date_range",
+          "mutation": false,
+          "operation_id": "activity.list_by_date_range",
+          "path": "/history/activity/{from_date}/{to_date}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.accounts.ActivityResponse",
+          "sync_signature": "(from_date: 'date | datetime | str', to_date: 'date | datetime | str') -> 'ActivityResponse'"
+        },
+        {
+          "async_signature": "(period: 'str') -> 'ActivityResponse'",
+          "http_method": "GET",
+          "method": "list_by_period",
+          "mutation": false,
+          "operation_id": "activity.list_by_period",
+          "path": "/history/activity/{period}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.accounts.ActivityResponse",
+          "sync_signature": "(period: 'str') -> 'ActivityResponse'"
+        }
+      ],
+      "path": "ig.operations.activity"
+    },
+    {
+      "namespace": "applications",
+      "operations": [
+        {
+          "async_signature": "() -> 'ApplicationsResponse'",
+          "http_method": "GET",
+          "method": "list",
+          "mutation": false,
+          "operation_id": "applications.list",
+          "path": "/operations/application",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.applications.ApplicationsResponse",
+          "sync_signature": "() -> 'ApplicationsResponse'"
+        },
+        {
+          "async_signature": "(request: 'UpdateApplicationRequest') -> 'Application'",
+          "http_method": "PUT",
+          "method": "update",
+          "mutation": true,
+          "operation_id": "applications.update",
+          "path": "/operations/application",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.applications.Application",
+          "sync_signature": "(request: 'UpdateApplicationRequest') -> 'Application'"
+        },
+        {
+          "async_signature": "() -> 'Application'",
+          "http_method": "PUT",
+          "method": "disable",
+          "mutation": true,
+          "operation_id": "applications.disable",
+          "path": "/operations/application/disable",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.applications.Application",
+          "sync_signature": "() -> 'Application'"
+        }
+      ],
+      "path": "ig.operations.applications"
+    },
+    {
+      "namespace": "categories",
+      "operations": [
+        {
+          "async_signature": "() -> 'CategoriesResponse'",
+          "http_method": "GET",
+          "method": "list",
+          "mutation": false,
+          "operation_id": "categories.list",
+          "path": "/categories",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.markets.CategoriesResponse",
+          "sync_signature": "() -> 'CategoriesResponse'"
+        },
+        {
+          "async_signature": "(category_id: 'str', query: 'CategoryInstrumentsQuery | None' = None) -> 'CategoryInstrumentsResponse'",
+          "http_method": "GET",
+          "method": "list_instruments",
+          "mutation": false,
+          "operation_id": "categories.list_instruments",
+          "path": "/categories/{category_id}/instruments",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.markets.CategoryInstrumentsResponse",
+          "sync_signature": "(category_id: 'str', query: 'CategoryInstrumentsQuery | None' = None) -> 'CategoryInstrumentsResponse'"
+        }
+      ],
+      "path": "ig.operations.categories"
+    },
+    {
+      "namespace": "client_sentiment",
+      "operations": [
+        {
+          "async_signature": "(market_ids: 'tuple[str, ...] | None' = None) -> 'ClientSentimentsResponse'",
+          "http_method": "GET",
+          "method": "list",
+          "mutation": false,
+          "operation_id": "client_sentiment.list",
+          "path": "/client-sentiment",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.sentiment.ClientSentimentsResponse",
+          "sync_signature": "(market_ids: 'tuple[str, ...] | None' = None) -> 'ClientSentimentsResponse'"
+        },
+        {
+          "async_signature": "(market_id: 'str') -> 'ClientSentimentResponse'",
+          "http_method": "GET",
+          "method": "get",
+          "mutation": false,
+          "operation_id": "client_sentiment.get",
+          "path": "/client-sentiment/{market_id}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.sentiment.ClientSentimentResponse",
+          "sync_signature": "(market_id: 'str') -> 'ClientSentimentResponse'"
+        },
+        {
+          "async_signature": "(market_id: 'str') -> 'ClientSentimentsResponse'",
+          "http_method": "GET",
+          "method": "related",
+          "mutation": false,
+          "operation_id": "client_sentiment.related",
+          "path": "/client-sentiment/related/{market_id}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.sentiment.ClientSentimentsResponse",
+          "sync_signature": "(market_id: 'str') -> 'ClientSentimentsResponse'"
+        }
+      ],
+      "path": "ig.operations.client_sentiment"
+    },
+    {
+      "namespace": "confirmations",
+      "operations": [
+        {
+          "async_signature": "(deal_reference: 'str') -> 'DealConfirmationResponse'",
+          "http_method": "GET",
+          "method": "get",
+          "mutation": false,
+          "operation_id": "confirmations.get",
+          "path": "/confirms/{deal_reference}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.dealing.DealConfirmationResponse",
+          "sync_signature": "(deal_reference: 'str') -> 'DealConfirmationResponse'"
+        }
+      ],
+      "path": "ig.operations.confirmations"
+    },
+    {
+      "namespace": "indicative_costs",
+      "operations": [
+        {
+          "async_signature": "(request: 'OpenIndicativeCostRequest') -> 'OpenIndicativeCostResponse'",
+          "http_method": "POST",
+          "method": "quote_open",
+          "mutation": true,
+          "operation_id": "indicative_costs.quote_open",
+          "path": "/indicativecostsandcharges/open",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.costs.OpenIndicativeCostResponse",
+          "sync_signature": "(request: 'OpenIndicativeCostRequest') -> 'OpenIndicativeCostResponse'"
+        },
+        {
+          "async_signature": "(request: 'CloseIndicativeCostRequest') -> 'CloseIndicativeCostResponse'",
+          "http_method": "POST",
+          "method": "quote_close",
+          "mutation": true,
+          "operation_id": "indicative_costs.quote_close",
+          "path": "/indicativecostsandcharges/close",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.costs.CloseIndicativeCostResponse",
+          "sync_signature": "(request: 'CloseIndicativeCostRequest') -> 'CloseIndicativeCostResponse'"
+        },
+        {
+          "async_signature": "(request: 'EditIndicativeCostRequest') -> 'EditIndicativeCostResponse'",
+          "http_method": "POST",
+          "method": "quote_edit",
+          "mutation": true,
+          "operation_id": "indicative_costs.quote_edit",
+          "path": "/indicativecostsandcharges/edit",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.costs.EditIndicativeCostResponse",
+          "sync_signature": "(request: 'EditIndicativeCostRequest') -> 'EditIndicativeCostResponse'"
+        },
+        {
+          "async_signature": "(quote_reference: 'str') -> 'DurableMediumResponse'",
+          "http_method": "GET",
+          "method": "get_durable_medium",
+          "mutation": false,
+          "operation_id": "indicative_costs.get_durable_medium",
+          "path": "/indicativecostsandcharges/durablemedium/{quote_reference}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.costs.DurableMediumResponse",
+          "sync_signature": "(quote_reference: 'str') -> 'DurableMediumResponse'"
+        },
+        {
+          "async_signature": "(from_date: 'datetime | str', to_date: 'datetime | str', query: 'IndicativeCostHistoryQuery | None' = None) -> 'IndicativeCostHistoryResponse'",
+          "http_method": "GET",
+          "method": "history",
+          "mutation": false,
+          "operation_id": "indicative_costs.history",
+          "path": "/indicativecostsandcharges/history/from/{from_date}/to/{to_date}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.costs.IndicativeCostHistoryResponse",
+          "sync_signature": "(from_date: 'datetime | str', to_date: 'datetime | str', query: 'IndicativeCostHistoryQuery | None' = None) -> 'IndicativeCostHistoryResponse'"
+        }
+      ],
+      "path": "ig.operations.indicative_costs"
+    },
+    {
+      "namespace": "markets",
+      "operations": [
+        {
+          "async_signature": "(epics: 'tuple[str, ...]', *, filter: \"Literal['ALL', 'SNAPSHOT_ONLY']\" = 'ALL') -> 'MarketsResponse'",
+          "http_method": "GET",
+          "method": "list",
+          "mutation": false,
+          "operation_id": "markets.list",
+          "path": "/markets",
+          "protocol_version": 2,
+          "return_type": "ig_trading_lib.operations.markets.MarketsResponse",
+          "sync_signature": "(epics: 'tuple[str, ...]', *, filter: \"Literal['ALL', 'SNAPSHOT_ONLY']\" = 'ALL') -> 'MarketsResponse'"
+        },
+        {
+          "async_signature": "(search_term: 'str') -> 'MarketSearchResponse'",
+          "http_method": "GET",
+          "method": "search",
+          "mutation": false,
+          "operation_id": "markets.search",
+          "path": "/markets",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.markets.MarketSearchResponse",
+          "sync_signature": "(search_term: 'str') -> 'MarketSearchResponse'"
+        },
+        {
+          "async_signature": "(epic: 'str') -> 'MarketGetResponse'",
+          "http_method": "GET",
+          "method": "get",
+          "mutation": false,
+          "operation_id": "markets.get",
+          "path": "/markets/{epic}",
+          "protocol_version": 4,
+          "return_type": "ig_trading_lib.operations.markets.MarketGetResponse",
+          "sync_signature": "(epic: 'str') -> 'MarketGetResponse'"
+        }
+      ],
+      "path": "ig.operations.markets"
+    },
+    {
+      "namespace": "positions",
+      "operations": [
+        {
+          "async_signature": "() -> 'PositionsResponse'",
+          "http_method": "GET",
+          "method": "list",
+          "mutation": false,
+          "operation_id": "positions.list",
+          "path": "/positions",
+          "protocol_version": 2,
+          "return_type": "ig_trading_lib.operations.dealing.PositionsResponse",
+          "sync_signature": "() -> 'PositionsResponse'"
+        },
+        {
+          "async_signature": "(deal_id: 'str') -> 'PositionResponse'",
+          "http_method": "GET",
+          "method": "get",
+          "mutation": false,
+          "operation_id": "positions.get",
+          "path": "/positions/{deal_id}",
+          "protocol_version": 2,
+          "return_type": "ig_trading_lib.operations.dealing.PositionResponse",
+          "sync_signature": "(deal_id: 'str') -> 'PositionResponse'"
+        },
+        {
+          "async_signature": "(request: 'CreatePositionRequest') -> 'DealReferenceResponse'",
+          "http_method": "POST",
+          "method": "create",
+          "mutation": true,
+          "operation_id": "positions.create",
+          "path": "/positions/otc",
+          "protocol_version": 2,
+          "return_type": "ig_trading_lib.operations.dealing.DealReferenceResponse",
+          "sync_signature": "(request: 'CreatePositionRequest') -> 'DealReferenceResponse'"
+        },
+        {
+          "async_signature": "(deal_id: 'str', request: 'AmendPositionRequest') -> 'DealReferenceResponse'",
+          "http_method": "PUT",
+          "method": "amend",
+          "mutation": true,
+          "operation_id": "positions.amend",
+          "path": "/positions/otc/{deal_id}",
+          "protocol_version": 2,
+          "return_type": "ig_trading_lib.operations.dealing.DealReferenceResponse",
+          "sync_signature": "(deal_id: 'str', request: 'AmendPositionRequest') -> 'DealReferenceResponse'"
+        },
+        {
+          "async_signature": "(request: 'ClosePositionRequest') -> 'DealReferenceResponse'",
+          "http_method": "DELETE",
+          "method": "close",
+          "mutation": true,
+          "operation_id": "positions.close",
+          "path": "/positions/otc",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.dealing.DealReferenceResponse",
+          "sync_signature": "(request: 'ClosePositionRequest') -> 'DealReferenceResponse'"
+        }
+      ],
+      "path": "ig.operations.positions"
+    },
+    {
+      "namespace": "prices",
+      "operations": [
+        {
+          "async_signature": "(epic: 'str', query: 'PricesQuery | None' = None) -> 'PricesResponse'",
+          "http_method": "GET",
+          "method": "list",
+          "mutation": false,
+          "operation_id": "prices.list",
+          "path": "/prices/{epic}",
+          "protocol_version": 3,
+          "return_type": "ig_trading_lib.operations.markets.PricesResponse",
+          "sync_signature": "(epic: 'str', query: 'PricesQuery | None' = None) -> 'PricesResponse'"
+        },
+        {
+          "async_signature": "(epic: 'str', resolution: 'str', num_points: 'int') -> 'PricesResponse'",
+          "http_method": "GET",
+          "method": "list_points",
+          "mutation": false,
+          "operation_id": "prices.list_points",
+          "path": "/prices/{epic}/{resolution}/{num_points}",
+          "protocol_version": 2,
+          "return_type": "ig_trading_lib.operations.markets.PricesResponse",
+          "sync_signature": "(epic: 'str', resolution: 'str', num_points: 'int') -> 'PricesResponse'"
+        },
+        {
+          "async_signature": "(epic: 'str', resolution: 'str', start_date: 'datetime | str', end_date: 'datetime | str') -> 'PricesResponse'",
+          "http_method": "GET",
+          "method": "list_date_range",
+          "mutation": false,
+          "operation_id": "prices.list_date_range",
+          "path": "/prices/{epic}/{resolution}/{start_date}/{end_date}",
+          "protocol_version": 2,
+          "return_type": "ig_trading_lib.operations.markets.PricesResponse",
+          "sync_signature": "(epic: 'str', resolution: 'str', start_date: 'datetime | str', end_date: 'datetime | str') -> 'PricesResponse'"
+        }
+      ],
+      "path": "ig.operations.prices"
+    },
+    {
+      "namespace": "repeat_dealing_window",
+      "operations": [
+        {
+          "async_signature": "(*, epic: 'str | None' = None) -> 'RepeatDealingWindowResponse'",
+          "http_method": "GET",
+          "method": "get",
+          "mutation": false,
+          "operation_id": "repeat_dealing_window.get",
+          "path": "/repeat-dealing-window",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.dealing.RepeatDealingWindowResponse",
+          "sync_signature": "(*, epic: 'str | None' = None) -> 'RepeatDealingWindowResponse'"
+        }
+      ],
+      "path": "ig.operations.repeat_dealing_window"
+    },
+    {
+      "namespace": "session",
+      "operations": [
+        {
+          "async_signature": "(*, fetch_session_tokens: 'bool' = False) -> 'SessionResponse'",
+          "http_method": "GET",
+          "method": "get",
+          "mutation": false,
+          "operation_id": "session.get",
+          "path": "/session",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.session.SessionResponse",
+          "sync_signature": "(*, fetch_session_tokens: 'bool' = False) -> 'SessionResponse'"
+        },
+        {
+          "async_signature": "(request: 'SwitchAccountRequest') -> 'SwitchAccountResponse'",
+          "http_method": "PUT",
+          "method": "switch_account",
+          "mutation": true,
+          "operation_id": "session.switch_account",
+          "path": "/session",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.session.SwitchAccountResponse",
+          "sync_signature": "(request: 'SwitchAccountRequest') -> 'SwitchAccountResponse'"
+        },
+        {
+          "async_signature": "() -> 'DeleteSessionResponse'",
+          "http_method": "DELETE",
+          "method": "delete",
+          "mutation": true,
+          "operation_id": "session.delete",
+          "path": "/session",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.session.DeleteSessionResponse",
+          "sync_signature": "() -> 'DeleteSessionResponse'"
+        },
+        {
+          "async_signature": "() -> 'EncryptionKeyResponse'",
+          "http_method": "GET",
+          "method": "get_encryption_key",
+          "mutation": false,
+          "operation_id": "session.get_encryption_key",
+          "path": "/session/encryptionKey",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.session.EncryptionKeyResponse",
+          "sync_signature": "() -> 'EncryptionKeyResponse'"
+        }
+      ],
+      "path": "ig.operations.session"
+    },
+    {
+      "namespace": "streaming",
+      "operations": [
+        {
+          "async_signature": "(subscription: 'StreamSubscription') -> 'AsyncIterator[StreamUpdate]'",
+          "method": "subscribe",
+          "operation_id": "streaming.subscribe",
+          "return_type": "collections.abc.Iterator[ig_trading_lib.streaming.StreamUpdate]",
+          "sync_signature": "(subscription: 'StreamSubscription') -> 'Iterator[StreamUpdate]'"
+        },
+        {
+          "async_signature": "() -> 'None'",
+          "method": "close",
+          "operation_id": "streaming.close",
+          "return_type": "builtins.NoneType",
+          "sync_signature": "() -> 'None'"
+        }
+      ],
+      "path": "ig.operations.streaming"
+    },
+    {
+      "namespace": "transactions",
+      "operations": [
+        {
+          "async_signature": "(query: 'TransactionsQuery | None' = None) -> 'TransactionsResponse'",
+          "http_method": "GET",
+          "method": "list",
+          "mutation": false,
+          "operation_id": "transactions.list",
+          "path": "/history/transactions",
+          "protocol_version": 2,
+          "return_type": "ig_trading_lib.operations.accounts.TransactionsResponse",
+          "sync_signature": "(query: 'TransactionsQuery | None' = None) -> 'TransactionsResponse'"
+        },
+        {
+          "async_signature": "(transaction_type: 'TransactionType', from_date: 'date | datetime | str', to_date: 'date | datetime | str') -> 'TransactionsResponse'",
+          "http_method": "GET",
+          "method": "list_by_date_range",
+          "mutation": false,
+          "operation_id": "transactions.list_by_date_range",
+          "path": "/history/transactions/{transaction_type}/{from_date}/{to_date}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.accounts.TransactionsResponse",
+          "sync_signature": "(transaction_type: 'TransactionType', from_date: 'date | datetime | str', to_date: 'date | datetime | str') -> 'TransactionsResponse'"
+        },
+        {
+          "async_signature": "(transaction_type: 'TransactionType', period: 'str') -> 'TransactionsResponse'",
+          "http_method": "GET",
+          "method": "list_by_period",
+          "mutation": false,
+          "operation_id": "transactions.list_by_period",
+          "path": "/history/transactions/{transaction_type}/{period}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.accounts.TransactionsResponse",
+          "sync_signature": "(transaction_type: 'TransactionType', period: 'str') -> 'TransactionsResponse'"
+        }
+      ],
+      "path": "ig.operations.transactions"
+    },
+    {
+      "namespace": "watchlists",
+      "operations": [
+        {
+          "async_signature": "() -> 'WatchlistsResponse'",
+          "http_method": "GET",
+          "method": "list",
+          "mutation": false,
+          "operation_id": "watchlists.list",
+          "path": "/watchlists",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.watchlists.WatchlistsResponse",
+          "sync_signature": "() -> 'WatchlistsResponse'"
+        },
+        {
+          "async_signature": "(request: 'CreateWatchlistRequest') -> 'CreateWatchlistResponse'",
+          "http_method": "POST",
+          "method": "create",
+          "mutation": true,
+          "operation_id": "watchlists.create",
+          "path": "/watchlists",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.watchlists.CreateWatchlistResponse",
+          "sync_signature": "(request: 'CreateWatchlistRequest') -> 'CreateWatchlistResponse'"
+        },
+        {
+          "async_signature": "(watchlist_id: 'str') -> 'WatchlistResponse'",
+          "http_method": "GET",
+          "method": "get",
+          "mutation": false,
+          "operation_id": "watchlists.get",
+          "path": "/watchlists/{watchlist_id}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.watchlists.WatchlistResponse",
+          "sync_signature": "(watchlist_id: 'str') -> 'WatchlistResponse'"
+        },
+        {
+          "async_signature": "(watchlist_id: 'str', request: 'AddWatchlistMarketRequest') -> 'WatchlistMutationResponse'",
+          "http_method": "PUT",
+          "method": "add_market",
+          "mutation": true,
+          "operation_id": "watchlists.add_market",
+          "path": "/watchlists/{watchlist_id}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.watchlists.WatchlistMutationResponse",
+          "sync_signature": "(watchlist_id: 'str', request: 'AddWatchlistMarketRequest') -> 'WatchlistMutationResponse'"
+        },
+        {
+          "async_signature": "(watchlist_id: 'str') -> 'WatchlistMutationResponse'",
+          "http_method": "DELETE",
+          "method": "delete",
+          "mutation": true,
+          "operation_id": "watchlists.delete",
+          "path": "/watchlists/{watchlist_id}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.watchlists.WatchlistMutationResponse",
+          "sync_signature": "(watchlist_id: 'str') -> 'WatchlistMutationResponse'"
+        },
+        {
+          "async_signature": "(watchlist_id: 'str', epic: 'str') -> 'WatchlistMutationResponse'",
+          "http_method": "DELETE",
+          "method": "remove_market",
+          "mutation": true,
+          "operation_id": "watchlists.remove_market",
+          "path": "/watchlists/{watchlist_id}/{epic}",
+          "protocol_version": 1,
+          "return_type": "ig_trading_lib.operations.watchlists.WatchlistMutationResponse",
+          "sync_signature": "(watchlist_id: 'str', epic: 'str') -> 'WatchlistMutationResponse'"
+        }
+      ],
+      "path": "ig.operations.watchlists"
+    },
+    {
+      "namespace": "working_orders",
+      "operations": [
+        {
+          "async_signature": "() -> 'WorkingOrdersResponse'",
+          "http_method": "GET",
+          "method": "list",
+          "mutation": false,
+          "operation_id": "working_orders.list",
+          "path": "/working-orders",
+          "protocol_version": 2,
+          "return_type": "ig_trading_lib.operations.dealing.WorkingOrdersResponse",
+          "sync_signature": "() -> 'WorkingOrdersResponse'"
+        },
+        {
+          "async_signature": "(request: 'CreateWorkingOrderRequest') -> 'DealReferenceResponse'",
+          "http_method": "POST",
+          "method": "create",
+          "mutation": true,
+          "operation_id": "working_orders.create",
+          "path": "/working-orders/otc",
+          "protocol_version": 2,
+          "return_type": "ig_trading_lib.operations.dealing.DealReferenceResponse",
+          "sync_signature": "(request: 'CreateWorkingOrderRequest') -> 'DealReferenceResponse'"
+        },
+        {
+          "async_signature": "(deal_id: 'str', request: 'AmendWorkingOrderRequest') -> 'DealReferenceResponse'",
+          "http_method": "PUT",
+          "method": "amend",
+          "mutation": true,
+          "operation_id": "working_orders.amend",
+          "path": "/working-orders/otc/{deal_id}",
+          "protocol_version": 2,
+          "return_type": "ig_trading_lib.operations.dealing.DealReferenceResponse",
+          "sync_signature": "(deal_id: 'str', request: 'AmendWorkingOrderRequest') -> 'DealReferenceResponse'"
+        },
+        {
+          "async_signature": "(deal_id: 'str') -> 'DealReferenceResponse'",
+          "http_method": "DELETE",
+          "method": "delete",
+          "mutation": true,
+          "operation_id": "working_orders.delete",
+          "path": "/working-orders/otc/{deal_id}",
+          "protocol_version": 2,
+          "return_type": "ig_trading_lib.operations.dealing.DealReferenceResponse",
+          "sync_signature": "(deal_id: 'str') -> 'DealReferenceResponse'"
+        }
+      ],
+      "path": "ig.operations.working_orders"
+    }
+  ],
+  "public_modules": [
+    "ig_trading_lib.api",
+    "ig_trading_lib.core",
+    "ig_trading_lib.errors",
+    "ig_trading_lib.models",
+    "ig_trading_lib.operations.accounts",
+    "ig_trading_lib.operations.applications",
+    "ig_trading_lib.operations.costs",
+    "ig_trading_lib.operations.dealing",
+    "ig_trading_lib.operations.markets",
+    "ig_trading_lib.operations.sentiment",
+    "ig_trading_lib.operations.session",
+    "ig_trading_lib.operations.streaming",
+    "ig_trading_lib.operations.watchlists",
+    "ig_trading_lib.streaming",
+    "ig_trading_lib.workflows.dealing",
+    "ig_trading_lib.workflows.discovery",
+    "ig_trading_lib.workflows.portfolio"
+  ],
+  "root_exports": [
+    "AmbiguousExecutionError",
+    "AmendPositionRequest",
+    "AmendWorkingOrderRequest",
+    "AsyncIG",
+    "AuthenticationError",
+    "AuthorizationError",
+    "ClosePositionRequest",
+    "CreatePositionRequest",
+    "CreateWorkingOrderRequest",
+    "DealConfirmationError",
+    "DealConfirmationResponse",
+    "Environment",
+    "IG",
+    "IGConfig",
+    "IGError",
+    "LiveTradingPermissionError",
+    "MarketGetResponse",
+    "MarketSearchResponse",
+    "OAuthCredentials",
+    "ProviderRejectionError",
+    "RateLimitError",
+    "ResourceNotFoundError",
+    "SessionCredentials",
+    "StreamSubscription",
+    "StreamUpdate",
+    "StreamingDataLossError",
+    "StreamingSubscriptionError",
+    "TradingPermit",
+    "TransportError"
+  ],
+  "schema_version": 2,
+  "workflows": [
+    {
+      "methods": [
+        "find_market"
+      ],
+      "namespace": "discovery",
+      "path": "ig.workflows.discovery",
+      "signatures": {
+        "find_market": {
+          "async": "(search_term: 'str', epic: 'str') -> 'MarketGetResponse'",
+          "return_type": "ig_trading_lib.operations.markets.MarketGetResponse",
+          "sync": "(search_term: 'str', epic: 'str') -> 'MarketGetResponse'"
+        }
+      }
+    },
+    {
+      "methods": [
+        "snapshot"
+      ],
+      "namespace": "portfolio",
+      "path": "ig.workflows.portfolio",
+      "signatures": {
+        "snapshot": {
+          "async": "() -> 'PortfolioSnapshot'",
+          "return_type": "ig_trading_lib.workflows.portfolio.PortfolioSnapshot",
+          "sync": "() -> 'PortfolioSnapshot'"
+        }
+      }
+    },
+    {
+      "methods": [
+        "open_and_confirm",
+        "amend_and_confirm",
+        "close_and_confirm"
+      ],
+      "namespace": "positions",
+      "path": "ig.workflows.positions",
+      "signatures": {
+        "amend_and_confirm": {
+          "async": "(deal_id: 'str', request: 'AmendPositionRequest') -> 'DealConfirmationResponse'",
+          "return_type": "ig_trading_lib.operations.dealing.DealConfirmationResponse",
+          "sync": "(deal_id: 'str', request: 'AmendPositionRequest') -> 'DealConfirmationResponse'"
+        },
+        "close_and_confirm": {
+          "async": "(request: 'ClosePositionRequest') -> 'DealConfirmationResponse'",
+          "return_type": "ig_trading_lib.operations.dealing.DealConfirmationResponse",
+          "sync": "(request: 'ClosePositionRequest') -> 'DealConfirmationResponse'"
+        },
+        "open_and_confirm": {
+          "async": "(request: 'CreatePositionRequest') -> 'DealConfirmationResponse'",
+          "return_type": "ig_trading_lib.operations.dealing.DealConfirmationResponse",
+          "sync": "(request: 'CreatePositionRequest') -> 'DealConfirmationResponse'"
+        }
+      }
+    },
+    {
+      "methods": [
+        "place_and_confirm",
+        "amend_and_confirm",
+        "cancel_and_confirm"
+      ],
+      "namespace": "working_orders",
+      "path": "ig.workflows.working_orders",
+      "signatures": {
+        "amend_and_confirm": {
+          "async": "(deal_id: 'str', request: 'AmendWorkingOrderRequest') -> 'DealConfirmationResponse'",
+          "return_type": "ig_trading_lib.operations.dealing.DealConfirmationResponse",
+          "sync": "(deal_id: 'str', request: 'AmendWorkingOrderRequest') -> 'DealConfirmationResponse'"
+        },
+        "cancel_and_confirm": {
+          "async": "(deal_id: 'str') -> 'DealConfirmationResponse'",
+          "return_type": "ig_trading_lib.operations.dealing.DealConfirmationResponse",
+          "sync": "(deal_id: 'str') -> 'DealConfirmationResponse'"
+        },
+        "place_and_confirm": {
+          "async": "(request: 'CreateWorkingOrderRequest') -> 'DealConfirmationResponse'",
+          "return_type": "ig_trading_lib.operations.dealing.DealConfirmationResponse",
+          "sync": "(request: 'CreateWorkingOrderRequest') -> 'DealConfirmationResponse'"
+        }
+      }
+    }
+  ]
+}
