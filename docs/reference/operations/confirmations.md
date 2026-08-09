@@ -1,6 +1,6 @@
 <!-- Generated from docs/contracts/method-documentation.yml and live Python types. -->
 
-# Confirmations methods
+# Confirmations operations
 
 Examples assume an initialized synchronous or asynchronous client named `ig`.
 

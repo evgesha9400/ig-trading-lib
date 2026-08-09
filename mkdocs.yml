@@ -59,26 +59,31 @@ nav:
       - Streaming API: streaming-api.md
       - Recipes: recipes/index.md
   - Library reference:
-      - Complete method reference:
-          - Overview: reference/methods/index.md
-          - Accounts: reference/methods/accounts.md
-          - Activity: reference/methods/activity.md
-          - Applications: reference/methods/applications.md
-          - Categories: reference/methods/categories.md
-          - Client sentiment: reference/methods/client_sentiment.md
-          - Confirmations: reference/methods/confirmations.md
-          - Discovery workflow: reference/methods/discovery.md
-          - Indicative costs: reference/methods/indicative_costs.md
-          - Markets: reference/methods/markets.md
-          - Portfolio workflow: reference/methods/portfolio.md
-          - Positions: reference/methods/positions.md
-          - Prices: reference/methods/prices.md
-          - Repeat dealing window: reference/methods/repeat_dealing_window.md
-          - Session: reference/methods/session.md
-          - Streaming: reference/methods/streaming.md
-          - Transactions: reference/methods/transactions.md
-          - Watchlists: reference/methods/watchlists.md
-          - Working orders: reference/methods/working_orders.md
+      - Overview: reference/index.md
+      - Operations:
+          - Overview: reference/operations/index.md
+          - Accounts: reference/operations/accounts.md
+          - Activity: reference/operations/activity.md
+          - Applications: reference/operations/applications.md
+          - Categories: reference/operations/categories.md
+          - Client sentiment: reference/operations/client_sentiment.md
+          - Confirmations: reference/operations/confirmations.md
+          - Indicative costs: reference/operations/indicative_costs.md
+          - Markets: reference/operations/markets.md
+          - Positions: reference/operations/positions.md
+          - Prices: reference/operations/prices.md
+          - Repeat dealing window: reference/operations/repeat_dealing_window.md
+          - Session: reference/operations/session.md
+          - Streaming: reference/operations/streaming.md
+          - Transactions: reference/operations/transactions.md
+          - Watchlists: reference/operations/watchlists.md
+          - Working orders: reference/operations/working_orders.md
+      - Workflows:
+          - Overview: reference/workflows/index.md
+          - Discovery: reference/workflows/discovery.md
+          - Portfolio: reference/workflows/portfolio.md
+          - Positions: reference/workflows/positions.md
+          - Working orders: reference/workflows/working_orders.md
       - Agent API index: reference/agent-api-index.md
       - Public API: reference/public-api.md
 

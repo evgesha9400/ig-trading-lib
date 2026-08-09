@@ -1,6 +1,6 @@
 <!-- Generated from docs/contracts/method-documentation.yml and live Python types. -->
 
-# Discovery methods
+# Discovery workflows
 
 Examples assume an initialized synchronous or asynchronous client named `ig`.
 

@@ -1,63 +1,74 @@
 <!-- Generated from docs/contracts/method-documentation.yml and live Python types. -->
 
-# Session methods
+# Applications operations
 
 Examples assume an initialized synchronous or asynchronous client named `ig`.
 
-## `ig.operations.session.get()`
+## `ig.operations.applications.list()`
 
-Read the active session and optionally request CST/XST tokens.
+List API applications associated with the authenticated client.
 
-Official IG reference: [https://labs.ig.com/reference/session.html](https://labs.ig.com/reference/session.html)
+Official IG reference: [https://labs.ig.com/reference/operations-application.html](https://labs.ig.com/reference/operations-application.html)
 
 ### Signatures
 
-- Sync: `(*, fetch_session_tokens: 'bool' = False) -> 'SessionResponse'`
-- Async: `(*, fetch_session_tokens: 'bool' = False) -> 'SessionResponse'`
+- Sync: `() -> 'ApplicationsResponse'`
+- Async: `() -> 'ApplicationsResponse'`
 
 ### Parameters
 
 | Name | Type | Required/default | Constraints | Description |
 | --- | --- | --- | --- | --- |
-| `fetch_session_tokens` | `bool` | False | - | Whether CST and XST session tokens are requested from IG. |
+| None | - | - | - | This method accepts no parameters. |
 
 ### Sync example
 
 ```python
-result = ig.operations.session.get(fetch_session_tokens=True)
+result = ig.operations.applications.list()
 ```
 
 ### Async example
 
 ```python
-result = await ig.operations.session.get(fetch_session_tokens=True)
+result = await ig.operations.applications.list()
 ```
 
-### Response shape: `SessionResponse`
+### Response shape: `ApplicationsResponse`
 
 | Field | Type | Required/default |
 | --- | --- | --- |
-| `account_id` | `str | None` | default: `None` |
-| `client_id` | `str | None` | default: `None` |
-| `currency` | `str | None` | default: `None` |
-| `lightstreamer_endpoint` | `str | None` | default: `None` |
-| `locale` | `str | None` | default: `None` |
-| `timezone_offset` | `int | None` | default: `None` |
-| `cst` | `str | None` | default: `None` |
-| `security_token` | `str | None` | default: `None` |
+| `applications[]` | `tuple[Application, ...]` | default: `()` |
+| `applications[].allow_equities` | `bool | None` | default: `None` |
+| `applications[].allow_quote_orders` | `bool | None` | default: `None` |
+| `applications[].allowance_account_historical_data` | `int | None` | default: `None` |
+| `applications[].allowance_account_overall` | `int | None` | default: `None` |
+| `applications[].allowance_account_trading` | `int | None` | default: `None` |
+| `applications[].allowance_application_overall` | `int | None` | default: `None` |
+| `applications[].api_key` | `str | None` | default: `None` |
+| `applications[].concurrent_subscriptions_limit` | `int | None` | default: `None` |
+| `applications[].created_date` | `str | None` | default: `None` |
+| `applications[].name` | `str | None` | default: `None` |
+| `applications[].status` | `str | None` | default: `None` |
 
 ### Response example
 
 ```json
 {
-  "account_id": "ABC123",
-  "client_id": "example",
-  "currency": "GBP",
-  "lightstreamer_endpoint": "example",
-  "locale": "example",
-  "timezone_offset": 1,
-  "cst": "example",
-  "security_token": "example"
+  "applications": [
+    {
+      "allow_equities": true,
+      "allow_quote_orders": true,
+      "allowance_account_historical_data": 1,
+      "allowance_account_overall": 1,
+      "allowance_account_trading": 1,
+      "allowance_application_overall": 1,
+      "api_key": "example",
+      "concurrent_subscriptions_limit": 1,
+      "created_date": "example",
+      "name": "Example",
+      "status": "ENABLED"
+    }
+  ]
 }
 ```
 
@@ -65,7 +76,7 @@ result = await ig.operations.session.get(fetch_session_tokens=True)
 
 - Returned resources and fields depend on the active account, environment, entitlements, and current IG catalogue.
 - IG can change account-specific allowances and availability independently of this library.
-- Session tokens are sensitive, excluded from model repr, and must never be logged.
+- Application administration may require elevated account permissions.
 
 ### Exceptions
 
@@ -79,119 +90,73 @@ result = await ig.operations.session.get(fetch_session_tokens=True)
 | `TransportError` | A network or timeout failure prevented a completed read request. | Retry the idempotent read with bounded backoff. |
 | `ValidationError` | Request construction failed or an IG response did not match the declared model. | Correct invalid request fields; report provider response drift with redacted diagnostics. |
 
-## `ig.operations.session.switch_account()`
+## `ig.operations.applications.update()`
 
-Switch the current session to another accessible account.
+Update one API application's status and allowances.
 
-Official IG reference: [https://labs.ig.com/reference/session.html](https://labs.ig.com/reference/session.html)
+Official IG reference: [https://labs.ig.com/reference/operations-application.html](https://labs.ig.com/reference/operations-application.html)
 
 ### Signatures
 
-- Sync: `(request: 'SwitchAccountRequest') -> 'SwitchAccountResponse'`
-- Async: `(request: 'SwitchAccountRequest') -> 'SwitchAccountResponse'`
+- Sync: `(request: 'UpdateApplicationRequest') -> 'Application'`
+- Async: `(request: 'UpdateApplicationRequest') -> 'Application'`
 
 ### Parameters
 
 | Name | Type | Required/default | Constraints | Description |
 | --- | --- | --- | --- | --- |
-| `request` | `SwitchAccountRequest` | required | - | Validated typed request body. |
-| `request.account_id` | `str` | required | minimum length `1` | IG account identifier to switch to. |
-| `request.default_account` | `bool` | default: `False` | - | Whether the switched account becomes the login default. |
+| `request` | `UpdateApplicationRequest` | required | - | Validated typed request body. |
+| `request.api_key` | `str` | required | minimum length `1` | Application API key whose settings are updated. |
+| `request.status` | `Literal['DISABLED', 'ENABLED', 'REVOKED']` | required | - | Application status to assign. |
+| `request.allowance_account_overall` | `int` | required | >= `0` | Overall request allowance assigned to the application. |
+| `request.allowance_account_trading` | `int` | required | >= `0` | Trading request allowance assigned to the application. |
 
 ### Sync example
 
 ```python
-from ig_trading_lib.operations.session import SwitchAccountRequest
+from ig_trading_lib.operations.applications import UpdateApplicationRequest
 
-result = ig.operations.session.switch_account(request=SwitchAccountRequest(account_id="ABC123"))
+result = ig.operations.applications.update(request=UpdateApplicationRequest(api_key="example-key", status="ENABLED", allowance_account_overall=60, allowance_account_trading=30))
 ```
 
 ### Async example
 
 ```python
-from ig_trading_lib.operations.session import SwitchAccountRequest
+from ig_trading_lib.operations.applications import UpdateApplicationRequest
 
-result = await ig.operations.session.switch_account(request=SwitchAccountRequest(account_id="ABC123"))
+result = await ig.operations.applications.update(request=UpdateApplicationRequest(api_key="example-key", status="ENABLED", allowance_account_overall=60, allowance_account_trading=30))
 ```
 
-### Response shape: `SwitchAccountResponse`
+### Response shape: `Application`
 
 | Field | Type | Required/default |
 | --- | --- | --- |
-| `dealing_enabled` | `bool | None` | default: `None` |
-| `has_active_demo_accounts` | `bool | None` | default: `None` |
-| `has_active_live_accounts` | `bool | None` | default: `None` |
-| `trailing_stops_enabled` | `bool | None` | default: `None` |
-
-### Response example
-
-```json
-{
-  "dealing_enabled": true,
-  "has_active_demo_accounts": true,
-  "has_active_live_accounts": true,
-  "trailing_stops_enabled": true
-}
-```
-
-### Limitations
-
-- Live calls require an explicit `TradingPermit`; demo calls do not.
-- Mutations are sent once and are never automatically retried after an uncertain outcome.
-- The target account must be available to the authenticated client.
-
-### Exceptions
-
-| Exception | Trigger | Recovery |
-| --- | --- | --- |
-| `AuthenticationError` | IG rejected the credentials, required session values were absent, or refresh failed. | Re-authenticate with valid credentials before retrying. |
-| `AuthorizationError` | The active account cannot access the requested resource or action. | Switch to an entitled account or request the required IG permission. |
-| `RateLimitError` | IG rejected the request because an allowance was exhausted. | Wait for `retry_after_seconds` when present, then retry with bounded backoff. |
-| `ProviderRejectionError` | IG rejected an otherwise well-formed request. | Inspect `error_code` and correct the provider-specific input or account state. |
-| `ResourceNotFoundError` | The requested provider resource does not exist or is inaccessible. | Verify the identifier and active account before retrying. |
-| `AmbiguousExecutionError` | A mutation may have reached IG before a network or timeout failure. | Reconcile account state or query by deal reference; never replay blindly. |
-| `LiveTradingPermissionError` | A live-environment mutation was called without an acknowledged `TradingPermit`. | Construct the client with an explicit `TradingPermit` after confirming live intent. |
-| `ValidationError` | Request construction failed or an IG response did not match the declared model. | Correct invalid request fields; report provider response drift with redacted diagnostics. |
-
-## `ig.operations.session.delete()`
-
-Log out the current IG session and invalidate local tokens.
-
-Official IG reference: [https://labs.ig.com/reference/session.html](https://labs.ig.com/reference/session.html)
-
-### Signatures
-
-- Sync: `() -> 'DeleteSessionResponse'`
-- Async: `() -> 'DeleteSessionResponse'`
-
-### Parameters
-
-| Name | Type | Required/default | Constraints | Description |
-| --- | --- | --- | --- | --- |
-| None | - | - | - | This method accepts no parameters. |
-
-### Sync example
-
-```python
-result = ig.operations.session.delete()
-```
-
-### Async example
-
-```python
-result = await ig.operations.session.delete()
-```
-
-### Response shape: `DeleteSessionResponse`
-
-| Field | Type | Required/default |
-| --- | --- | --- |
+| `allow_equities` | `bool | None` | default: `None` |
+| `allow_quote_orders` | `bool | None` | default: `None` |
+| `allowance_account_historical_data` | `int | None` | default: `None` |
+| `allowance_account_overall` | `int | None` | default: `None` |
+| `allowance_account_trading` | `int | None` | default: `None` |
+| `allowance_application_overall` | `int | None` | default: `None` |
+| `api_key` | `str | None` | default: `None` |
+| `concurrent_subscriptions_limit` | `int | None` | default: `None` |
+| `created_date` | `str | None` | default: `None` |
+| `name` | `str | None` | default: `None` |
 | `status` | `str | None` | default: `None` |
 
 ### Response example
 
 ```json
 {
+  "allow_equities": true,
+  "allow_quote_orders": true,
+  "allowance_account_historical_data": 1,
+  "allowance_account_overall": 1,
+  "allowance_account_trading": 1,
+  "allowance_application_overall": 1,
+  "api_key": "example",
+  "concurrent_subscriptions_limit": 1,
+  "created_date": "example",
+  "name": "Example",
   "status": "ENABLED"
 }
 ```
@@ -200,7 +165,7 @@ result = await ig.operations.session.delete()
 
 - Live calls require an explicit `TradingPermit`; demo calls do not.
 - Mutations are sent once and are never automatically retried after an uncertain outcome.
-- A successful call makes subsequent operations authenticate again.
+- IG can cap requested allowances below the supplied values.
 
 ### Exceptions
 
@@ -215,16 +180,16 @@ result = await ig.operations.session.delete()
 | `LiveTradingPermissionError` | A live-environment mutation was called without an acknowledged `TradingPermit`. | Construct the client with an explicit `TradingPermit` after confirming live intent. |
 | `ValidationError` | Request construction failed or an IG response did not match the declared model. | Correct invalid request fields; report provider response drift with redacted diagnostics. |
 
-## `ig.operations.session.get_encryption_key()`
+## `ig.operations.applications.disable()`
 
-Retrieve IG's password-encryption key and timestamp.
+Disable the API key used by the current session.
 
-Official IG reference: [https://labs.ig.com/reference/session-encryption-key.html](https://labs.ig.com/reference/session-encryption-key.html)
+Official IG reference: [https://labs.ig.com/reference/operations-application-disable.html](https://labs.ig.com/reference/operations-application-disable.html)
 
 ### Signatures
 
-- Sync: `() -> 'EncryptionKeyResponse'`
-- Async: `() -> 'EncryptionKeyResponse'`
+- Sync: `() -> 'Application'`
+- Async: `() -> 'Application'`
 
 ### Parameters
 
@@ -235,36 +200,54 @@ Official IG reference: [https://labs.ig.com/reference/session-encryption-key.htm
 ### Sync example
 
 ```python
-result = ig.operations.session.get_encryption_key()
+result = ig.operations.applications.disable()
 ```
 
 ### Async example
 
 ```python
-result = await ig.operations.session.get_encryption_key()
+result = await ig.operations.applications.disable()
 ```
 
-### Response shape: `EncryptionKeyResponse`
+### Response shape: `Application`
 
 | Field | Type | Required/default |
 | --- | --- | --- |
-| `encryption_key` | `str` | required |
-| `time_stamp` | `int` | required |
+| `allow_equities` | `bool | None` | default: `None` |
+| `allow_quote_orders` | `bool | None` | default: `None` |
+| `allowance_account_historical_data` | `int | None` | default: `None` |
+| `allowance_account_overall` | `int | None` | default: `None` |
+| `allowance_account_trading` | `int | None` | default: `None` |
+| `allowance_application_overall` | `int | None` | default: `None` |
+| `api_key` | `str | None` | default: `None` |
+| `concurrent_subscriptions_limit` | `int | None` | default: `None` |
+| `created_date` | `str | None` | default: `None` |
+| `name` | `str | None` | default: `None` |
+| `status` | `str | None` | default: `None` |
 
 ### Response example
 
 ```json
 {
-  "encryption_key": "example",
-  "time_stamp": 1
+  "allow_equities": true,
+  "allow_quote_orders": true,
+  "allowance_account_historical_data": 1,
+  "allowance_account_overall": 1,
+  "allowance_account_trading": 1,
+  "allowance_application_overall": 1,
+  "api_key": "example",
+  "concurrent_subscriptions_limit": 1,
+  "created_date": "example",
+  "name": "Example",
+  "status": "ENABLED"
 }
 ```
 
 ### Limitations
 
-- Returned resources and fields depend on the active account, environment, entitlements, and current IG catalogue.
-- IG can change account-specific allowances and availability independently of this library.
-- The key is time-sensitive and intended only for IG's encrypted-login flow.
+- Live calls require an explicit `TradingPermit`; demo calls do not.
+- Mutations are sent once and are never automatically retried after an uncertain outcome.
+- Disabling the current key can prevent subsequent calls from the client.
 
 ### Exceptions
 
@@ -275,5 +258,6 @@ result = await ig.operations.session.get_encryption_key()
 | `RateLimitError` | IG rejected the request because an allowance was exhausted. | Wait for `retry_after_seconds` when present, then retry with bounded backoff. |
 | `ProviderRejectionError` | IG rejected an otherwise well-formed request. | Inspect `error_code` and correct the provider-specific input or account state. |
 | `ResourceNotFoundError` | The requested provider resource does not exist or is inaccessible. | Verify the identifier and active account before retrying. |
-| `TransportError` | A network or timeout failure prevented a completed read request. | Retry the idempotent read with bounded backoff. |
+| `AmbiguousExecutionError` | A mutation may have reached IG before a network or timeout failure. | Reconcile account state or query by deal reference; never replay blindly. |
+| `LiveTradingPermissionError` | A live-environment mutation was called without an acknowledged `TradingPermit`. | Construct the client with an explicit `TradingPermit` after confirming live intent. |
 | `ValidationError` | Request construction failed or an IG response did not match the declared model. | Correct invalid request fields; report provider response drift with redacted diagnostics. |

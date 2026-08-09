@@ -32,5 +32,5 @@ For retriable reads, catch `RateLimitError` or `TransportError` and let a caller
 Never reuse this read-recovery pattern for a mutation after `AmbiguousExecutionError`. Verify with a confirmation or relevant read first. The [error recovery recipe](../recipes/index.md#error-recovery) makes one retry decision signal and intentionally does not send another request.
 
 For the precise failures, triggers, and recovery rule of one call, use the
-[complete method reference](../reference/methods/index.md). Every operation and workflow carries
+[library reference](../reference/index.md). Every operation and workflow carries
 its own exception table.

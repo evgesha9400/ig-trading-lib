@@ -1,6 +1,6 @@
 <!-- Generated from docs/contracts/method-documentation.yml and live Python types. -->
 
-# Repeat Dealing Window methods
+# Repeat Dealing Window operations
 
 Examples assume an initialized synchronous or asynchronous client named `ig`.
 

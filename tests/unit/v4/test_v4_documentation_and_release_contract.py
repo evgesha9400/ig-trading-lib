@@ -76,7 +76,7 @@ def test_documentation_does_not_create_an_async_compatibility_promise() -> None:
 
 
 def test_generated_market_search_reference_is_a_complete_method_contract() -> None:
-    reference = (PROJECT_ROOT / "docs" / "reference" / "methods" / "markets.md").read_text(
+    reference = (PROJECT_ROOT / "docs" / "reference" / "operations" / "markets.md").read_text(
         encoding="utf-8"
     )
 
@@ -96,6 +96,45 @@ def test_generated_market_search_reference_is_a_complete_method_contract() -> No
     assert "| `AuthenticationError` |" in reference
     assert "| `ValueError` | `search_term` is empty" in reference
     assert "https://labs.ig.com/reference/markets-searchterm.html" in reference
+
+
+def test_library_reference_hierarchy_matches_the_public_mental_model() -> None:
+    reference = PROJECT_ROOT / "docs" / "reference"
+
+    assert not (reference / "methods").exists()
+    assert (reference / "index.md").exists()
+    assert {path.stem for path in (reference / "operations").glob("*.md")} == {
+        "accounts",
+        "activity",
+        "applications",
+        "categories",
+        "client_sentiment",
+        "confirmations",
+        "index",
+        "indicative_costs",
+        "markets",
+        "positions",
+        "prices",
+        "repeat_dealing_window",
+        "session",
+        "streaming",
+        "transactions",
+        "watchlists",
+        "working_orders",
+    }
+    assert {path.stem for path in (reference / "workflows").glob("*.md")} == {
+        "discovery",
+        "index",
+        "portfolio",
+        "positions",
+        "working_orders",
+    }
+
+    navigation = (PROJECT_ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+    assert "- Operations:" in navigation
+    assert "- Workflows:" in navigation
+    assert "reference/operations/index.md" in navigation
+    assert "reference/workflows/index.md" in navigation
 
 
 def test_every_operation_and_workflow_has_complete_generated_documentation() -> None:
@@ -125,7 +164,7 @@ def test_every_operation_and_workflow_has_complete_generated_documentation() -> 
         )
 
         layer, namespace, method_name = method_id.split(".")
-        page = (PROJECT_ROOT / "docs" / "reference" / "methods" / f"{namespace}.md").read_text(
+        page = (PROJECT_ROOT / "docs" / "reference" / layer / f"{namespace}.md").read_text(
             encoding="utf-8"
         )
         assert f"## `ig.{layer}.{namespace}.{method_name}()`" in page
@@ -149,7 +188,8 @@ def test_every_operation_and_workflow_has_complete_generated_documentation() -> 
 def test_every_generated_method_example_is_valid_python_and_json() -> None:
     pages = [
         path.read_text(encoding="utf-8")
-        for path in (PROJECT_ROOT / "docs" / "reference" / "methods").glob("*.md")
+        for layer in ("operations", "workflows")
+        for path in (PROJECT_ROOT / "docs" / "reference" / layer).glob("*.md")
         if path.name != "index.md"
     ]
     python_examples = re.findall(r"```python\n(.*?)\n```", "\n".join(pages), re.DOTALL)
