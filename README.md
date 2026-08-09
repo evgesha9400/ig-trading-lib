@@ -53,7 +53,7 @@ config = IGConfig(
 with IG(config) as ig:
     matches = ig.operations.markets.search("EUR/USD")
     market = ig.operations.markets.get(matches.markets[0].epic)
-    print(market.instrument.epic, market.snapshot.bid if market.snapshot else None)
+    print(market.instrument.epic, market.snapshot.market_status if market.snapshot else None)
 ```
 
 Provider-added response fields remain available while documented fields are typed and

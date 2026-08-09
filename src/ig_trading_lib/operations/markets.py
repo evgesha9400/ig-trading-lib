@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
+from typing import Literal
+
+from pydantic import Field
 
 from ig_trading_lib._protocol.executor import AsyncExecutor, SyncExecutor
-from ig_trading_lib.models import IGModel
+from ig_trading_lib.models import IGModel, IGRequest
 
 
 class MarketSummary(IGModel):
@@ -23,19 +26,75 @@ class MarketsResponse(MarketSearchResponse):
     pass
 
 
+DistanceUnit = Literal["PERCENTAGE", "POINTS"]
+
+
+class MarketDistanceRule(IGModel):
+    unit: DistanceUnit
+    value: Decimal
+
+
+class MarketCurrency(IGModel):
+    base_exchange_rate: Decimal | None = None
+    code: str
+    exchange_rate: Decimal | None = None
+    is_default: bool | None = None
+    symbol: str | None = None
+
+
 class MarketInstrument(IGModel):
+    chart_code: str | None = None
+    contract_size: str | None = None
+    country: str | None = None
+    currencies: tuple[MarketCurrency, ...] = ()
     epic: str
+    expiry: str | None = None
+    limited_risk_premium: MarketDistanceRule | None = None
+    lot_size: Decimal | None = None
+    market_id: str | None = None
     name: str | None = None
+    news_code: str | None = None
+    streaming_prices_available: bool | None = None
+    limit_allowed: bool | None = None
+    stop_allowed: bool | None = None
+    type: str | None = None
+    unit: str | None = None
+    value_of_one_pip: str | None = None
+
+
+class MarketPriceLadderEntry(IGModel):
+    bid: Decimal
+    ask: Decimal
+
+
+class MarketCurrencyLadder(IGModel):
+    currency: str
+    bid_sizes: tuple[Decimal, ...] = ()
+    ask_sizes: tuple[Decimal, ...] = ()
 
 
 class MarketSnapshot(IGModel):
+    decimal_places_factor: int | None = None
+    delay_time: int | None = None
+    high: Decimal | None = None
+    low: Decimal | None = None
     market_status: str | None = None
-    bid: float | None = None
-    offer: float | None = None
+    net_change: Decimal | None = None
+    percentage_change: Decimal | None = None
+    scaling_factor: Decimal | None = None
+    update_timestamp_utc: int | None = None
+    price_ladder: tuple[MarketPriceLadderEntry, ...] = ()
+    currency_ladders: tuple[MarketCurrencyLadder, ...] = ()
 
 
 class MarketDealingRules(IGModel):
-    market_order_preference: str | None = None
+    controlled_risk_spacing: MarketDistanceRule | None = None
+    max_stop_or_limit_distance: MarketDistanceRule | None = None
+    min_controlled_risk_stop_distance: MarketDistanceRule | None = None
+    min_deal_size: MarketDistanceRule | None = None
+    min_normal_stop_or_limit_distance: MarketDistanceRule | None = None
+    min_step_distance: MarketDistanceRule | None = None
+    trailing_stops_preference: str | None = None
 
 
 class MarketGetResponse(IGModel):
@@ -45,16 +104,48 @@ class MarketGetResponse(IGModel):
 
 
 class Category(IGModel):
-    id: str
-    name: str | None = None
+    code: str
+    non_tradeable: bool
 
 
 class CategoriesResponse(IGModel):
-    nodes: tuple[Category, ...] = ()
+    categories: tuple[Category, ...] = ()
+
+
+class CategoryInstrument(IGModel):
+    epic: str
+    instrument_name: str | None = None
+    expiry: str | None = None
+    instrument_type: str | None = None
+    lot_size: Decimal | None = None
+    otc_tradeable: bool | None = None
+    market_status: str | None = None
+    delay_time: int | None = None
+    bid: Decimal | None = None
+    offer: Decimal | None = None
+    high: Decimal | None = None
+    low: Decimal | None = None
+    net_change: Decimal | None = None
+    percentage_change: Decimal | None = None
+    update_time: str | None = None
+    scaling_factor: Decimal | None = None
+
+
+class PagingMetadata(IGModel):
+    page_number: int
+    page_size: int
+
+
+class CategoryInstrumentsQuery(IGRequest):
+    page_number: int = Field(default=0, ge=0)
+    page_size: int = Field(default=150, ge=1, le=1000)
+    reference_epic: str | None = None
+    maturity_type: str | None = None
 
 
 class CategoryInstrumentsResponse(IGModel):
-    markets: tuple[MarketSummary, ...] = ()
+    instruments: tuple[CategoryInstrument, ...] = ()
+    metadata: PagingMetadata
 
 
 class PriceValue(IGModel):
@@ -126,11 +217,16 @@ class CategoriesOperations:
     def list(self) -> CategoriesResponse:
         return self._executor.execute("categories.list", CategoriesResponse)
 
-    def list_instruments(self, category_id: str) -> CategoryInstrumentsResponse:
+    def list_instruments(
+        self,
+        category_id: str,
+        query: CategoryInstrumentsQuery | None = None,
+    ) -> CategoryInstrumentsResponse:
         return self._executor.execute(
             "categories.list_instruments",
             CategoryInstrumentsResponse,
             path={"category_id": category_id},
+            query=query.to_wire() if query else None,
         )
 
 
@@ -141,11 +237,16 @@ class AsyncCategoriesOperations:
     async def list(self) -> CategoriesResponse:
         return await self._executor.execute("categories.list", CategoriesResponse)
 
-    async def list_instruments(self, category_id: str) -> CategoryInstrumentsResponse:
+    async def list_instruments(
+        self,
+        category_id: str,
+        query: CategoryInstrumentsQuery | None = None,
+    ) -> CategoryInstrumentsResponse:
         return await self._executor.execute(
             "categories.list_instruments",
             CategoryInstrumentsResponse,
             path={"category_id": category_id},
+            query=query.to_wire() if query else None,
         )
 
 

@@ -11,8 +11,8 @@ from ig_trading_lib._protocol.executor import AsyncExecutor, SyncExecutor
 from ig_trading_lib.models import IGModel, IGRequest
 
 Direction = Literal["BUY", "SELL"]
-OrderType = Literal["LIMIT", "MARKET", "QUOTE", "STOP"]
-TimeInForce = Literal["EXECUTE_AND_ELIMINATE", "FILL_OR_KILL", "GOOD_TILL_CANCELLED"]
+OrderType = Literal["LIMIT", "MARKET", "QUOTE"]
+TimeInForce = Literal["EXECUTE_AND_ELIMINATE", "FILL_OR_KILL"]
 
 
 class DealReferenceResponse(IGModel):
@@ -68,6 +68,8 @@ class CreatePositionRequest(IGRequest):
     force_open: bool = True
     guaranteed_stop: bool = False
     level: Decimal | None = None
+    quote_id: str | None = None
+    time_in_force: TimeInForce | None = None
     limit_distance: Decimal | None = None
     limit_level: Decimal | None = None
     stop_distance: Decimal | None = None
@@ -75,6 +77,76 @@ class CreatePositionRequest(IGRequest):
     trailing_stop: bool | None = None
     trailing_stop_increment: Decimal | None = None
     deal_reference: str | None = None
+
+    @model_validator(mode="after")
+    def validate_provider_constraints(self) -> CreatePositionRequest:
+        _validate_order_level(self.order_type, self.level, self.quote_id)
+        _require_force_open_for_limits_and_stops(self)
+        _require_one_of(self.limit_level, self.limit_distance, "limit_level", "limit_distance")
+        _require_one_of(self.stop_level, self.stop_distance, "stop_level", "stop_distance")
+        _validate_guaranteed_stop(self)
+        _validate_trailing_stop(self)
+        return self
+
+
+def _validate_order_level(
+    order_type: OrderType,
+    level: Decimal | None,
+    quote_id: str | None,
+) -> None:
+    if order_type == "LIMIT" and level is None:
+        raise ValueError("LIMIT orders require level")
+    if order_type == "LIMIT" and quote_id is not None:
+        raise ValueError("LIMIT orders do not accept quote_id")
+    if order_type == "MARKET" and (level is not None or quote_id is not None):
+        raise ValueError("MARKET orders do not accept level or quote_id")
+    if order_type == "QUOTE" and (level is None or quote_id is None):
+        raise ValueError("QUOTE orders require level and quote_id")
+
+
+def _require_force_open_for_limits_and_stops(request: CreatePositionRequest) -> None:
+    has_limit_or_stop = any(
+        value is not None
+        for value in (
+            request.limit_distance,
+            request.limit_level,
+            request.stop_distance,
+            request.stop_level,
+        )
+    )
+    if has_limit_or_stop and not request.force_open:
+        raise ValueError("force_open must be true when a limit or stop is set")
+
+
+def _require_one_of(
+    first: Decimal | None,
+    second: Decimal | None,
+    first_name: str,
+    second_name: str,
+) -> None:
+    if first is not None and second is not None:
+        raise ValueError(f"Set only one of {first_name} and {second_name}")
+
+
+def _validate_guaranteed_stop(request: CreatePositionRequest) -> None:
+    if not request.guaranteed_stop:
+        return
+    has_exactly_one_stop = (request.stop_level is None) != (request.stop_distance is None)
+    if not has_exactly_one_stop:
+        raise ValueError("A guaranteed stop requires exactly one stop_level or stop_distance")
+
+
+def _validate_trailing_stop(request: CreatePositionRequest) -> None:
+    if request.trailing_stop is False and request.trailing_stop_increment is not None:
+        raise ValueError("trailing_stop_increment requires trailing_stop")
+    if request.trailing_stop is not True:
+        return
+    if request.stop_level is not None:
+        raise ValueError("A trailing stop does not accept stop_level")
+    if request.guaranteed_stop:
+        raise ValueError("A trailing stop cannot be guaranteed")
+    if request.stop_distance is None or request.trailing_stop_increment is None:
+        raise ValueError("A trailing stop requires stop_distance and trailing_stop_increment")
 
 
 class AmendPositionRequest(IGRequest):

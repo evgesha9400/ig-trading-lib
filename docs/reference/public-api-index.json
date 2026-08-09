@@ -159,7 +159,7 @@
           "sync_signature": "() -> 'CategoriesResponse'"
         },
         {
-          "async_signature": "(category_id: 'str') -> 'CategoryInstrumentsResponse'",
+          "async_signature": "(category_id: 'str', query: 'CategoryInstrumentsQuery | None' = None) -> 'CategoryInstrumentsResponse'",
           "http_method": "GET",
           "method": "list_instruments",
           "mutation": false,
@@ -167,7 +167,7 @@
           "path": "/categories/{category_id}/instruments",
           "protocol_version": 1,
           "return_type": "ig_trading_lib.operations.markets.CategoryInstrumentsResponse",
-          "sync_signature": "(category_id: 'str') -> 'CategoryInstrumentsResponse'"
+          "sync_signature": "(category_id: 'str', query: 'CategoryInstrumentsQuery | None' = None) -> 'CategoryInstrumentsResponse'"
         }
       ],
       "path": "ig.operations.categories"
