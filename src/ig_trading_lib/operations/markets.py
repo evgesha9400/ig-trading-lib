@@ -156,6 +156,7 @@ class PriceValue(IGModel):
 
 class PricePoint(IGModel):
     snapshot_time: datetime | str | None = None
+    snapshot_time_utc: str | None = None
     open_price: PriceValue | None = None
     close_price: PriceValue | None = None
     high_price: PriceValue | None = None
@@ -163,9 +164,56 @@ class PricePoint(IGModel):
     last_traded_volume: float | None = None
 
 
+class PricePageData(IGModel):
+    page_number: int
+    page_size: int
+    total_pages: int
+
+
+class PriceAllowance(IGModel):
+    allowance_expiry: int
+    remaining_allowance: int
+    total_allowance: int
+
+
+class PriceMetadata(IGModel):
+    page_data: PricePageData | None = None
+    allowance: PriceAllowance | None = None
+    size: int | None = None
+
+
 class PricesResponse(IGModel):
     prices: tuple[PricePoint, ...] = ()
     instrument_type: str | None = None
+    metadata: PriceMetadata | None = None
+
+
+PriceResolution = Literal[
+    "DAY",
+    "HOUR",
+    "HOUR_2",
+    "HOUR_3",
+    "HOUR_4",
+    "MINUTE",
+    "MINUTE_2",
+    "MINUTE_3",
+    "MINUTE_5",
+    "MINUTE_10",
+    "MINUTE_15",
+    "MINUTE_30",
+    "MONTH",
+    "SECOND",
+    "WEEK",
+]
+
+
+class PricesQuery(IGRequest):
+    resolution: PriceResolution = "MINUTE"
+    from_date: datetime | str | None = Field(default=None, alias="from")
+    to_date: datetime | str | None = Field(default=None, alias="to")
+    max_points: int | None = Field(default=None, alias="max", ge=1)
+    page_size: int | None = Field(default=None, ge=0)
+    page_number: int | None = Field(default=None, ge=1)
 
 
 class MarketOperations:
@@ -254,10 +302,12 @@ class PricesOperations:
     def __init__(self, executor: SyncExecutor) -> None:
         self._executor = executor
 
-    def list(self, epic: str, *, resolution: str | None = None) -> PricesResponse:
-        query = {"resolution": resolution} if resolution else None
+    def list(self, epic: str, query: PricesQuery | None = None) -> PricesResponse:
         return self._executor.execute(
-            "prices.list", PricesResponse, path={"epic": epic}, query=query
+            "prices.list",
+            PricesResponse,
+            path={"epic": epic},
+            query=query.to_wire() if query else None,
         )
 
     def list_points(self, epic: str, resolution: str, num_points: int) -> PricesResponse:
@@ -286,10 +336,12 @@ class AsyncPricesOperations:
     def __init__(self, executor: AsyncExecutor) -> None:
         self._executor = executor
 
-    async def list(self, epic: str, *, resolution: str | None = None) -> PricesResponse:
-        query = {"resolution": resolution} if resolution else None
+    async def list(self, epic: str, query: PricesQuery | None = None) -> PricesResponse:
         return await self._executor.execute(
-            "prices.list", PricesResponse, path={"epic": epic}, query=query
+            "prices.list",
+            PricesResponse,
+            path={"epic": epic},
+            query=query.to_wire() if query else None,
         )
 
     async def list_points(self, epic: str, resolution: str, num_points: int) -> PricesResponse:

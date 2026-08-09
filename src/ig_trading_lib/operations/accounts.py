@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Literal
 from urllib.parse import parse_qs, urlsplit
 
@@ -37,13 +38,39 @@ class UpdateAccountPreferencesResponse(AccountPreferencesResponse):
     pass
 
 
+class ActivityAction(IGModel):
+    action_type: str | None = None
+    affected_deal_id: str | None = None
+    currency: str | None = None
+    deal_reference: str | None = None
+    direction: Literal["BUY", "SELL"] | None = None
+    good_till_date: str | None = None
+    guaranteed_stop: bool | None = None
+    level: Decimal | None = None
+    limit_distance: Decimal | None = None
+    limit_level: Decimal | None = None
+    market_name: str | None = None
+    size: Decimal | None = None
+    stop_distance: Decimal | None = None
+    stop_level: Decimal | None = None
+    trailing_step: Decimal | None = None
+    trailing_stop_distance: Decimal | None = None
+
+
+class ActivityDetails(IGModel):
+    actions: tuple[ActivityAction, ...] = ()
+    epic: str | None = None
+    period: str | None = None
+    status: str | None = None
+    type: str | None = None
+
+
 class Activity(IGModel):
+    channel: str | None = None
     date: str | None = None
     deal_id: str | None = None
     description: str | None = None
-    epic: str | None = None
-    status: str | None = None
-    type: str | None = None
+    details: ActivityDetails | None = None
 
 
 class CursorPaging(IGModel):
@@ -81,8 +108,16 @@ class ActivityResponse(IGModel):
 
 
 class Transaction(IGModel):
+    cash_transaction: bool | None = None
+    close_level: str | None = None
+    currency: str | None = None
     date: str | None = None
+    date_utc: str | None = None
     instrument_name: str | None = None
+    open_date_utc: str | None = None
+    open_level: str | None = None
+    period: str | None = None
+    profit_and_loss: str | None = None
     reference: str | None = None
     size: str | None = None
     transaction_type: str | None = None

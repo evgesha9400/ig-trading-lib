@@ -4,6 +4,7 @@ import httpx
 
 from ig_trading_lib import IG, Environment, IGConfig, SessionCredentials
 from ig_trading_lib.operations.accounts import ActivityQuery, TransactionsQuery
+from ig_trading_lib.operations.markets import PricesQuery
 
 
 def _config() -> IGConfig:
@@ -87,4 +88,37 @@ def test_transaction_page_controls_map_to_the_official_query() -> None:
         "type": "ALL_DEAL",
         "pageNumber": "2",
         "pageSize": "50",
+    }
+
+
+def test_price_page_controls_map_to_the_complete_v3_query() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.url.path == "/gateway/deal/session":
+            return httpx.Response(
+                200,
+                headers={"CST": "cst", "X-SECURITY-TOKEN": "security"},
+            )
+        return httpx.Response(200, json={"prices": []})
+
+    query = PricesQuery(
+        resolution="HOUR",
+        from_date="2026-08-01T00:00:00",
+        to_date="2026-08-08T00:00:00",
+        max_points=100,
+        page_size=25,
+        page_number=2,
+    )
+    with IG(_config(), http_client=httpx.Client(transport=httpx.MockTransport(handler))) as ig:
+        ig.operations.prices.list("CS.D.EURUSD.CFD.IP", query)
+
+    assert dict(requests[1].url.params) == {
+        "resolution": "HOUR",
+        "from": "2026-08-01T00:00:00",
+        "to": "2026-08-08T00:00:00",
+        "max": "100",
+        "pageSize": "25",
+        "pageNumber": "2",
     }

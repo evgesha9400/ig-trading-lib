@@ -3,7 +3,19 @@ from decimal import Decimal
 import httpx
 
 from ig_trading_lib import IG, Environment, IGConfig, SessionCredentials
-from ig_trading_lib.operations.dealing import PositionsResponse, WorkingOrdersResponse
+from ig_trading_lib.operations.accounts import (
+    Activity,
+    ActivityAction,
+    ActivityDetails,
+    Transaction,
+)
+from ig_trading_lib.operations.dealing import (
+    DealConfirmationResponse,
+    DealingMarket,
+    Position,
+    PositionsResponse,
+    WorkingOrdersResponse,
+)
 from ig_trading_lib.operations.markets import (
     CategoriesResponse,
     CategoryInstrumentsQuery,
@@ -12,6 +24,8 @@ from ig_trading_lib.operations.markets import (
     MarketGetResponse,
     MarketInstrument,
     MarketSnapshot,
+    PricePoint,
+    PricesQuery,
     PricesResponse,
 )
 from ig_trading_lib.operations.session import SwitchAccountResponse
@@ -94,6 +108,163 @@ def test_price_and_watchlist_nested_fields_remain_typed() -> None:
     assert prices.prices[0].open_price is not None
     assert prices.prices[0].open_price.bid == Decimal("1.08")
     assert watchlist.markets[0].epic == "CS.D.EURUSD.CFD.IP"
+
+
+def test_price_history_v3_exposes_the_complete_query_and_response_schema() -> None:
+    assert set(PricesQuery.model_fields) == {
+        "resolution",
+        "from_date",
+        "to_date",
+        "max_points",
+        "page_size",
+        "page_number",
+    }
+    assert set(PricePoint.model_fields) == {
+        "snapshot_time",
+        "snapshot_time_utc",
+        "open_price",
+        "close_price",
+        "high_price",
+        "low_price",
+        "last_traded_volume",
+    }
+
+    response = PricesResponse.model_validate(
+        {
+            "instrumentType": "CURRENCIES",
+            "metadata": {
+                "pageData": {"pageNumber": 2, "pageSize": 25, "totalPages": 3},
+                "size": 1,
+                "allowance": {
+                    "allowanceExpiry": 60,
+                    "remainingAllowance": 999,
+                    "totalAllowance": 1000,
+                },
+            },
+            "prices": [
+                {
+                    "snapshotTime": "2026/08/09 12:00:00",
+                    "snapshotTimeUTC": "2026-08-09T11:00:00",
+                    "closePrice": {"bid": 1.08, "ask": 1.09, "lastTraded": 1.085},
+                }
+            ],
+        }
+    )
+
+    assert response.metadata is not None
+    assert response.metadata.page_data is not None
+    assert response.metadata.page_data.total_pages == 3
+    assert response.metadata.allowance is not None
+    assert response.metadata.allowance.remaining_allowance == 999
+    assert response.prices[0].snapshot_time_utc == "2026-08-09T11:00:00"
+
+
+def test_core_dealing_and_history_models_type_every_documented_field() -> None:
+    assert set(DealConfirmationResponse.model_fields) == {
+        "affected_deals",
+        "date",
+        "deal_id",
+        "deal_reference",
+        "deal_status",
+        "direction",
+        "epic",
+        "expiry",
+        "guaranteed_stop",
+        "level",
+        "limit_distance",
+        "limit_level",
+        "profit",
+        "profit_currency",
+        "reason",
+        "size",
+        "status",
+        "stop_distance",
+        "stop_level",
+        "trailing_stop",
+    }
+    assert set(Position.model_fields) == {
+        "contract_size",
+        "controlled_risk",
+        "created_date",
+        "created_date_utc",
+        "currency",
+        "deal_id",
+        "deal_reference",
+        "direction",
+        "level",
+        "limit_level",
+        "limited_risk_premium",
+        "size",
+        "stop_level",
+        "trailing_step",
+        "trailing_stop_distance",
+    }
+    assert set(DealingMarket.model_fields) == {
+        "bid",
+        "delay_time",
+        "epic",
+        "expiry",
+        "high",
+        "instrument_name",
+        "instrument_type",
+        "lot_size",
+        "low",
+        "market_status",
+        "net_change",
+        "offer",
+        "percentage_change",
+        "scaling_factor",
+        "streaming_prices_available",
+        "update_time",
+        "update_time_utc",
+    }
+    assert set(Activity.model_fields) == {
+        "channel",
+        "date",
+        "deal_id",
+        "description",
+        "details",
+    }
+    assert set(ActivityDetails.model_fields) == {
+        "actions",
+        "epic",
+        "period",
+        "status",
+        "type",
+    }
+    assert set(ActivityAction.model_fields) == {
+        "action_type",
+        "affected_deal_id",
+        "currency",
+        "deal_reference",
+        "direction",
+        "good_till_date",
+        "guaranteed_stop",
+        "level",
+        "limit_distance",
+        "limit_level",
+        "market_name",
+        "size",
+        "stop_distance",
+        "stop_level",
+        "trailing_step",
+        "trailing_stop_distance",
+    }
+    assert set(Transaction.model_fields) == {
+        "cash_transaction",
+        "close_level",
+        "currency",
+        "date",
+        "date_utc",
+        "instrument_name",
+        "open_date_utc",
+        "open_level",
+        "period",
+        "profit_and_loss",
+        "reference",
+        "size",
+        "transaction_type",
+    }
 
 
 def test_switch_account_response_uses_the_official_fields() -> None:
@@ -287,5 +458,6 @@ def test_market_details_type_every_documented_v4_response_field() -> None:
     assert response.instrument.limited_risk_premium is not None
     assert response.instrument.limited_risk_premium.value == Decimal("0.5")
     assert response.snapshot is not None
+    assert response.snapshot.update_timestamp_utc == 1786276800000
     assert response.snapshot.price_ladder[0].bid == Decimal("1.08")
     assert response.snapshot.currency_ladders[0].ask_sizes == (Decimal("3"), Decimal("4"))

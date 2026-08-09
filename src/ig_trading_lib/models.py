@@ -11,13 +11,15 @@ from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-_CAMEL_BOUNDARY = re.compile(r"(?<!^)(?=[A-Z])")
+_WORD_BOUNDARY = re.compile(r"(.)([A-Z][a-z]+)")
+_ACRONYM_BOUNDARY = re.compile(r"([a-z0-9])([A-Z])")
 Item = TypeVar("Item")
 
 
 def to_snake_case(value: str) -> str:
     """Convert an IG camelCase key to the canonical public snake_case key."""
-    return _CAMEL_BOUNDARY.sub("_", value).lower().replace("-", "_")
+    words = _WORD_BOUNDARY.sub(r"\1_\2", value.replace("-", "_"))
+    return _ACRONYM_BOUNDARY.sub(r"\1_\2", words).lower()
 
 
 def to_camel_case(value: str) -> str:

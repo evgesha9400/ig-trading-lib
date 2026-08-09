@@ -19,30 +19,70 @@ class DealReferenceResponse(IGModel):
     deal_reference: str
 
 
+class AffectedDeal(IGModel):
+    deal_id: str
+    status: str
+
+
 class DealConfirmationResponse(IGModel):
+    affected_deals: tuple[AffectedDeal, ...] = ()
+    date: str | None = None
     deal_reference: str
     deal_id: str | None = None
     deal_status: str | None = None
+    direction: Direction | None = None
+    epic: str | None = None
+    expiry: str | None = None
+    guaranteed_stop: bool | None = None
+    level: Decimal | None = None
+    limit_distance: Decimal | None = None
+    limit_level: Decimal | None = None
+    profit: Decimal | None = None
+    profit_currency: str | None = None
     reason: str | None = None
+    size: Decimal | None = None
     status: str | None = None
+    stop_distance: Decimal | None = None
+    stop_level: Decimal | None = None
+    trailing_stop: bool | None = None
 
 
 class Position(IGModel):
+    contract_size: Decimal | None = None
+    controlled_risk: bool | None = None
+    created_date: str | None = None
+    created_date_utc: str | None = None
+    currency: str | None = None
     deal_id: str
     deal_reference: str | None = None
     direction: Direction | None = None
     size: Decimal | None = None
     level: Decimal | None = None
     limit_level: Decimal | None = None
+    limited_risk_premium: Decimal | None = None
     stop_level: Decimal | None = None
+    trailing_step: Decimal | None = None
+    trailing_stop_distance: Decimal | None = None
 
 
 class DealingMarket(IGModel):
-    epic: str
-    instrument_name: str | None = None
-    market_status: str | None = None
     bid: Decimal | None = None
+    delay_time: int | None = None
+    epic: str
+    expiry: str | None = None
+    high: Decimal | None = None
+    instrument_name: str | None = None
+    instrument_type: str | None = None
+    lot_size: Decimal | None = None
+    low: Decimal | None = None
+    market_status: str | None = None
+    net_change: Decimal | None = None
     offer: Decimal | None = None
+    percentage_change: Decimal | None = None
+    scaling_factor: Decimal | None = None
+    streaming_prices_available: bool | None = None
+    update_time: str | None = None
+    update_time_utc: str | None = None
 
 
 class PositionSummary(IGModel):

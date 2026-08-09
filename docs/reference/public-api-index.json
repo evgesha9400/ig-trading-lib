@@ -393,7 +393,7 @@
       "namespace": "prices",
       "operations": [
         {
-          "async_signature": "(epic: 'str', *, resolution: 'str | None' = None) -> 'PricesResponse'",
+          "async_signature": "(epic: 'str', query: 'PricesQuery | None' = None) -> 'PricesResponse'",
           "http_method": "GET",
           "method": "list",
           "mutation": false,
@@ -401,7 +401,7 @@
           "path": "/prices/{epic}",
           "protocol_version": 3,
           "return_type": "ig_trading_lib.operations.markets.PricesResponse",
-          "sync_signature": "(epic: 'str', *, resolution: 'str | None' = None) -> 'PricesResponse'"
+          "sync_signature": "(epic: 'str', query: 'PricesQuery | None' = None) -> 'PricesResponse'"
         },
         {
           "async_signature": "(epic: 'str', resolution: 'str', num_points: 'int') -> 'PricesResponse'",
