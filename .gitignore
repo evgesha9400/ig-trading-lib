@@ -13,5 +13,6 @@
 /tests/test_cache.json
 /test_cache.json
 /dist/
+/site/
 /.idea/vcs.xml
 *__pycache__

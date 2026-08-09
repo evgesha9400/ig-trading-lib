@@ -1,6 +1,6 @@
 <!-- Generated from docs/contracts/method-documentation.yml and live Python types. -->
 
-# Accounts methods
+# Accounts operations
 
 Examples assume an initialized synchronous or asynchronous client named `ig`.
 

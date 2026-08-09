@@ -5,7 +5,7 @@ expose exactly two layers.
 
 For copyable sync and async examples, every parameter and nested request field, recursive response
 shapes, limitations, and exception recovery rules, use the
-[complete method reference](methods/index.md).
+[library reference](index.md).
 
 --8<-- "docs/reference/.client-entry-points.md"
 

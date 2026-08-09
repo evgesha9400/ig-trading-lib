@@ -545,14 +545,14 @@ def _method_reference(
 def _method_reference_artifacts(
     contract: dict[str, Any], documentation: dict[str, Any]
 ) -> dict[Path, str]:
-    pages: dict[str, list[str]] = {}
+    pages: dict[str, dict[str, list[str]]] = {"operations": {}, "workflows": {}}
     for method_id in documentation["methods"]:
         layer, namespace, method_name = method_id.split(".")
         sync_root = Operations if layer == "operations" else Workflows
         async_root = AsyncOperations if layer == "operations" else AsyncWorkflows
         sync_type = get_type_hints(sync_root)[namespace]
         async_type = get_type_hints(async_root)[namespace]
-        pages.setdefault(namespace, []).append(
+        pages[layer].setdefault(namespace, []).append(
             _method_reference(
                 layer,
                 namespace,
@@ -562,30 +562,72 @@ def _method_reference_artifacts(
                 documentation,
             )
         )
-    artifacts = {
-        ROOT / f"docs/reference/methods/{namespace}.md": (
-            "<!-- Generated from docs/contracts/method-documentation.yml "
-            "and live Python types. -->\n\n"
-            f"# {namespace.replace('_', ' ').title()} methods\n\n"
-            "Examples assume an initialized synchronous or asynchronous client named `ig`.\n\n"
-            + "\n".join(methods)
+    artifacts = {}
+    for layer, namespaces in pages.items():
+        for namespace, methods in namespaces.items():
+            artifacts[ROOT / f"docs/reference/{layer}/{namespace}.md"] = (
+                "<!-- Generated from docs/contracts/method-documentation.yml "
+                "and live Python types. -->\n\n"
+                f"# {namespace.replace('_', ' ').title()} {layer}\n\n"
+                "Examples assume an initialized synchronous or asynchronous client named `ig`.\n\n"
+                + "\n".join(methods)
+            )
+        artifacts[ROOT / f"docs/reference/{layer}/index.md"] = _layer_reference_index(
+            layer, namespaces
         )
-        for namespace, methods in pages.items()
+    artifacts[ROOT / "docs/reference/index.md"] = _library_reference_index(pages)
+    return artifacts
+
+
+def _library_reference_index(pages: dict[str, dict[str, list[str]]]) -> str:
+    return (
+        "\n".join(
+            [
+                "<!-- Generated from docs/contracts/method-documentation.yml "
+                "and live Python types. -->",
+                "",
+                "# Library reference",
+                "",
+                "The reference hierarchy mirrors the library interface. Choose the layer that "
+                "matches "
+                "your intent before choosing a namespace.",
+                "",
+                "| Layer | Mental model | Namespaces | Methods |",
+                "| --- | --- | ---: | ---: |",
+                f"| [Operations](operations/index.md) | One faithful typed IG call. | "
+                f"{len(pages['operations'])} | {_method_count(pages['operations'])} |",
+                f"| [Workflows](workflows/index.md) | A multi-operation journey composed from "
+                f"operations. | {len(pages['workflows'])} | {_method_count(pages['workflows'])} |",
+                "",
+                "Every method documents its parameters, sync and async examples, recursive "
+                "response "
+                "shape, response example, limitations, and exceptions.",
+                "",
+                "- Parameter and response tables use public Python field names.",
+                "- Nested request fields include Pydantic defaults and declared constraints.",
+                "- `ValidationError` is `pydantic.ValidationError`; all other named failures are "
+                "exported by `ig_trading_lib`.",
+                "- Mutation workflows retain `DealConfirmationError.deal_reference`; reconcile it "
+                "instead of replaying the mutation.",
+            ]
+        )
+        + "\n"
+    )
+
+
+def _layer_reference_index(layer: str, pages: dict[str, list[str]]) -> str:
+    mental_model = {
+        "operations": (
+            "Each operation is one faithful typed IG call with protocol details kept private."
+        ),
+        "workflows": "Each workflow is a multi-operation journey composed only from operations.",
     }
     index_lines = [
         "<!-- Generated from docs/contracts/method-documentation.yml and live Python types. -->",
         "",
-        "# Complete method reference",
+        f"# {layer.title()}",
         "",
-        "Every public operation and workflow is documented with its parameters, examples, "
-        "response shape, limitations, and exceptions.",
-        "",
-        "- Parameter and response tables use public Python field names.",
-        "- Nested request fields include Pydantic defaults and declared constraints.",
-        "- `ValidationError` is `pydantic.ValidationError`; all other named failures are "
-        "exported by `ig_trading_lib`.",
-        "- Mutation workflows retain `DealConfirmationError.deal_reference`; reconcile it "
-        "instead of replaying the mutation.",
+        mental_model[layer],
         "",
         "| Namespace | Methods |",
         "| --- | ---: |",
@@ -594,8 +636,11 @@ def _method_reference_artifacts(
         index_lines.append(
             f"| [{namespace.replace('_', ' ').title()}]({namespace}.md) | {len(methods)} |"
         )
-    artifacts[ROOT / "docs/reference/methods/index.md"] = "\n".join(index_lines) + "\n"
-    return artifacts
+    return "\n".join(index_lines) + "\n"
+
+
+def _method_count(pages: dict[str, list[str]]) -> int:
+    return sum(len(methods) for methods in pages.values())
 
 
 def _entry_points(index: dict[str, Any]) -> str:
