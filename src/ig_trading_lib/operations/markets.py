@@ -13,17 +13,26 @@ from ig_trading_lib.models import IGModel, IGRequest
 
 
 class MarketSummary(IGModel):
+    bid: Decimal | None = None
+    delay_time: int | None = None
     epic: str
+    expiry: str | None = None
+    high: Decimal | None = None
     instrument_name: str | None = None
+    instrument_type: str | None = None
+    low: Decimal | None = None
     market_status: str | None = None
+    net_change: Decimal | None = None
+    offer: Decimal | None = None
+    percentage_change: Decimal | None = None
+    scaling_factor: Decimal | None = None
+    streaming_prices_available: bool | None = None
+    update_time: str | None = None
+    update_time_utc: str | None = None
 
 
 class MarketSearchResponse(IGModel):
     markets: tuple[MarketSummary, ...]
-
-
-class MarketsResponse(MarketSearchResponse):
-    pass
 
 
 DistanceUnit = Literal["PERCENTAGE", "POINTS"]
@@ -101,6 +110,71 @@ class MarketGetResponse(IGModel):
     instrument: MarketInstrument
     snapshot: MarketSnapshot | None = None
     dealing_rules: MarketDealingRules | None = None
+
+
+class MarketExpiryDetails(IGModel):
+    last_dealing_date: str | None = None
+    settlement_info: str | None = None
+
+
+class MarketMarginDepositBand(IGModel):
+    currency: str | None = None
+    margin: Decimal | None = None
+    max: Decimal | None = None
+    min: Decimal | None = None
+
+
+class MarketTime(IGModel):
+    close_time: str | None = None
+    open_time: str | None = None
+
+
+class MarketOpeningHours(IGModel):
+    market_times: tuple[MarketTime, ...] = ()
+
+
+class MarketRolloverDetails(IGModel):
+    last_rollover_time: str | None = None
+    rollover_info: str | None = None
+
+
+class DetailedMarketInstrument(MarketInstrument):
+    controlled_risk_allowed: bool | None = None
+    expiry_details: MarketExpiryDetails | None = None
+    force_open_allowed: bool | None = None
+    margin_deposit_bands: tuple[MarketMarginDepositBand, ...] = ()
+    margin_factor: Decimal | None = None
+    margin_factor_unit: DistanceUnit | None = None
+    one_pip_means: str | None = None
+    opening_hours: MarketOpeningHours | None = None
+    rollover_details: MarketRolloverDetails | None = None
+    slippage_factor: MarketDistanceRule | None = None
+    special_info: tuple[str, ...] = ()
+    sprint_markets_maximum_expiry_time: int | None = None
+    sprint_markets_minimum_expiry_time: int | None = None
+    stops_limits_allowed: bool | None = None
+
+
+class DetailedMarketDealingRules(MarketDealingRules):
+    market_order_preference: str | None = None
+
+
+class DetailedMarketSnapshot(MarketSnapshot):
+    bid: Decimal | None = None
+    binary_odds: Decimal | None = None
+    controlled_risk_extra_spread: Decimal | None = None
+    offer: Decimal | None = None
+    update_time: str | None = None
+
+
+class MarketDetails(IGModel):
+    dealing_rules: DetailedMarketDealingRules
+    instrument: DetailedMarketInstrument
+    snapshot: DetailedMarketSnapshot
+
+
+class MarketsResponse(IGModel):
+    market_details: tuple[MarketDetails, ...] = ()
 
 
 class Category(IGModel):
@@ -220,9 +294,17 @@ class MarketOperations:
     def __init__(self, executor: SyncExecutor) -> None:
         self._executor = executor
 
-    def list(self, epics: tuple[str, ...]) -> MarketsResponse:
+    def list(
+        self,
+        epics: tuple[str, ...],
+        *,
+        filter: Literal["ALL", "SNAPSHOT_ONLY"] = "ALL",
+    ) -> MarketsResponse:
+        _validate_epics(epics)
         return self._executor.execute(
-            "markets.list", MarketsResponse, query={"epics": ",".join(epics)}
+            "markets.list",
+            MarketsResponse,
+            query={"epics": ",".join(epics), "filter": filter},
         )
 
     def search(self, search_term: str) -> MarketSearchResponse:
@@ -241,9 +323,17 @@ class AsyncMarketOperations:
     def __init__(self, executor: AsyncExecutor) -> None:
         self._executor = executor
 
-    async def list(self, epics: tuple[str, ...]) -> MarketsResponse:
+    async def list(
+        self,
+        epics: tuple[str, ...],
+        *,
+        filter: Literal["ALL", "SNAPSHOT_ONLY"] = "ALL",
+    ) -> MarketsResponse:
+        _validate_epics(epics)
         return await self._executor.execute(
-            "markets.list", MarketsResponse, query={"epics": ",".join(epics)}
+            "markets.list",
+            MarketsResponse,
+            query={"epics": ",".join(epics), "filter": filter},
         )
 
     async def search(self, search_term: str) -> MarketSearchResponse:
@@ -370,6 +460,13 @@ def _required(value: str, name: str) -> str:
     if not value:
         raise ValueError(f"{name} must not be empty")
     return value
+
+
+def _validate_epics(epics: tuple[str, ...]) -> None:
+    if not 1 <= len(epics) <= 50:
+        raise ValueError("epics must contain between 1 and 50 identifiers")
+    if any(not epic for epic in epics):
+        raise ValueError("epics must not contain empty identifiers")
 
 
 def _date_time(value: datetime | str) -> str:

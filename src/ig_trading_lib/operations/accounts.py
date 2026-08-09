@@ -13,11 +13,24 @@ from ig_trading_lib._protocol.executor import AsyncExecutor, SyncExecutor
 from ig_trading_lib.models import IGModel, IGRequest
 
 
+class AccountBalance(IGModel):
+    available: Decimal | None = None
+    balance: Decimal | None = None
+    deposit: Decimal | None = None
+    profit_loss: Decimal | None = None
+
+
 class Account(IGModel):
+    account_alias: str | None = None
     account_id: str
     account_name: str | None = None
     account_type: str | None = None
+    balance: AccountBalance | None = None
+    can_transfer_from: bool | None = None
+    can_transfer_to: bool | None = None
+    currency: str | None = None
     preferred: bool | None = None
+    status: str | None = None
 
 
 class AccountsResponse(IGModel):

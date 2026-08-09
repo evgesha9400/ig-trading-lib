@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from pydantic import Field
 
 from ig_trading_lib._protocol.executor import AsyncExecutor, SyncExecutor
 from ig_trading_lib.models import IGModel, IGRequest
+from ig_trading_lib.operations.markets import MarketSummary
 
 
 class Watchlist(IGModel):
+    default_system_watchlist: bool | None = None
     id: str
     name: str | None = None
     editable: bool | None = None
@@ -19,10 +23,8 @@ class WatchlistsResponse(IGModel):
     watchlists: tuple[Watchlist, ...] = ()
 
 
-class WatchlistMarket(IGModel):
-    epic: str
-    instrument_name: str | None = None
-    market_status: str | None = None
+class WatchlistMarket(MarketSummary):
+    lot_size: Decimal | None = None
 
 
 class WatchlistResponse(IGModel):

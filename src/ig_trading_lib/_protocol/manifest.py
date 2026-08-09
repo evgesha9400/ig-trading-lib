@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 HttpMethod = Literal["DELETE", "GET", "POST", "PUT"]
+ResponseFormat = Literal["binary", "json"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,6 +35,7 @@ class OperationSpec:
     invalidates_session: bool
     schema_provenance: str
     evidence: SourceEvidence
+    response_format: ResponseFormat
 
 
 OFFICIAL_REST_EVIDENCE = SourceEvidence(
@@ -60,6 +62,7 @@ def _spec(
     mutation: bool = False,
     public: bool = True,
     invalidates_session: bool = False,
+    response_format: ResponseFormat = "json",
     schema: str = "IG REST reference response schema with provider extras preserved",
 ) -> OperationSpec:
     return OperationSpec(
@@ -72,6 +75,7 @@ def _spec(
         invalidates_session=invalidates_session,
         schema_provenance=schema,
         evidence=OFFICIAL_REST_EVIDENCE,
+        response_format=response_format,
     )
 
 
@@ -186,6 +190,7 @@ _SPECS = (
         "GET",
         "/indicativecostsandcharges/durablemedium/{quote_reference}",
         1,
+        response_format="binary",
     ),
     _spec(
         "indicative_costs.history",

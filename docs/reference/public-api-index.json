@@ -120,26 +120,26 @@
           "sync_signature": "() -> 'ApplicationsResponse'"
         },
         {
-          "async_signature": "(request: 'UpdateApplicationRequest') -> 'ApplicationMutationResponse'",
+          "async_signature": "(request: 'UpdateApplicationRequest') -> 'Application'",
           "http_method": "PUT",
           "method": "update",
           "mutation": true,
           "operation_id": "applications.update",
           "path": "/operations/application",
           "protocol_version": 1,
-          "return_type": "ig_trading_lib.operations.applications.ApplicationMutationResponse",
-          "sync_signature": "(request: 'UpdateApplicationRequest') -> 'ApplicationMutationResponse'"
+          "return_type": "ig_trading_lib.operations.applications.Application",
+          "sync_signature": "(request: 'UpdateApplicationRequest') -> 'Application'"
         },
         {
-          "async_signature": "(request: 'DisableApplicationRequest') -> 'ApplicationMutationResponse'",
+          "async_signature": "() -> 'Application'",
           "http_method": "PUT",
           "method": "disable",
           "mutation": true,
           "operation_id": "applications.disable",
           "path": "/operations/application/disable",
           "protocol_version": 1,
-          "return_type": "ig_trading_lib.operations.applications.ApplicationMutationResponse",
-          "sync_signature": "(request: 'DisableApplicationRequest') -> 'ApplicationMutationResponse'"
+          "return_type": "ig_trading_lib.operations.applications.Application",
+          "sync_signature": "() -> 'Application'"
         }
       ],
       "path": "ig.operations.applications"
@@ -265,15 +265,15 @@
           "sync_signature": "(request: 'EditIndicativeCostRequest') -> 'EditIndicativeCostResponse'"
         },
         {
-          "async_signature": "(quote_reference: 'str') -> 'IndicativeCostResponse'",
+          "async_signature": "(quote_reference: 'str') -> 'DurableMediumResponse'",
           "http_method": "GET",
           "method": "get_durable_medium",
           "mutation": false,
           "operation_id": "indicative_costs.get_durable_medium",
           "path": "/indicativecostsandcharges/durablemedium/{quote_reference}",
           "protocol_version": 1,
-          "return_type": "ig_trading_lib.operations.costs.IndicativeCostResponse",
-          "sync_signature": "(quote_reference: 'str') -> 'IndicativeCostResponse'"
+          "return_type": "ig_trading_lib.operations.costs.DurableMediumResponse",
+          "sync_signature": "(quote_reference: 'str') -> 'DurableMediumResponse'"
         },
         {
           "async_signature": "(from_date: 'datetime | str', to_date: 'datetime | str') -> 'IndicativeCostHistoryResponse'",
@@ -293,7 +293,7 @@
       "namespace": "markets",
       "operations": [
         {
-          "async_signature": "(epics: 'tuple[str, ...]') -> 'MarketsResponse'",
+          "async_signature": "(epics: 'tuple[str, ...]', *, filter: \"Literal['ALL', 'SNAPSHOT_ONLY']\" = 'ALL') -> 'MarketsResponse'",
           "http_method": "GET",
           "method": "list",
           "mutation": false,
@@ -301,7 +301,7 @@
           "path": "/markets",
           "protocol_version": 2,
           "return_type": "ig_trading_lib.operations.markets.MarketsResponse",
-          "sync_signature": "(epics: 'tuple[str, ...]') -> 'MarketsResponse'"
+          "sync_signature": "(epics: 'tuple[str, ...]', *, filter: \"Literal['ALL', 'SNAPSHOT_ONLY']\" = 'ALL') -> 'MarketsResponse'"
         },
         {
           "async_signature": "(search_term: 'str') -> 'MarketSearchResponse'",
@@ -432,7 +432,7 @@
       "namespace": "repeat_dealing_window",
       "operations": [
         {
-          "async_signature": "() -> 'RepeatDealingWindowResponse'",
+          "async_signature": "(*, epic: 'str | None' = None) -> 'RepeatDealingWindowResponse'",
           "http_method": "GET",
           "method": "get",
           "mutation": false,
@@ -440,7 +440,7 @@
           "path": "/repeat-dealing-window",
           "protocol_version": 1,
           "return_type": "ig_trading_lib.operations.dealing.RepeatDealingWindowResponse",
-          "sync_signature": "() -> 'RepeatDealingWindowResponse'"
+          "sync_signature": "(*, epic: 'str | None' = None) -> 'RepeatDealingWindowResponse'"
         }
       ],
       "path": "ig.operations.repeat_dealing_window"

@@ -41,26 +41,79 @@ class EditIndicativeCostRequest(IndicativeCostRequest):
     limit_level: Decimal | None = None
 
 
-class IndicativeCostResponse(IGModel):
+class OpenIndicativeCostResponse(IGModel):
+    borrowing_charge: Decimal | None = None
+    closing_commission: Decimal | None = None
+    closing_fx_fee: Decimal | None = None
+    closing_iftt: Decimal | None = None
+    closing_spread: Decimal | None = None
+    currency_code_iso: str | None = None
+    daily_running_fx_fee: Decimal | None = None
+    etp_entry_cost: Decimal | None = None
+    etp_exit_cost: Decimal | None = None
+    etp_ongoing_cost: Decimal | None = None
+    guaranteed_stop_deposit: Decimal | None = None
+    guaranteed_stop_return: Decimal | None = None
     indicative_quote_reference: str | None = None
-    total_cost: Decimal | None = None
-    currency_code: str | None = None
+    inducements: Decimal | None = None
+    knockout_premium_deposit: Decimal | None = None
+    knockout_premium_return: Decimal | None = None
+    notional_value: Decimal | None = None
+    notional_value_in_user_currency: Decimal | None = None
+    opening_commission: Decimal | None = None
+    opening_fx_fee: Decimal | None = None
+    opening_iftt: Decimal | None = None
+    opening_spread: Decimal | None = None
+    overnight_funding_fee: Decimal | None = None
 
 
-class OpenIndicativeCostResponse(IndicativeCostResponse):
-    pass
+class ClosingIndicativeCost(IGModel):
+    closing_commission: Decimal | None = None
+    closing_fx_fee: Decimal | None = None
+    closing_iftt: Decimal | None = None
+    closing_spread: Decimal | None = None
+    etp_exit_cost: Decimal | None = None
+    guaranteed_stop_return: Decimal | None = None
+    indicative_quote_reference: str | None = None
+    knockout_premium_return: Decimal | None = None
+    notional_value: Decimal | None = None
+    notional_value_in_user_currency: Decimal | None = None
 
 
-class CloseIndicativeCostResponse(IndicativeCostResponse):
-    pass
+class CloseIndicativeCostResponse(IGModel):
+    close: ClosingIndicativeCost | None = None
+    currency_code_iso: str | None = None
 
 
-class EditIndicativeCostResponse(IndicativeCostResponse):
-    pass
+class EditIndicativeCostResponse(IGModel):
+    currency_code_iso: str | None = None
+    limit: ClosingIndicativeCost | None = None
+    stop: ClosingIndicativeCost | None = None
+
+
+class IndicativeCostHistoryEntry(IGModel):
+    created_timestamp: str | None = None
+    direction: str | None = None
+    indicative_quote_reference: str | None = None
+    instrument_name: str | None = None
+    type: str | None = None
+
+
+class IndicativeCostHistoryPagination(IGModel):
+    page_number: int | None = None
+    page_size: int | None = None
+    total_elements: int | None = None
+    total_pages: int | None = None
 
 
 class IndicativeCostHistoryResponse(IGModel):
-    costs: tuple[IndicativeCostResponse, ...] = ()
+    costs_and_charges_history: tuple[IndicativeCostHistoryEntry, ...] = ()
+    pagination: IndicativeCostHistoryPagination | None = None
+
+
+class DurableMediumResponse(IGModel):
+    content: bytes
+    content_type: str | None = None
 
 
 class IndicativeCostsOperations:
@@ -88,10 +141,10 @@ class IndicativeCostsOperations:
             body=request.to_wire(),
         )
 
-    def get_durable_medium(self, quote_reference: str) -> IndicativeCostResponse:
+    def get_durable_medium(self, quote_reference: str) -> DurableMediumResponse:
         return self._executor.execute(
             "indicative_costs.get_durable_medium",
-            IndicativeCostResponse,
+            DurableMediumResponse,
             path={"quote_reference": quote_reference},
         )
 
@@ -130,10 +183,10 @@ class AsyncIndicativeCostsOperations:
             body=request.to_wire(),
         )
 
-    async def get_durable_medium(self, quote_reference: str) -> IndicativeCostResponse:
+    async def get_durable_medium(self, quote_reference: str) -> DurableMediumResponse:
         return await self._executor.execute(
             "indicative_costs.get_durable_medium",
-            IndicativeCostResponse,
+            DurableMediumResponse,
             path={"quote_reference": quote_reference},
         )
 

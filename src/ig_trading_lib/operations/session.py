@@ -11,7 +11,9 @@ from ig_trading_lib.models import IGModel, IGRequest
 class SessionResponse(IGModel):
     account_id: str | None = None
     client_id: str | None = None
+    currency: str | None = None
     lightstreamer_endpoint: str | None = None
+    locale: str | None = None
     timezone_offset: int | None = None
 
 

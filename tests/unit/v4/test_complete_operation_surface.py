@@ -70,6 +70,7 @@ def test_manifest_is_the_complete_source_evidence_and_protocol_boundary() -> Non
         assert spec.evidence.retrieved_on == "2026-08-09"
         assert len(spec.evidence.sha256) == 64
         assert spec.schema_provenance
+        assert spec.response_format in {"binary", "json"}
 
 
 def test_protocol_versions_are_private_including_authentication() -> None:
@@ -267,6 +268,13 @@ def test_every_sync_operation_reaches_its_manifest_bound_wire_contract() -> None
                 headers={"CST": "cst", "X-SECURITY-TOKEN": "security"},
             )
         requests.append(request)
+        content = payload.get("content")
+        if isinstance(content, bytes):
+            return httpx.Response(
+                200,
+                content=content,
+                headers={"Content-Type": "application/pdf"},
+            )
         return httpx.Response(200, json=payload)
 
     root = IG(_config(), http_client=httpx.Client(transport=httpx.MockTransport(handler)))
@@ -324,6 +332,8 @@ def _sample_value(annotation: object) -> object:
         return _required_payload(annotation)
     if annotation is str:
         return "value"
+    if annotation is bytes:
+        return b"value"
     if annotation is int:
         return 1
     if annotation is float:

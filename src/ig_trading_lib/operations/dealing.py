@@ -9,6 +9,7 @@ from pydantic import Field, model_validator
 
 from ig_trading_lib._protocol.executor import AsyncExecutor, SyncExecutor
 from ig_trading_lib.models import IGModel, IGRequest
+from ig_trading_lib.operations.markets import MarketSummary
 
 Direction = Literal["BUY", "SELL"]
 OrderType = Literal["LIMIT", "MARKET", "QUOTE"]
@@ -65,24 +66,8 @@ class Position(IGModel):
     trailing_stop_distance: Decimal | None = None
 
 
-class DealingMarket(IGModel):
-    bid: Decimal | None = None
-    delay_time: int | None = None
-    epic: str
-    expiry: str | None = None
-    high: Decimal | None = None
-    instrument_name: str | None = None
-    instrument_type: str | None = None
+class DealingMarket(MarketSummary):
     lot_size: Decimal | None = None
-    low: Decimal | None = None
-    market_status: str | None = None
-    net_change: Decimal | None = None
-    offer: Decimal | None = None
-    percentage_change: Decimal | None = None
-    scaling_factor: Decimal | None = None
-    streaming_prices_available: bool | None = None
-    update_time: str | None = None
-    update_time_utc: str | None = None
 
 
 class PositionSummary(IGModel):
@@ -249,17 +234,32 @@ class ClosePositionRequest(IGRequest):
 
 
 class WorkingOrderData(IGModel):
+    created_date: str | None = None
+    created_date_utc: str | None = None
+    currency_code: str | None = None
     deal_id: str
-    epic: str
     direction: Direction | None = None
-    order_size: Decimal | None = None
+    dma: bool | None = None
+    epic: str
+    good_till_date: str | None = None
+    good_till_date_iso: str | None = None
+    guaranteed_stop: bool | None = None
+    limit_distance: Decimal | None = None
+    limited_risk_premium: Decimal | None = None
     order_level: Decimal | None = None
+    order_size: Decimal | None = None
     order_type: str | None = None
+    stop_distance: Decimal | None = None
+    time_in_force: str | None = None
+
+
+class WorkingOrderMarket(DealingMarket):
+    exchange_id: str | None = None
 
 
 class WorkingOrderSummary(IGModel):
     working_order_data: WorkingOrderData
-    market_data: DealingMarket
+    market_data: WorkingOrderMarket
 
 
 class WorkingOrdersResponse(IGModel):
@@ -320,8 +320,27 @@ def _validate_good_till_date(time_in_force: str, good_till_date: str | None) -> 
         raise ValueError("GOOD_TILL_DATE requires good_till_date")
 
 
+class RepeatDealingExecution(IGModel):
+    size: Decimal
+    expiry: int
+
+
+class RepeatDealingCurrency(IGModel):
+    currency: str
+    buy: tuple[RepeatDealingExecution, ...] = ()
+    sell: tuple[RepeatDealingExecution, ...] = ()
+
+
+class RepeatDealingEntry(IGModel):
+    instrument_source: str
+    instrument_value: str
+    currency_list: tuple[RepeatDealingCurrency, ...] = ()
+
+
 class RepeatDealingWindowResponse(IGModel):
-    remaining_seconds: int | None = None
+    account_id: str
+    request_start_time: int
+    repeat_dealing_entry_list: tuple[RepeatDealingEntry, ...] = ()
 
 
 class ConfirmationsOperations:
@@ -464,15 +483,21 @@ class RepeatDealingWindowOperations:
     def __init__(self, executor: SyncExecutor) -> None:
         self._executor = executor
 
-    def get(self) -> RepeatDealingWindowResponse:
-        return self._executor.execute("repeat_dealing_window.get", RepeatDealingWindowResponse)
+    def get(self, *, epic: str | None = None) -> RepeatDealingWindowResponse:
+        return self._executor.execute(
+            "repeat_dealing_window.get",
+            RepeatDealingWindowResponse,
+            query={"epic": epic} if epic else None,
+        )
 
 
 class AsyncRepeatDealingWindowOperations:
     def __init__(self, executor: AsyncExecutor) -> None:
         self._executor = executor
 
-    async def get(self) -> RepeatDealingWindowResponse:
+    async def get(self, *, epic: str | None = None) -> RepeatDealingWindowResponse:
         return await self._executor.execute(
-            "repeat_dealing_window.get", RepeatDealingWindowResponse
+            "repeat_dealing_window.get",
+            RepeatDealingWindowResponse,
+            query={"epic": epic} if epic else None,
         )
