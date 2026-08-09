@@ -3,10 +3,15 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import inspect
 import json
 import sys
 import types
+from collections.abc import Mapping
+from datetime import date, datetime
+from decimal import Decimal
+from enum import Enum
 from pathlib import Path
 from typing import Any, Literal, Union, get_args, get_origin, get_type_hints
 
@@ -127,6 +132,10 @@ def _type_name(annotation: object) -> str:
 
 
 def _short_type_name(annotation: object) -> str:
+    if annotation is type(None):
+        return "None"
+    if annotation is Ellipsis:
+        return "..."
     origin = get_origin(annotation)
     if origin in (Union, types.UnionType):
         return " | ".join(_short_type_name(item) for item in get_args(annotation))
@@ -141,7 +150,7 @@ def _short_type_name(annotation: object) -> str:
 
 def _parameter_rows(
     method: object, descriptions: dict[str, str]
-) -> list[tuple[str, str, str, str]]:
+) -> list[tuple[str, str, str, str, str]]:
     signature = inspect.signature(method)
     hints = get_type_hints(method)
     rows = []
@@ -154,10 +163,68 @@ def _parameter_rows(
                 parameter.name,
                 _short_type_name(hints[parameter.name]),
                 required,
+                "-",
                 descriptions[parameter.name],
             )
         )
+        rows.extend(
+            _nested_parameter_rows(
+                hints[parameter.name],
+                prefix=parameter.name,
+                descriptions=descriptions,
+            )
+        )
     return rows
+
+
+def _nested_parameter_rows(
+    annotation: object,
+    *,
+    prefix: str,
+    descriptions: dict[str, str],
+) -> list[tuple[str, str, str, str, str]]:
+    rows = []
+    for model in _structured_types(annotation):
+        if inspect.isclass(model) and issubclass(model, BaseModel):
+            for name, field in model.model_fields.items():
+                rows.append(
+                    (
+                        f"{prefix}.{name}",
+                        _short_type_name(field.annotation),
+                        _field_required(field),
+                        _field_constraints(field),
+                        descriptions[name],
+                    )
+                )
+        elif dataclasses.is_dataclass(model):
+            hints = get_type_hints(model)
+            for field in dataclasses.fields(model):
+                required = (
+                    "required"
+                    if field.default is dataclasses.MISSING
+                    and field.default_factory is dataclasses.MISSING
+                    else f"default: `{field.default!r}`"
+                )
+                rows.append(
+                    (
+                        f"{prefix}.{field.name}",
+                        _short_type_name(hints[field.name]),
+                        required,
+                        "-",
+                        descriptions[field.name],
+                    )
+                )
+    return rows
+
+
+def _structured_types(annotation: object) -> tuple[type[Any], ...]:
+    if inspect.isclass(annotation) and (
+        issubclass(annotation, BaseModel) or dataclasses.is_dataclass(annotation)
+    ):
+        return (annotation,)
+    return tuple(
+        candidate for argument in get_args(annotation) for candidate in _structured_types(argument)
+    )
 
 
 def _field_required(field: Any) -> str:
@@ -166,11 +233,40 @@ def _field_required(field: Any) -> str:
     return f"default: `{field.default!r}`"
 
 
+def _field_constraints(field: Any) -> str:
+    labels = {
+        "gt": ">",
+        "ge": ">=",
+        "lt": "<",
+        "le": "<=",
+        "min_length": "minimum length",
+        "max_length": "maximum length",
+        "pattern": "pattern",
+    }
+    constraints = []
+    for metadata in field.metadata:
+        for attribute, label in labels.items():
+            if (value := getattr(metadata, attribute, None)) is not None:
+                constraints.append(f"{label} `{value}`")
+    return "; ".join(constraints) or "-"
+
+
 def _response_rows(
-    model: type[BaseModel],
+    annotation: object,
     *,
     prefix: str = "",
-    seen: frozenset[type[BaseModel]] = frozenset(),
+    seen: frozenset[type[Any]] = frozenset(),
+) -> list[tuple[str, str, str]]:
+    annotation = _response_item_type(annotation)
+    if inspect.isclass(annotation) and issubclass(annotation, BaseModel):
+        return _pydantic_response_rows(annotation, prefix=prefix, seen=seen)
+    if dataclasses.is_dataclass(annotation):
+        return _dataclass_response_rows(annotation, prefix=prefix, seen=seen)
+    return []
+
+
+def _pydantic_response_rows(
+    model: type[BaseModel], *, prefix: str, seen: frozenset[type[Any]]
 ) -> list[tuple[str, str, str]]:
     if model in seen:
         return []
@@ -192,31 +288,163 @@ def _response_rows(
             suffix = "[]"
         path = f"{prefix}.{name}{suffix}" if prefix else f"{name}{suffix}"
         rows.append((path, _short_type_name(annotation), _field_required(field)))
-        if inspect.isclass(nested_annotation) and issubclass(nested_annotation, BaseModel):
-            rows.extend(
-                _response_rows(
-                    nested_annotation,
-                    prefix=path,
-                    seen=seen | {model},
-                )
+        rows.extend(
+            _response_rows(
+                nested_annotation,
+                prefix=path,
+                seen=seen | {model},
             )
+        )
     return rows
 
 
+def _dataclass_response_rows(
+    model: type[Any], *, prefix: str, seen: frozenset[type[Any]]
+) -> list[tuple[str, str, str]]:
+    if model in seen:
+        return []
+    rows = []
+    hints = get_type_hints(model)
+    for field in dataclasses.fields(model):
+        annotation = hints[field.name]
+        path = f"{prefix}.{field.name}" if prefix else field.name
+        required = "required" if field.default is dataclasses.MISSING else repr(field.default)
+        rows.append((path, _short_type_name(annotation), required))
+        rows.extend(_response_rows(annotation, prefix=path, seen=seen | {model}))
+    return rows
+
+
+def _response_item_type(annotation: object) -> object:
+    origin = get_origin(annotation)
+    arguments = get_args(annotation)
+    if origin in (Union, types.UnionType):
+        return next((item for item in arguments if item is not type(None)), annotation)
+    if origin is not None and arguments:
+        return arguments[0]
+    return annotation
+
+
+_EXAMPLE_VALUES = {
+    "account_id": "ABC123",
+    "currency": "GBP",
+    "currency_code": "GBP",
+    "deal_id": "DIAAAABBBCCC",
+    "deal_reference": "ABC123",
+    "epic": "CS.D.EURUSD.CFD.IP",
+    "expiry": "-",
+    "instrument_name": "EUR/USD",
+    "market_id": "EURUSD",
+    "market_status": "TRADEABLE",
+    "name": "Example",
+    "status": "ENABLED",
+    "update_time": "12:34:56",
+}
+
+
+def _response_example(annotation: object, *, field_name: str = "value") -> object:
+    origin = get_origin(annotation)
+    arguments = get_args(annotation)
+    if origin in (Union, types.UnionType):
+        return _response_example(
+            next((item for item in arguments if item is not type(None)), type(None)),
+            field_name=field_name,
+        )
+    if origin in (tuple, list, set, frozenset):
+        return [_response_example(arguments[0], field_name=field_name)] if arguments else []
+    if origin is not None and origin is not Literal:
+        if origin is Mapping or issubclass(origin, Mapping):
+            return {"BID": "1.0812"}
+        return _response_example(arguments[0], field_name=field_name) if arguments else None
+    if origin is Literal:
+        return arguments[0]
+    if inspect.isclass(annotation) and issubclass(annotation, BaseModel):
+        return {
+            field.alias or name: _response_example(field.annotation, field_name=name)
+            for name, field in annotation.model_fields.items()
+        }
+    if dataclasses.is_dataclass(annotation):
+        hints = get_type_hints(annotation)
+        return {
+            field.name: _response_example(hints[field.name], field_name=field.name)
+            for field in dataclasses.fields(annotation)
+        }
+    if inspect.isclass(annotation) and issubclass(annotation, Enum):
+        return next(iter(annotation)).value
+    if annotation in (datetime, date):
+        return "2026-08-08T12:34:56Z"
+    if annotation is Decimal:
+        return "1.0"
+    if annotation is bytes:
+        return "<binary data>"
+    if annotation is str:
+        return _EXAMPLE_VALUES.get(field_name, "example")
+    if annotation is bool:
+        return True
+    if annotation is int:
+        return 1
+    if annotation is float:
+        return 1.0
+    if annotation is type(None):
+        return None
+    return "example"
+
+
+def _configured_items(
+    contract: dict[str, Any], documentation: dict[str, Any], kind: str
+) -> list[Any]:
+    profile = contract.get(f"{kind[:-1]}_profile")
+    items = list(documentation.get(f"{kind[:-1]}_profiles", {}).get(profile, []))
+    if kind == "limitations":
+        return [*items, *contract[kind]]
+    configured_by_name = {
+        item if isinstance(item, str) else next(iter(item)): item for item in items
+    }
+    for item in contract[kind]:
+        name = item if isinstance(item, str) else next(iter(item))
+        configured_by_name[name] = item
+    return list(configured_by_name.values())
+
+
+def _request_imports(method: object) -> list[str]:
+    hints = get_type_hints(method)
+    imports = []
+    for parameter in tuple(inspect.signature(method).parameters.values())[1:]:
+        for model in _structured_types(hints[parameter.name]):
+            imports.append(f"from {model.__module__} import {model.__name__}")
+    return sorted(set(imports))
+
+
+def _example_call_lines(method: object, call: str, *, asynchronous: bool) -> list[str]:
+    response = get_type_hints(method)["return"]
+    origin_name = getattr(get_origin(response), "__name__", "")
+    if origin_name == "Iterator":
+        return [f"for update in {call}:", "    print(update)"]
+    if origin_name == "AsyncIterator":
+        return [f"async for update in {call}:", "    print(update)"]
+    prefix = "await " if asynchronous and inspect.iscoroutinefunction(method) else ""
+    if response is type(None):
+        return [f"{prefix}{call}"]
+    return [f"result = {prefix}{call}"]
+
+
 def _method_reference(
+    layer: str,
     namespace: str,
     method_name: str,
-    method: object,
+    sync_method: object,
+    async_method: object,
     documentation: dict[str, Any],
 ) -> str:
-    method_id = f"operations.{namespace}.{method_name}"
+    method_id = f"{layer}.{namespace}.{method_name}"
     contract = documentation["methods"][method_id]
-    hints = get_type_hints(method)
+    hints = get_type_hints(sync_method)
     response_type = hints["return"]
     call_arguments = ", ".join(f"{name}={value}" for name, value in contract["arguments"].items())
-    call = f"ig.operations.{namespace}.{method_name}({call_arguments})"
+    call = f"ig.{layer}.{namespace}.{method_name}({call_arguments})"
+    response_name = _short_type_name(response_type)
+    imports = _request_imports(sync_method)
     lines = [
-        f"## `ig.operations.{namespace}.{method_name}()`",
+        f"## `ig.{layer}.{namespace}.{method_name}()`",
         "",
         contract["summary"],
         "",
@@ -225,53 +453,74 @@ def _method_reference(
         "",
         "### Signatures",
         "",
-        f"- Sync: `{_public_signature(method)}`",
-        "- Async: use the same parameters and `await` the result.",
+        f"- Sync: `{_public_signature(sync_method)}`",
+        f"- Async: `{_public_signature(async_method)}`",
         "",
         "### Parameters",
         "",
-        "| Name | Type | Required/default | Description |",
-        "| --- | --- | --- | --- |",
+        "| Name | Type | Required/default | Constraints | Description |",
+        "| --- | --- | --- | --- | --- |",
     ]
-    for name, type_name, required, description in _parameter_rows(
-        method, documentation["parameter_descriptions"]
-    ):
-        lines.append(f"| `{name}` | `{type_name}` | {required} | {description} |")
+    parameter_rows = _parameter_rows(sync_method, documentation["parameter_descriptions"])
+    if parameter_rows:
+        for name, type_name, required, constraints, description in parameter_rows:
+            lines.append(
+                f"| `{name}` | `{type_name}` | {required} | {constraints} | {description} |"
+            )
+    else:
+        lines.append("| None | - | - | - | This method accepts no parameters. |")
+    sync_example = [
+        *imports,
+        "" if imports else None,
+        *_example_call_lines(sync_method, call, asynchronous=False),
+    ]
+    async_example = [
+        *imports,
+        "" if imports else None,
+        *_example_call_lines(async_method, call, asynchronous=True),
+    ]
     lines.extend(
         [
             "",
             "### Sync example",
             "",
             "```python",
-            f"result = {call}",
+            *(line for line in sync_example if line is not None),
             "```",
             "",
             "### Async example",
             "",
             "```python",
-            f"result = await {call}",
+            *(line for line in async_example if line is not None),
             "```",
             "",
-            f"### Response shape: `{response_type.__name__}`",
+            f"### Response shape: `{response_name}`",
             "",
             "| Field | Type | Required/default |",
             "| --- | --- | --- |",
         ]
     )
-    for path, type_name, required in _response_rows(response_type):
-        lines.append(f"| `{path}` | `{type_name}` | {required} |")
+    response_rows = _response_rows(response_type)
+    if response_rows:
+        for path, type_name, required in response_rows:
+            lines.append(f"| `{path}` | `{type_name}` | {required} |")
+    else:
+        lines.append("| None | - | This method returns no structured response fields. |")
+    response_example = contract.get("response_example", _response_example(response_type))
+    limitations = _configured_items(contract, documentation, "limitations")
+    exceptions = _configured_items(contract, documentation, "exceptions")
     lines.extend(
         [
             "",
             "### Response example",
             "",
             "```json",
-            json.dumps(contract["response_example"], indent=2),
+            json.dumps(response_example, indent=2),
             "```",
             "",
             "### Limitations",
             "",
-            *(f"- {limitation}" for limitation in contract["limitations"]),
+            *(f"- {limitation}" for limitation in limitations),
             "",
             "### Exceptions",
             "",
@@ -280,7 +529,9 @@ def _method_reference(
         ]
     )
     exception_definitions = documentation["exceptions"]
-    for configured_exception in contract["exceptions"]:
+    if not exceptions:
+        lines.append("| None | No library-specific exception is expected. | No action required. |")
+    for configured_exception in exceptions:
         if isinstance(configured_exception, str):
             name = configured_exception
             override = {}
@@ -294,20 +545,56 @@ def _method_reference(
 def _method_reference_artifacts(
     contract: dict[str, Any], documentation: dict[str, Any]
 ) -> dict[Path, str]:
-    artifacts = {}
+    pages: dict[str, list[str]] = {}
     for method_id in documentation["methods"]:
         layer, namespace, method_name = method_id.split(".")
-        if layer != "operations":
-            raise ValueError(f"Unsupported method documentation layer: {layer}")
-        sync_type = get_type_hints(Operations)[namespace]
-        content = "# Markets operations\n\n" if namespace == "markets" else ""
-        content += _method_reference(
-            namespace,
-            method_name,
-            getattr(sync_type, method_name),
-            documentation,
+        sync_root = Operations if layer == "operations" else Workflows
+        async_root = AsyncOperations if layer == "operations" else AsyncWorkflows
+        sync_type = get_type_hints(sync_root)[namespace]
+        async_type = get_type_hints(async_root)[namespace]
+        pages.setdefault(namespace, []).append(
+            _method_reference(
+                layer,
+                namespace,
+                method_name,
+                getattr(sync_type, method_name),
+                getattr(async_type, method_name),
+                documentation,
+            )
         )
-        artifacts[ROOT / f"docs/reference/methods/{namespace}.md"] = content
+    artifacts = {
+        ROOT / f"docs/reference/methods/{namespace}.md": (
+            "<!-- Generated from docs/contracts/method-documentation.yml "
+            "and live Python types. -->\n\n"
+            f"# {namespace.replace('_', ' ').title()} methods\n\n"
+            "Examples assume an initialized synchronous or asynchronous client named `ig`.\n\n"
+            + "\n".join(methods)
+        )
+        for namespace, methods in pages.items()
+    }
+    index_lines = [
+        "<!-- Generated from docs/contracts/method-documentation.yml and live Python types. -->",
+        "",
+        "# Complete method reference",
+        "",
+        "Every public operation and workflow is documented with its parameters, examples, "
+        "response shape, limitations, and exceptions.",
+        "",
+        "- Parameter and response tables use public Python field names.",
+        "- Nested request fields include Pydantic defaults and declared constraints.",
+        "- `ValidationError` is `pydantic.ValidationError`; all other named failures are "
+        "exported by `ig_trading_lib`.",
+        "- Mutation workflows retain `DealConfirmationError.deal_reference`; reconcile it "
+        "instead of replaying the mutation.",
+        "",
+        "| Namespace | Methods |",
+        "| --- | ---: |",
+    ]
+    for namespace, methods in pages.items():
+        index_lines.append(
+            f"| [{namespace.replace('_', ' ').title()}]({namespace}.md) | {len(methods)} |"
+        )
+    artifacts[ROOT / "docs/reference/methods/index.md"] = "\n".join(index_lines) + "\n"
     return artifacts
 
 

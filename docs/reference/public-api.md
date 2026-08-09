@@ -3,6 +3,10 @@
 The source-checked contract is [public-api.yml](../contracts/public-api.yml). The composition roots
 expose exactly two layers.
 
+For copyable sync and async examples, every parameter and nested request field, recursive response
+shapes, limitations, and exception recovery rules, use the
+[complete method reference](methods/index.md).
+
 --8<-- "docs/reference/.client-entry-points.md"
 
 ## Composition roots

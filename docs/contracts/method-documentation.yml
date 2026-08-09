@@ -1,34 +1,326 @@
 schema_version: 1
 
 parameter_descriptions:
+  account_id: IG account identifier to switch to.
+  allowance_account_overall: Overall request allowance assigned to the application.
+  allowance_account_trading: Trading request allowance assigned to the application.
+  api_key: Application API key whose settings are updated.
+  ask: Current provider ask price used for an indicative calculation.
+  bid: Current provider bid price used for an indicative calculation.
+  category_id: IG market-navigation category identifier.
+  currency_code: Three-letter deal currency code.
+  deal_currency_code: Three-letter currency code used for the cost calculation.
+  deal_id: IG identifier of an existing position or working order.
+  deal_reference: Client or provider reference used to correlate a deal.
+  default_account: Whether the switched account becomes the login default.
+  detailed: Whether IG should include detailed activity records.
+  direction: Deal direction; `BUY` or `SELL`.
+  edit_type: Provider edit-cost calculation type.
+  end_date: Inclusive end of the requested time range.
+  epic: IG market epic.
+  epics: Ordered collection of IG market epics.
+  expiry: Market expiry, or `-` for a non-expiring market.
+  fetch_session_tokens: Whether CST and XST session tokens are requested from IG.
+  filter: Provider filter controlling the records or market detail returned.
+  force_open: Whether the deal must create a separate position.
+  from_date: Inclusive beginning of the requested time range.
+  good_till_date: Expiry timestamp for a `GOOD_TILL_DATE` working order.
+  guaranteed_stop: Whether the stop is guaranteed by IG.
+  hedging_mode: Provider account hedging preference.
+  instrument_id: Provider instrument identifier used by indicative-cost operations.
+  items: Lightstreamer item names included in the subscription.
+  fields: Lightstreamer fields requested for every item.
+  data_adapter: Optional Lightstreamer data-adapter name.
+  key: Caller-defined key copied to every stream update.
+  max_frequency: Maximum update frequency requested from Lightstreamer.
+  mode: Lightstreamer subscription mode; `MERGE` or `DISTINCT`.
+  snapshot: Whether Lightstreamer should send an initial snapshot.
+  knockout_premium: Knockout premium used in an indicative-cost calculation.
+  level: Requested order or quote price level.
+  limit_distance: Limit distance in market points; mutually exclusive with `limit_level`.
+  limit_level: Absolute limit level; mutually exclusive with `limit_distance`.
+  market_id: IG client-sentiment market identifier.
+  market_ids: Optional collection of IG client-sentiment market identifiers.
+  maturity_type: Optional provider maturity filter for category instruments.
+  max_points: Maximum number of historical price points to return.
+  max_span_seconds: Maximum transaction-history span in seconds.
+  name: User-visible watchlist name.
+  num_points: Number of historical price points requested.
+  opening_level: Original opening price used for close or edit cost calculations.
+  order_type: Provider order type for the requested deal.
+  page_number: Provider page number.
+  page_size: Maximum records requested per provider page.
+  period: ISO-8601-style provider period such as `P7D`.
+  price_level: Current price level used in an indicative-cost calculation.
+  query: Optional typed query controls; `None` uses provider defaults.
+  quote_id: IG quote identifier required for a `QUOTE` order.
+  quote_reference: IG indicative-cost quote reference.
+  reference_epic: Optional epic used as a category-navigation reference point.
+  request: Validated typed request body.
+  resolution: IG historical-price resolution.
   search_term: Text matched against IG market names and identifiers.
+  size: Positive deal size.
+  start_date: Inclusive beginning of the requested time range.
+  status: Application status to assign.
+  stop_distance: Stop distance in market points; mutually exclusive with `stop_level`.
+  stop_level: Absolute stop level; mutually exclusive with `stop_distance`.
+  subscription: Declarative Lightstreamer subscription specification.
+  time_in_force: Provider rule controlling how long or how aggressively an order executes.
+  to_date: Inclusive end of the requested time range.
+  trailing_stop: Whether trailing-stop behavior is enabled.
+  trailing_stop_distance: Distance maintained by an amended trailing stop.
+  trailing_stop_enabled: Whether trailing stops are enabled for the account.
+  trailing_stops_enabled: Whether trailing stops are enabled for the account.
+  trailing_stop_increment: Minimum movement before a trailing stop advances.
+  transaction_type: Provider transaction category filter.
+  type: Provider history or transaction type filter.
+  watchlist_id: IG watchlist identifier.
 
 exceptions:
   AuthenticationError:
-    trigger: IG rejected the credentials or session refresh failed.
+    trigger: IG rejected the credentials, required session values were absent, or refresh failed.
     recovery: Re-authenticate with valid credentials before retrying.
   AuthorizationError:
-    trigger: The active account cannot access this resource.
+    trigger: The active account cannot access the requested resource or action.
     recovery: Switch to an entitled account or request the required IG permission.
   RateLimitError:
     trigger: IG rejected the request because an allowance was exhausted.
-    recovery: Wait for `retry_after_seconds` when present, then retry with backoff.
+    recovery: Wait for `retry_after_seconds` when present, then retry with bounded backoff.
   ProviderRejectionError:
-    trigger: IG rejected an otherwise valid request.
+    trigger: IG rejected an otherwise well-formed request.
     recovery: Inspect `error_code` and correct the provider-specific input or account state.
+  ResourceNotFoundError:
+    trigger: The requested provider resource does not exist or is inaccessible.
+    recovery: Verify the identifier and active account before retrying.
   TransportError:
     trigger: A network or timeout failure prevented a completed read request.
     recovery: Retry the idempotent read with bounded backoff.
+  AmbiguousExecutionError:
+    trigger: A mutation may have reached IG before a network or timeout failure.
+    recovery: Reconcile account state or query by deal reference; never replay blindly.
+  LiveTradingPermissionError:
+    trigger: A live-environment mutation was called without an acknowledged `TradingPermit`.
+    recovery: Construct the client with an explicit `TradingPermit` after confirming live intent.
+  DealConfirmationError:
+    trigger: IG accepted a mutation but its follow-up confirmation could not be retrieved.
+    recovery: Preserve `deal_reference` from the exception and reconcile it; do not replay the mutation.
+  StreamingSubscriptionError:
+    trigger: IG or Lightstreamer rejected the subscription.
+    recovery: Correct the item, field, mode, entitlement, or adapter before resubscribing.
+  StreamingDataLossError:
+    trigger: IG reported lost updates or the local consumer exhausted its stream buffer.
+    recovery: Treat local state as stale, obtain a fresh snapshot, then resubscribe.
+  ValidationError:
+    trigger: Request construction failed or an IG response did not match the declared model.
+    recovery: Correct invalid request fields; report provider response drift with redacted diagnostics.
   ValueError:
-    trigger: A local argument violates a method-specific rule.
+    trigger: A direct method argument violates a local rule.
     recovery: Correct the argument before calling IG again.
 
+exception_profiles:
+  read: [AuthenticationError, AuthorizationError, RateLimitError, ProviderRejectionError, ResourceNotFoundError, TransportError, ValidationError]
+  mutation: [AuthenticationError, AuthorizationError, RateLimitError, ProviderRejectionError, ResourceNotFoundError, AmbiguousExecutionError, LiveTradingPermissionError, ValidationError]
+  workflow_read: [AuthenticationError, AuthorizationError, RateLimitError, ProviderRejectionError, ResourceNotFoundError, TransportError, ValidationError]
+  workflow_mutation: [AuthenticationError, AuthorizationError, RateLimitError, ProviderRejectionError, ResourceNotFoundError, AmbiguousExecutionError, LiveTradingPermissionError, DealConfirmationError, ValidationError]
+  streaming: [AuthenticationError, StreamingSubscriptionError, StreamingDataLossError]
+  none: []
+
+limitation_profiles:
+  read:
+    - Returned resources and fields depend on the active account, environment, entitlements, and current IG catalogue.
+    - IG can change account-specific allowances and availability independently of this library.
+  mutation:
+    - Live calls require an explicit `TradingPermit`; demo calls do not.
+    - Mutations are sent once and are never automatically retried after an uncertain outcome.
+  workflow_read:
+    - A workflow performs multiple IG requests and does not provide a transactional snapshot.
+    - Returned resources depend on the active account and may change between requests.
+  workflow_mutation:
+    - A workflow performs a mutation followed by a separate confirmation request.
+    - Confirmation failure does not roll back an accepted mutation.
+  streaming:
+    - Streams are long-lived and require the consumer to keep pace with the configured local buffer.
+    - Recovery can reconnect once, but consumers must rebuild state after any reported data loss.
+  none:
+    - No library-specific failure is expected during normal local cleanup.
+
 methods:
+  operations.accounts.list:
+    summary: List every account available to the authenticated client.
+    official_reference: https://labs.ig.com/reference/accounts.html
+    arguments: {}
+    limitation_profile: read
+    limitations: []
+    exception_profile: read
+    exceptions: []
+  operations.accounts.get_preferences:
+    summary: Read trading preferences for the active account.
+    official_reference: https://labs.ig.com/reference/accounts-preferences.html
+    arguments: {}
+    limitation_profile: read
+    limitations: []
+    exception_profile: read
+    exceptions: []
+  operations.accounts.update_preferences:
+    summary: Update trading preferences for the active account.
+    official_reference: https://labs.ig.com/reference/accounts-preferences.html
+    arguments: {request: "UpdateAccountPreferencesRequest(trailing_stops_enabled=True)"}
+    limitation_profile: mutation
+    limitations: ["Only fields supported by the account type can be changed."]
+    exception_profile: mutation
+    exceptions: []
+  operations.activity.list:
+    summary: List account activity with the v3 query controls.
+    official_reference: https://labs.ig.com/reference/history-activity.html
+    arguments: {query: "ActivityQuery(page_size=50)"}
+    limitation_profile: read
+    limitations: ["IG restricts activity history to provider-defined date and page windows."]
+    exception_profile: read
+    exceptions: []
+  operations.activity.list_by_date_range:
+    summary: List account activity between two dates using the v2 endpoint.
+    official_reference: https://labs.ig.com/reference/history-activity-dates.html
+    arguments: {from_date: '"2026-08-01"', to_date: '"2026-08-08"'}
+    limitation_profile: read
+    limitations: ["Date strings must use a format accepted by IG."]
+    exception_profile: read
+    exceptions: []
+  operations.activity.list_by_period:
+    summary: List recent account activity for a provider period.
+    official_reference: https://labs.ig.com/reference/history-activity-period.html
+    arguments: {period: '"P7D"'}
+    limitation_profile: read
+    limitations: ["Supported period syntax and maximum history are controlled by IG."]
+    exception_profile: read
+    exceptions: []
+  operations.applications.list:
+    summary: List API applications associated with the authenticated client.
+    official_reference: https://labs.ig.com/reference/operations-application.html
+    arguments: {}
+    limitation_profile: read
+    limitations: ["Application administration may require elevated account permissions."]
+    exception_profile: read
+    exceptions: []
+  operations.applications.update:
+    summary: Update one API application's status and allowances.
+    official_reference: https://labs.ig.com/reference/operations-application.html
+    arguments: {request: 'UpdateApplicationRequest(api_key="example-key", status="ENABLED", allowance_account_overall=60, allowance_account_trading=30)'}
+    limitation_profile: mutation
+    limitations: ["IG can cap requested allowances below the supplied values."]
+    exception_profile: mutation
+    exceptions: []
+  operations.applications.disable:
+    summary: Disable the API key used by the current session.
+    official_reference: https://labs.ig.com/reference/operations-application-disable.html
+    arguments: {}
+    limitation_profile: mutation
+    limitations: ["Disabling the current key can prevent subsequent calls from the client."]
+    exception_profile: mutation
+    exceptions: []
+  operations.categories.list:
+    summary: List top-level market-navigation categories.
+    official_reference: https://labs.ig.com/reference/categories.html
+    arguments: {}
+    limitation_profile: read
+    limitations: []
+    exception_profile: read
+    exceptions: []
+  operations.categories.list_instruments:
+    summary: List instruments inside a market-navigation category.
+    official_reference: https://labs.ig.com/reference/categories-category-id-instruments.html
+    arguments: {category_id: '"CURRENCIES"', query: "CategoryInstrumentsQuery(page_size=100)"}
+    limitation_profile: read
+    limitations: ["`page_size` is limited to 1-1000 and `page_number` starts at 0."]
+    exception_profile: read
+    exceptions: []
+  operations.client_sentiment.list:
+    summary: List client sentiment, optionally restricted to market identifiers.
+    official_reference: https://labs.ig.com/reference/client-sentiment.html
+    arguments: {market_ids: '("EURUSD", "GBPUSD")'}
+    limitation_profile: read
+    limitations: ["At most 500 identifiers are accepted; each must be 1-30 letters, digits, spaces, underscores, or hyphens."]
+    exception_profile: read
+    exceptions:
+      - ValueError:
+          trigger: "The collection exceeds 500 items or an identifier violates IG's character and length rules."
+  operations.client_sentiment.get:
+    summary: Read client sentiment for one market identifier.
+    official_reference: https://labs.ig.com/reference/client-sentiment-market-id.html
+    arguments: {market_id: '"EURUSD"'}
+    limitation_profile: read
+    limitations: ["Sentiment is available only for markets exposed by IG's sentiment service."]
+    exception_profile: read
+    exceptions: []
+  operations.client_sentiment.related:
+    summary: List sentiment for markets related to one market identifier.
+    official_reference: https://labs.ig.com/reference/client-sentiment-related-market-id.html
+    arguments: {market_id: '"EURUSD"'}
+    limitation_profile: read
+    limitations: ["Related markets are selected by IG and may be empty."]
+    exception_profile: read
+    exceptions: []
+  operations.confirmations.get:
+    summary: Retrieve the final confirmation for a deal reference.
+    official_reference: https://labs.ig.com/reference/confirms-deal-reference.html
+    arguments: {deal_reference: '"ABC123"'}
+    limitation_profile: read
+    limitations: ["Confirmations are retained only for the provider-defined availability window."]
+    exception_profile: read
+    exceptions: []
+  operations.indicative_costs.quote_open:
+    summary: Calculate indicative costs for opening a position.
+    official_reference: https://labs.ig.com/reference/indicative-costs-and-charges-open.html
+    arguments: {request: 'OpenIndicativeCostRequest(ask="1.0813", bid="1.0812", deal_currency_code="GBP", deal_reference="COST-1", size="1")'}
+    limitation_profile: read
+    limitations: ["The result is indicative and can differ from costs at execution time."]
+    exception_profile: read
+    exceptions: []
+  operations.indicative_costs.quote_close:
+    summary: Calculate indicative costs for closing a position.
+    official_reference: https://labs.ig.com/reference/indicative-costs-and-charges-close.html
+    arguments: {request: 'CloseIndicativeCostRequest(ask="1.0813", bid="1.0812", deal_currency_code="GBP", deal_reference="COST-2", size="1", opening_level="1.0700")'}
+    limitation_profile: read
+    limitations: ["The result is indicative and requires the original opening level."]
+    exception_profile: read
+    exceptions: []
+  operations.indicative_costs.quote_edit:
+    summary: Calculate indicative costs for editing a position.
+    official_reference: https://labs.ig.com/reference/indicative-costs-and-charges-edit.html
+    arguments: {request: 'EditIndicativeCostRequest(ask="1.0813", bid="1.0812", deal_currency_code="GBP", deal_reference="COST-3", size="1", opening_level="1.0700")'}
+    limitation_profile: read
+    limitations: ["The result is indicative and depends on the supplied edit context."]
+    exception_profile: read
+    exceptions: []
+  operations.indicative_costs.get_durable_medium:
+    summary: Download the durable-medium document for an indicative quote.
+    official_reference: https://labs.ig.com/reference/indicative-costs-and-charges-durable-medium.html
+    arguments: {quote_reference: '"COST-1"'}
+    limitation_profile: read
+    limitations: ["The response contains binary document bytes and may be unavailable after IG's retention window."]
+    exception_profile: read
+    exceptions: []
+  operations.indicative_costs.history:
+    summary: List historical indicative-cost disclosures for a date range.
+    official_reference: https://labs.ig.com/reference/indicative-costs-and-charges-history-dates.html
+    arguments: {from_date: '"2026-08-01T00:00:00"', to_date: '"2026-08-08T00:00:00"', query: "IndicativeCostHistoryQuery(page_size=50)"}
+    limitation_profile: read
+    limitations: ["History depth and page availability are controlled by IG."]
+    exception_profile: read
+    exceptions: []
+  operations.markets.list:
+    summary: Retrieve details for up to 50 market epics.
+    official_reference: https://labs.ig.com/reference/markets.html
+    arguments: {epics: '("CS.D.EURUSD.CFD.IP",)', filter: '"ALL"'}
+    limitation_profile: read
+    limitations: ["`epics` must contain 1-50 non-empty identifiers; `SNAPSHOT_ONLY` returns reduced detail."]
+    exception_profile: read
+    exceptions:
+      - ValueError:
+          trigger: "`epics` is empty, exceeds 50 items, or contains an empty identifier."
   operations.markets.search:
     summary: Search for markets by name or identifier.
     official_reference: https://labs.ig.com/reference/markets-searchterm.html
-    arguments:
-      search_term: '"EUR/USD"'
+    arguments: {search_term: '"EUR/USD"'}
     response_example:
       markets:
         - epic: CS.D.EURUSD.CFD.IP
@@ -36,14 +328,309 @@ methods:
           marketStatus: TRADEABLE
           bid: '1.08120'
           offer: '1.08135'
-    limitations:
-      - "`search_term` must contain at least one non-whitespace character."
-      - "Results depend on the active account's permissions and market catalogue."
+    limitation_profile: read
+    limitations: ["`search_term` must contain at least one non-whitespace character."]
+    exception_profile: read
     exceptions:
       - ValueError:
-          trigger: '`search_term` is empty or contains only whitespace.'
-      - AuthenticationError
-      - AuthorizationError
-      - RateLimitError
-      - ProviderRejectionError
-      - TransportError
+          trigger: "`search_term` is empty or contains only whitespace."
+  operations.markets.get:
+    summary: Retrieve details, snapshot, and dealing rules for one market epic.
+    official_reference: https://labs.ig.com/reference/markets-epic.html
+    arguments: {epic: '"CS.D.EURUSD.CFD.IP"'}
+    limitation_profile: read
+    limitations: ["`epic` must contain at least one non-whitespace character."]
+    exception_profile: read
+    exceptions:
+      - ValueError:
+          trigger: "`epic` is empty or contains only whitespace."
+  operations.positions.list:
+    summary: List all open positions for the active account.
+    official_reference: https://labs.ig.com/reference/positions.html
+    arguments: {}
+    limitation_profile: read
+    limitations: []
+    exception_profile: read
+    exceptions: []
+  operations.positions.get:
+    summary: Retrieve one open position by deal identifier.
+    official_reference: https://labs.ig.com/reference/positions-deal-id.html
+    arguments: {deal_id: '"DIAAAABBBCCC"'}
+    limitation_profile: read
+    limitations: ["The position must belong to the active account."]
+    exception_profile: read
+    exceptions: []
+  operations.positions.create:
+    summary: Create an OTC position and return its deal reference.
+    official_reference: https://labs.ig.com/reference/positions-otc.html
+    arguments: {request: 'CreatePositionRequest(epic="CS.D.EURUSD.CFD.IP", direction="BUY", size="1", order_type="MARKET", currency_code="GBP")'}
+    limitation_profile: mutation
+    limitations: ["Order-level, stop, limit, force-open, quote, and trailing-stop combinations are validated before sending."]
+    exception_profile: mutation
+    exceptions: []
+  operations.positions.amend:
+    summary: Amend stops or limits on an open position.
+    official_reference: https://labs.ig.com/reference/positions-otc-deal-id.html
+    arguments: {deal_id: '"DIAAAABBBCCC"', request: 'AmendPositionRequest(limit_level="1.0900")'}
+    limitation_profile: mutation
+    limitations: ["Guaranteed and trailing-stop amendments require provider-valid field combinations."]
+    exception_profile: mutation
+    exceptions: []
+  operations.positions.close:
+    summary: Close all or part of an OTC position.
+    official_reference: https://labs.ig.com/reference/positions-otc.html
+    arguments: {request: 'ClosePositionRequest(direction="SELL", size="1", deal_id="DIAAAABBBCCC")'}
+    limitation_profile: mutation
+    limitations: ["Identify the position by exactly one of `deal_id` or `epic`; `epic` also requires `expiry`."]
+    exception_profile: mutation
+    exceptions: []
+  operations.prices.list:
+    summary: List historical prices using the v3 paging and allowance model.
+    official_reference: https://labs.ig.com/reference/prices-epic.html
+    arguments: {epic: '"CS.D.EURUSD.CFD.IP"', query: 'PricesQuery(resolution="HOUR", max_points=100)'}
+    limitation_profile: read
+    limitations: ["IG historical-price allowances and maximum ranges vary by account and resolution."]
+    exception_profile: read
+    exceptions: []
+  operations.prices.list_points:
+    summary: List a fixed number of historical price points using the v2 endpoint.
+    official_reference: https://labs.ig.com/reference/prices-epic-resolution-numpoints.html
+    arguments: {epic: '"CS.D.EURUSD.CFD.IP"', resolution: '"HOUR"', num_points: '100'}
+    limitation_profile: read
+    limitations: ["Resolution values and point limits are enforced by IG."]
+    exception_profile: read
+    exceptions: []
+  operations.prices.list_date_range:
+    summary: List historical prices for an explicit date range using the v2 endpoint.
+    official_reference: https://labs.ig.com/reference/prices-epic-dates-new.html
+    arguments: {epic: '"CS.D.EURUSD.CFD.IP"', resolution: '"HOUR"', start_date: '"2026-08-01T00:00:00"', end_date: '"2026-08-08T00:00:00"'}
+    limitation_profile: read
+    limitations: ["Date format, range length, resolution, and allowance are enforced by IG."]
+    exception_profile: read
+    exceptions: []
+  operations.repeat_dealing_window.get:
+    summary: Read repeat-dealing window availability, optionally for one epic.
+    official_reference: https://labs.ig.com/reference/repeat-deal-window.html
+    arguments: {epic: '"CS.D.EURUSD.CFD.IP"'}
+    limitation_profile: read
+    limitations: ["Repeat-dealing eligibility and expiry are determined by IG in real time."]
+    exception_profile: read
+    exceptions: []
+  operations.session.get:
+    summary: Read the active session and optionally request CST/XST tokens.
+    official_reference: https://labs.ig.com/reference/session.html
+    arguments: {fetch_session_tokens: 'True'}
+    limitation_profile: read
+    limitations: ["Session tokens are sensitive, excluded from model repr, and must never be logged."]
+    exception_profile: read
+    exceptions: []
+  operations.session.switch_account:
+    summary: Switch the current session to another accessible account.
+    official_reference: https://labs.ig.com/reference/session.html
+    arguments: {request: 'SwitchAccountRequest(account_id="ABC123")'}
+    limitation_profile: mutation
+    limitations: ["The target account must be available to the authenticated client."]
+    exception_profile: mutation
+    exceptions: []
+  operations.session.delete:
+    summary: Log out the current IG session and invalidate local tokens.
+    official_reference: https://labs.ig.com/reference/session.html
+    arguments: {}
+    limitation_profile: mutation
+    limitations: ["A successful call makes subsequent operations authenticate again."]
+    exception_profile: mutation
+    exceptions: []
+  operations.session.get_encryption_key:
+    summary: Retrieve IG's password-encryption key and timestamp.
+    official_reference: https://labs.ig.com/reference/session-encryption-key.html
+    arguments: {}
+    limitation_profile: read
+    limitations: ["The key is time-sensitive and intended only for IG's encrypted-login flow."]
+    exception_profile: read
+    exceptions: []
+  operations.streaming.subscribe:
+    summary: Subscribe to Lightstreamer updates as a sync or async iterator.
+    official_reference: https://labs.ig.com/streaming-api-reference.html
+    arguments: {subscription: 'StreamSubscription(key="prices", mode="MERGE", items=("MARKET:CS.D.EURUSD.CFD.IP",), fields=("BID", "OFFER"))'}
+    limitation_profile: streaming
+    limitations: ["The sync method returns `Iterator[StreamUpdate]`; the async method returns `AsyncIterator[StreamUpdate]`."]
+    exception_profile: streaming
+    exceptions: []
+  operations.streaming.close:
+    summary: Unsubscribe active streams and close the Lightstreamer connection.
+    official_reference: https://labs.ig.com/streaming-api-reference.html
+    arguments: {}
+    limitation_profile: none
+    limitations: []
+    exception_profile: none
+    exceptions: []
+  operations.transactions.list:
+    summary: List account transactions with v2 query controls.
+    official_reference: https://labs.ig.com/reference/history-transactions.html
+    arguments: {query: 'TransactionsQuery(transaction_type="ALL", page_size=50)'}
+    limitation_profile: read
+    limitations: ["IG restricts transaction history to provider-defined date and page windows."]
+    exception_profile: read
+    exceptions: []
+  operations.transactions.list_by_date_range:
+    summary: List transactions of one type between two dates.
+    official_reference: https://labs.ig.com/reference/history-transactions-dates.html
+    arguments: {transaction_type: '"ALL"', from_date: '"2026-08-01"', to_date: '"2026-08-08"'}
+    limitation_profile: read
+    limitations: ["Date strings and transaction types must be accepted by the provider endpoint."]
+    exception_profile: read
+    exceptions: []
+  operations.transactions.list_by_period:
+    summary: List recent transactions of one type for a provider period.
+    official_reference: https://labs.ig.com/reference/history-transactions-period.html
+    arguments: {transaction_type: '"ALL"', period: '"P7D"'}
+    limitation_profile: read
+    limitations: ["Supported period syntax and maximum history are controlled by IG."]
+    exception_profile: read
+    exceptions: []
+  operations.watchlists.list:
+    summary: List watchlists belonging to the active account.
+    official_reference: https://labs.ig.com/reference/watchlists.html
+    arguments: {}
+    limitation_profile: read
+    limitations: []
+    exception_profile: read
+    exceptions: []
+  operations.watchlists.create:
+    summary: Create a watchlist with an optional initial market set.
+    official_reference: https://labs.ig.com/reference/watchlists.html
+    arguments: {request: 'CreateWatchlistRequest(name="FX majors", epics=("CS.D.EURUSD.CFD.IP",))'}
+    limitation_profile: mutation
+    limitations: ["The name must be non-empty; market and watchlist limits are controlled by IG."]
+    exception_profile: mutation
+    exceptions: []
+  operations.watchlists.get:
+    summary: Retrieve one watchlist and its markets.
+    official_reference: https://labs.ig.com/reference/watchlists-watchlist-id.html
+    arguments: {watchlist_id: '"12345"'}
+    limitation_profile: read
+    limitations: ["The watchlist must belong to the active account."]
+    exception_profile: read
+    exceptions: []
+  operations.watchlists.add_market:
+    summary: Add one market epic to a watchlist.
+    official_reference: https://labs.ig.com/reference/watchlists-watchlist-id-epic.html
+    arguments: {watchlist_id: '"12345"', request: 'AddWatchlistMarketRequest(epic="CS.D.EURUSD.CFD.IP")'}
+    limitation_profile: mutation
+    limitations: ["The market must be available and the watchlist must have remaining capacity."]
+    exception_profile: mutation
+    exceptions: []
+  operations.watchlists.delete:
+    summary: Delete one watchlist.
+    official_reference: https://labs.ig.com/reference/watchlists-watchlist-id.html
+    arguments: {watchlist_id: '"12345"'}
+    limitation_profile: mutation
+    limitations: ["Deletion is permanent at IG and does not delete any market."]
+    exception_profile: mutation
+    exceptions: []
+  operations.watchlists.remove_market:
+    summary: Remove one market epic from a watchlist.
+    official_reference: https://labs.ig.com/reference/watchlists-watchlist-id-epic.html
+    arguments: {watchlist_id: '"12345"', epic: '"CS.D.EURUSD.CFD.IP"'}
+    limitation_profile: mutation
+    limitations: ["The watchlist and market association must exist for the active account."]
+    exception_profile: mutation
+    exceptions: []
+  operations.working_orders.list:
+    summary: List all working orders for the active account.
+    official_reference: https://labs.ig.com/reference/working-orders.html
+    arguments: {}
+    limitation_profile: read
+    limitations: []
+    exception_profile: read
+    exceptions: []
+  operations.working_orders.create:
+    summary: Create an OTC working order and return its deal reference.
+    official_reference: https://labs.ig.com/reference/working-orders-otc.html
+    arguments: {request: 'CreateWorkingOrderRequest(epic="CS.D.EURUSD.CFD.IP", direction="BUY", size="1", level="1.0700", order_type="LIMIT", currency_code="GBP")'}
+    limitation_profile: mutation
+    limitations: ["Good-till-date, stop, limit, and guaranteed-stop combinations are validated before sending."]
+    exception_profile: mutation
+    exceptions: []
+  operations.working_orders.amend:
+    summary: Amend an existing OTC working order.
+    official_reference: https://labs.ig.com/reference/working-orders-otc-deal-id.html
+    arguments: {deal_id: '"DIAAAABBBCCC"', request: 'AmendWorkingOrderRequest(level="1.0710", order_type="LIMIT", time_in_force="GOOD_TILL_CANCELLED")'}
+    limitation_profile: mutation
+    limitations: ["Good-till-date, stop, limit, and guaranteed-stop combinations are validated before sending."]
+    exception_profile: mutation
+    exceptions: []
+  operations.working_orders.delete:
+    summary: Delete an existing OTC working order.
+    official_reference: https://labs.ig.com/reference/working-orders-otc-deal-id.html
+    arguments: {deal_id: '"DIAAAABBBCCC"'}
+    limitation_profile: mutation
+    limitations: ["Deletion is accepted asynchronously by IG and returns a deal reference."]
+    exception_profile: mutation
+    exceptions: []
+  workflows.discovery.find_market:
+    summary: Search for an exact epic and then retrieve its market details.
+    official_reference: https://labs.ig.com/reference/markets-searchterm.html
+    arguments: {search_term: '"EUR/USD"', epic: '"CS.D.EURUSD.CFD.IP"'}
+    limitation_profile: workflow_read
+    limitations: ["The exact epic must appear in the search results before details are fetched."]
+    exception_profile: workflow_read
+    exceptions:
+      - ResourceNotFoundError:
+          trigger: "Search completed but did not contain the requested exact `epic`."
+  workflows.portfolio.snapshot:
+    summary: Read accounts, open positions, and working orders as one portfolio view.
+    official_reference: https://labs.ig.com/reference/positions.html
+    arguments: {}
+    limitation_profile: workflow_read
+    limitations: ["The three reads are sequential and therefore not an atomic point-in-time snapshot."]
+    exception_profile: workflow_read
+    exceptions: []
+  workflows.positions.open_and_confirm:
+    summary: Open a position and retrieve its final deal confirmation.
+    official_reference: https://labs.ig.com/reference/positions-otc.html
+    arguments: {request: 'CreatePositionRequest(epic="CS.D.EURUSD.CFD.IP", direction="BUY", size="1", order_type="MARKET", currency_code="GBP")'}
+    limitation_profile: workflow_mutation
+    limitations: ["A returned `DealConfirmationError` means the open request may already have succeeded."]
+    exception_profile: workflow_mutation
+    exceptions: []
+  workflows.positions.amend_and_confirm:
+    summary: Amend a position and retrieve its final deal confirmation.
+    official_reference: https://labs.ig.com/reference/positions-otc-deal-id.html
+    arguments: {deal_id: '"DIAAAABBBCCC"', request: 'AmendPositionRequest(limit_level="1.0900")'}
+    limitation_profile: workflow_mutation
+    limitations: ["A returned `DealConfirmationError` means the amendment may already have succeeded."]
+    exception_profile: workflow_mutation
+    exceptions: []
+  workflows.positions.close_and_confirm:
+    summary: Close a position and retrieve its final deal confirmation.
+    official_reference: https://labs.ig.com/reference/positions-otc.html
+    arguments: {request: 'ClosePositionRequest(direction="SELL", size="1", deal_id="DIAAAABBBCCC")'}
+    limitation_profile: workflow_mutation
+    limitations: ["A returned `DealConfirmationError` means the close request may already have succeeded."]
+    exception_profile: workflow_mutation
+    exceptions: []
+  workflows.working_orders.place_and_confirm:
+    summary: Place a working order and retrieve its final deal confirmation.
+    official_reference: https://labs.ig.com/reference/working-orders-otc.html
+    arguments: {request: 'CreateWorkingOrderRequest(epic="CS.D.EURUSD.CFD.IP", direction="BUY", size="1", level="1.0700", order_type="LIMIT", currency_code="GBP")'}
+    limitation_profile: workflow_mutation
+    limitations: ["A returned `DealConfirmationError` means the order may already have been placed."]
+    exception_profile: workflow_mutation
+    exceptions: []
+  workflows.working_orders.amend_and_confirm:
+    summary: Amend a working order and retrieve its final deal confirmation.
+    official_reference: https://labs.ig.com/reference/working-orders-otc-deal-id.html
+    arguments: {deal_id: '"DIAAAABBBCCC"', request: 'AmendWorkingOrderRequest(level="1.0710", order_type="LIMIT", time_in_force="GOOD_TILL_CANCELLED")'}
+    limitation_profile: workflow_mutation
+    limitations: ["A returned `DealConfirmationError` means the amendment may already have succeeded."]
+    exception_profile: workflow_mutation
+    exceptions: []
+  workflows.working_orders.cancel_and_confirm:
+    summary: Cancel a working order and retrieve its final deal confirmation.
+    official_reference: https://labs.ig.com/reference/working-orders-otc-deal-id.html
+    arguments: {deal_id: '"DIAAAABBBCCC"'}
+    limitation_profile: workflow_mutation
+    limitations: ["A returned `DealConfirmationError` means the cancellation may already have succeeded."]
+    exception_profile: workflow_mutation
+    exceptions: []
